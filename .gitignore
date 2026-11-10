@@ -1,0 +1,26 @@
+# Environment
+.venv/
+.env
+
+# Large data, weights, outputs (CLAUDE.md)
+data/
+checkpoints/
+outputs/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.ply
+*.obj
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Tools / OS
+.gradio/
+.vscode/
+Thumbs.db
+.DS_Store
