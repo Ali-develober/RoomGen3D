@@ -1,0 +1,271 @@
+path_a,path_b,hamming,same_style,same_room
+images/Art Deco/Bathroom/237.jpg,images/Art Deco/Kitchen/2793.jpg,0,True,False
+images/Art Deco/Bedroom/1270.jpg,images/Art Deco/Bedroom/930.jpg,0,True,True
+images/Art Deco/Bedroom/1281.jpg,images/Art Deco/Bedroom/829.jpg,0,True,True
+images/Art Deco/Bedroom/788.jpg,images/Art Deco/Bedroom/970.jpg,2,True,True
+images/Art Deco/Bedroom/818.jpg,images/Art Deco/Bedroom/926.jpg,0,True,True
+images/Art Deco/Bedroom/822.jpg,images/Art Deco/Dining Room/1963.jpg,0,True,False
+images/Art Deco/Bedroom/851.jpg,images/Art Deco/Dining Room/1648.jpg,0,True,False
+images/Art Deco/Bedroom/940.jpg,images/Art Deco/Dining Room/1605.jpg,0,True,False
+images/Art Deco/Bedroom/951.jpg,images/Mediterranean/Bedroom/24154.jpg,0,False,True
+images/Art Deco/Bedroom/952.jpg,images/Art Deco/Dining Room/1463.jpg,0,True,False
+images/Art Deco/Bedroom/967.jpg,images/Art Deco/Dining Room/1563.jpg,2,True,False
+images/Art Deco/Bedroom/984.jpg,images/Traditional/Dining Room/36121.jpg,0,False,False
+images/Art Deco/Dining Room/1573.jpg,images/Eclectic/Dining Room/17476.jpg,0,False,True
+images/Art Deco/Dining Room/1655.jpg,images/Art Deco/Dining Room/2606.jpg,0,True,True
+images/Art Deco/Dining Room/1690.jpg,images/Eclectic/Dining Room/17561.jpg,0,False,True
+images/Art Deco/Dining Room/1938.jpg,images/Art Deco/Living Room/3026.jpg,0,True,False
+images/Art Deco/Dining Room/2343.jpg,images/Art Deco/Living Room/2933.jpg,0,True,False
+images/Art Deco/Dining Room/2423.jpg,images/Contemporary/Dining Room/13097.jpg,0,False,True
+images/Art Deco/Kitchen/2216.jpg,images/Art Deco/Kitchen/2856.jpg,0,True,True
+images/Art Deco/Kitchen/2305.jpg,images/Art Deco/Living Room/3163.jpg,0,True,False
+images/Art Deco/Kitchen/2360.jpg,images/Rustic/Kitchen/33343.jpg,6,False,True
+images/Art Deco/Kitchen/2368.jpg,images/Art Deco/Kitchen/2782.jpg,6,True,True
+images/Art Deco/Kitchen/2407.jpg,images/Mid-Century Modern/Kitchen/29782.jpg,8,False,True
+images/Art Deco/Kitchen/2476.jpg,images/Mediterranean/Kitchen/25785.jpg,8,False,True
+images/Art Deco/Kitchen/2481.jpg,images/Farmhouse/Kitchen/22260.jpg,0,False,True
+images/Art Deco/Kitchen/2746.jpg,images/Eclectic/Kitchen/17878.jpg,0,False,True
+images/Art Deco/Kitchen/2746.jpg,images/Eclectic/Kitchen/17983.jpg,0,False,True
+images/Art Deco/Kitchen/2746.jpg,images/Transitional/Kitchen/41799.jpg,0,False,True
+images/Art Deco/Living Room/1114.jpg,images/Art Deco/Living Room/2940.jpg,0,True,True
+images/Art Deco/Living Room/1344.jpg,images/Art Deco/Living Room/2082.jpg,0,True,True
+images/Art Deco/Living Room/1385.jpg,images/Art Deco/Living Room/3151.jpg,0,True,True
+images/Art Deco/Living Room/1747.jpg,images/Art Deco/Living Room/767.jpg,0,True,True
+images/Art Deco/Living Room/1776.jpg,images/Art Deco/Living Room/981.jpg,0,True,True
+images/Art Deco/Living Room/1990.jpg,images/Art Deco/Living Room/2904.jpg,0,True,True
+images/Art Deco/Living Room/2025.jpg,images/Art Deco/Living Room/2915.jpg,0,True,True
+images/Art Deco/Living Room/2069.jpg,images/Art Deco/Living Room/3052.jpg,0,True,True
+images/Art Deco/Living Room/2632.jpg,images/Art Deco/Living Room/2929.jpg,0,True,True
+images/Art Deco/Living Room/2948.jpg,images/Art Deco/Living Room/826.jpg,0,True,True
+images/Art Deco/Living Room/2993.jpg,images/Art Deco/Living Room/694.jpg,0,True,True
+images/Bohemian/Bathroom/3206.jpg,images/Transitional/Bathroom/41844.jpg,0,False,True
+images/Bohemian/Bathroom/3304.jpg,images/Transitional/Bathroom/39612.jpg,0,False,True
+images/Bohemian/Bathroom/3309.jpg,images/Transitional/Bathroom/39904.jpg,0,False,True
+images/Bohemian/Bathroom/3329.jpg,images/Transitional/Bathroom/39835.jpg,0,False,True
+images/Bohemian/Bathroom/3411.jpg,images/Eclectic/Living Room/16424.jpg,0,False,False
+images/Bohemian/Bathroom/3412.jpg,images/Transitional/Kitchen/42141.jpg,0,False,False
+images/Bohemian/Bathroom/3446.jpg,images/Traditional/Bathroom/35201.jpg,0,False,True
+images/Bohemian/Bathroom/3474.jpg,images/Transitional/Bathroom/39581.jpg,0,False,True
+images/Bohemian/Bathroom/3507.jpg,images/Transitional/Bathroom/39861.jpg,2,False,True
+images/Bohemian/Bathroom/3551.jpg,images/Transitional/Bathroom/39442.jpg,0,False,True
+images/Bohemian/Bathroom/3627.jpg,images/Bohemian/Bathroom/3710.jpg,8,True,True
+images/Bohemian/Bathroom/3627.jpg,images/Coastal/Bathroom/7014.jpg,0,False,True
+images/Bohemian/Bathroom/3635.jpg,images/Farmhouse/Bathroom/19744.jpg,0,False,True
+images/Bohemian/Bathroom/3710.jpg,images/Coastal/Bathroom/7014.jpg,8,False,True
+images/Bohemian/Bathroom/3719.jpg,images/Bohemian/Bathroom/3720.jpg,8,True,True
+images/Bohemian/Bedroom/3868.jpg,images/Bohemian/Bedroom/4222.jpg,0,True,True
+images/Bohemian/Bedroom/4045.jpg,images/Coastal/Bedroom/7863.jpg,0,False,True
+images/Bohemian/Bedroom/4089.jpg,images/Eclectic/Bedroom/16419.jpg,0,False,True
+images/Bohemian/Bedroom/4095.jpg,images/Coastal/Bedroom/7629.jpg,0,False,True
+images/Bohemian/Bedroom/4105.jpg,images/Bohemian/Bedroom/4130.jpg,0,True,True
+images/Bohemian/Bedroom/4225.jpg,images/Coastal/Bedroom/7780.jpg,4,False,True
+images/Bohemian/Dining Room/4483.jpg,images/Transitional/Dining Room/41115.jpg,0,False,True
+images/Bohemian/Dining Room/4498.jpg,images/Bohemian/Dining Room/4698.jpg,2,True,True
+images/Bohemian/Dining Room/4513.jpg,images/Transitional/Dining Room/41515.jpg,0,False,True
+images/Bohemian/Dining Room/4528.jpg,images/Traditional/Dining Room/36624.jpg,0,False,True
+images/Bohemian/Dining Room/4528.jpg,images/Transitional/Kitchen/41874.jpg,0,False,False
+images/Bohemian/Dining Room/4545.jpg,images/Transitional/Dining Room/40941.jpg,0,False,True
+images/Bohemian/Dining Room/4598.jpg,images/Transitional/Dining Room/41625.jpg,0,False,True
+images/Bohemian/Dining Room/4634.jpg,images/Transitional/Dining Room/41053.jpg,0,False,True
+images/Bohemian/Dining Room/4664.jpg,images/Transitional/Kitchen/41950.jpg,0,False,False
+images/Bohemian/Dining Room/4683.jpg,images/Transitional/Dining Room/41708.jpg,0,False,True
+images/Bohemian/Dining Room/4685.jpg,images/Transitional/Dining Room/41529.jpg,0,False,True
+images/Bohemian/Dining Room/4699.jpg,images/Transitional/Dining Room/41687.jpg,0,False,True
+images/Bohemian/Dining Room/4703.jpg,images/Transitional/Dining Room/41378.jpg,0,False,True
+images/Bohemian/Dining Room/4706.jpg,images/Transitional/Living Room/42881.jpg,0,False,False
+images/Bohemian/Dining Room/4740.jpg,images/Transitional/Dining Room/41262.jpg,0,False,True
+images/Bohemian/Dining Room/4790.jpg,images/Transitional/Dining Room/41602.jpg,0,False,True
+images/Bohemian/Dining Room/4796.jpg,images/Transitional/Dining Room/41576.jpg,0,False,True
+images/Bohemian/Dining Room/4819.jpg,images/Transitional/Dining Room/41303.jpg,0,False,True
+images/Bohemian/Dining Room/4829.jpg,images/Transitional/Dining Room/41455.jpg,0,False,True
+images/Bohemian/Dining Room/4881.jpg,images/Transitional/Dining Room/41266.jpg,0,False,True
+images/Bohemian/Dining Room/4891.jpg,images/Transitional/Dining Room/41513.jpg,0,False,True
+images/Bohemian/Dining Room/4915.jpg,images/Transitional/Dining Room/41401.jpg,0,False,True
+images/Bohemian/Dining Room/4922.jpg,images/Transitional/Dining Room/41232.jpg,0,False,True
+images/Bohemian/Dining Room/4941.jpg,images/Transitional/Dining Room/41117.jpg,0,False,True
+images/Bohemian/Dining Room/4960.jpg,images/Transitional/Dining Room/40947.jpg,0,False,True
+images/Bohemian/Dining Room/5014.jpg,images/Transitional/Kitchen/42190.jpg,0,False,False
+images/Bohemian/Dining Room/5032.jpg,images/Transitional/Dining Room/41351.jpg,0,False,True
+images/Bohemian/Dining Room/5057.jpg,images/Transitional/Dining Room/41020.jpg,0,False,True
+images/Bohemian/Dining Room/5073.jpg,images/Transitional/Dining Room/41001.jpg,2,False,True
+images/Bohemian/Dining Room/5150.jpg,images/Transitional/Dining Room/41647.jpg,0,False,True
+images/Bohemian/Dining Room/5153.jpg,images/Transitional/Dining Room/41624.jpg,0,False,True
+images/Bohemian/Dining Room/5170.jpg,images/Transitional/Dining Room/41595.jpg,0,False,True
+images/Bohemian/Kitchen/5259.jpg,images/Eclectic/Kitchen/18237.jpg,0,False,True
+images/Bohemian/Kitchen/5266.jpg,images/Eclectic/Kitchen/18352.jpg,0,False,True
+images/Bohemian/Kitchen/5274.jpg,images/Traditional/Kitchen/37816.jpg,0,False,True
+images/Bohemian/Kitchen/5303.jpg,images/Farmhouse/Kitchen/21900.jpg,2,False,True
+images/Bohemian/Kitchen/5452.jpg,images/Contemporary/Kitchen/14107.jpg,0,False,True
+images/Bohemian/Kitchen/5526.jpg,images/Traditional/Kitchen/37506.jpg,0,False,True
+images/Bohemian/Kitchen/5664.jpg,images/Bohemian/Kitchen/5671.jpg,8,True,True
+images/Bohemian/Living Room/5970.jpg,images/Contemporary/Living Room/14529.jpg,8,False,True
+images/Bohemian/Living Room/6114.jpg,images/Bohemian/Living Room/6151.jpg,0,True,True
+images/Coastal/Bathroom/6628.jpg,images/Coastal/Bathroom/6854.jpg,8,True,True
+images/Coastal/Bedroom/7601.jpg,images/Eclectic/Bathroom/15586.jpg,0,False,False
+images/Coastal/Bedroom/7800.jpg,images/Mediterranean/Bedroom/24247.jpg,0,False,True
+images/Coastal/Bedroom/7800.jpg,images/Mediterranean/Bedroom/24269.jpg,0,False,True
+images/Coastal/Dining Room/7956.jpg,images/Coastal/Kitchen/9288.jpg,2,True,False
+images/Coastal/Kitchen/8864.jpg,images/Coastal/Kitchen/9183.jpg,0,True,True
+images/Coastal/Kitchen/8941.jpg,images/Coastal/Kitchen/9199.jpg,0,True,True
+images/Coastal/Kitchen/9065.jpg,images/Coastal/Kitchen/9227.jpg,0,True,True
+images/Coastal/Kitchen/9160.jpg,images/Coastal/Kitchen/9236.jpg,0,True,True
+images/Coastal/Kitchen/9295.jpg,images/Contemporary/Kitchen/13293.jpg,0,False,True
+images/Coastal/Living Room/10102.jpg,images/Coastal/Living Room/7215.jpg,0,True,True
+images/Coastal/Living Room/7284.jpg,images/Coastal/Living Room/9477.jpg,0,True,True
+images/Coastal/Living Room/7450.jpg,images/Coastal/Living Room/9310.jpg,0,True,True
+images/Coastal/Living Room/7546.jpg,images/Coastal/Living Room/9378.jpg,0,True,True
+images/Coastal/Living Room/7604.jpg,images/Coastal/Living Room/9708.jpg,0,True,True
+images/Coastal/Living Room/7751.jpg,images/Coastal/Living Room/9488.jpg,2,True,True
+images/Coastal/Living Room/7862.jpg,images/Coastal/Living Room/9342.jpg,0,True,True
+images/Coastal/Living Room/9340.jpg,images/Rustic/Living Room/34191.jpg,0,False,True
+images/Contemporary/Bathroom/10178.jpg,images/Eclectic/Bathroom/15360.jpg,0,False,True
+images/Contemporary/Bathroom/10370.jpg,images/Eclectic/Bathroom/15534.jpg,0,False,True
+images/Contemporary/Bathroom/10459.jpg,images/Rustic/Bathroom/31295.jpg,0,False,True
+images/Contemporary/Bathroom/10580.jpg,images/Eclectic/Bathroom/15602.jpg,0,False,True
+images/Contemporary/Bathroom/10665.jpg,images/Eclectic/Bathroom/15298.jpg,0,False,True
+images/Contemporary/Bedroom/10992.jpg,images/Contemporary/Bedroom/12111.jpg,0,True,True
+images/Contemporary/Bedroom/10992.jpg,images/Rustic/Bedroom/31434.jpg,0,False,True
+images/Contemporary/Bedroom/11011.jpg,images/Contemporary/Bedroom/11844.jpg,0,True,True
+images/Contemporary/Bedroom/11173.jpg,images/Contemporary/Bedroom/12349.jpg,0,True,True
+images/Contemporary/Bedroom/11210.jpg,images/Contemporary/Bedroom/11949.jpg,0,True,True
+images/Contemporary/Bedroom/11266.jpg,images/Contemporary/Bedroom/11751.jpg,0,True,True
+images/Contemporary/Bedroom/11289.jpg,images/Mid-Century Modern/Bedroom/28134.jpg,0,False,True
+images/Contemporary/Bedroom/11579.jpg,images/Contemporary/Bedroom/12202.jpg,0,True,True
+images/Contemporary/Bedroom/11591.jpg,images/Traditional/Bedroom/35999.jpg,0,False,True
+images/Contemporary/Bedroom/12111.jpg,images/Rustic/Bedroom/31434.jpg,0,False,True
+images/Contemporary/Bedroom/12199.jpg,images/Traditional/Bedroom/36105.jpg,0,False,True
+images/Contemporary/Dining Room/12501.jpg,images/Mediterranean/Dining Room/24686.jpg,2,False,True
+images/Contemporary/Dining Room/12767.jpg,images/Eclectic/Dining Room/17115.jpg,0,False,True
+images/Contemporary/Dining Room/13000.jpg,images/Eclectic/Dining Room/16922.jpg,0,False,True
+images/Contemporary/Dining Room/13009.jpg,images/Eclectic/Dining Room/17073.jpg,0,False,True
+images/Contemporary/Dining Room/13238.jpg,images/Farmhouse/Dining Room/22086.jpg,0,False,True
+images/Contemporary/Dining Room/13238.jpg,images/Farmhouse/Kitchen/20772.jpg,0,False,False
+images/Contemporary/Dining Room/13302.jpg,images/Farmhouse/Dining Room/20343.jpg,0,False,True
+images/Contemporary/Dining Room/13302.jpg,images/Farmhouse/Dining Room/22272.jpg,0,False,True
+images/Contemporary/Dining Room/13742.jpg,images/Contemporary/Dining Room/13780.jpg,0,True,True
+images/Contemporary/Kitchen/13561.jpg,images/Contemporary/Kitchen/14090.jpg,0,True,True
+images/Contemporary/Kitchen/13603.jpg,images/Eclectic/Kitchen/18441.jpg,0,False,True
+images/Contemporary/Kitchen/13951.jpg,images/Rustic/Kitchen/33213.jpg,0,False,True
+images/Contemporary/Kitchen/14101.jpg,images/Eclectic/Kitchen/18063.jpg,0,False,True
+images/Contemporary/Living Room/11956.jpg,images/Mid-Century Modern/Living Room/28245.jpg,2,False,True
+images/Contemporary/Living Room/12094.jpg,images/Contemporary/Living Room/12297.jpg,2,True,True
+images/Contemporary/Living Room/13153.jpg,images/Eclectic/Living Room/17162.jpg,0,False,True
+images/Contemporary/Living Room/13575.jpg,images/Eclectic/Living Room/17908.jpg,0,False,True
+images/Contemporary/Living Room/14329.jpg,images/Mid-Century Modern/Living Room/27832.jpg,6,False,True
+images/Contemporary/Living Room/14486.jpg,images/Transitional/Living Room/42700.jpg,8,False,True
+images/Eclectic/Bathroom/15398.jpg,images/Farmhouse/Bathroom/19616.jpg,0,False,True
+images/Eclectic/Bedroom/16514.jpg,images/Eclectic/Bedroom/16847.jpg,0,True,True
+images/Eclectic/Bedroom/16848.jpg,images/Eclectic/Living Room/16824.jpg,0,True,False
+images/Eclectic/Dining Room/16248.jpg,images/Eclectic/Dining Room/18393.jpg,0,True,True
+images/Eclectic/Dining Room/16802.jpg,images/Mid-Century Modern/Dining Room/28896.jpg,0,False,True
+images/Eclectic/Dining Room/17008.jpg,images/Eclectic/Dining Room/17237.jpg,0,True,True
+images/Eclectic/Dining Room/17206.jpg,images/Eclectic/Dining Room/17626.jpg,0,True,True
+images/Eclectic/Dining Room/17439.jpg,images/Eclectic/Dining Room/17452.jpg,0,True,True
+images/Eclectic/Dining Room/17454.jpg,images/Mid-Century Modern/Dining Room/28750.jpg,0,False,True
+images/Eclectic/Dining Room/17815.jpg,images/Eclectic/Kitchen/16576.jpg,0,True,False
+images/Eclectic/Kitchen/17725.jpg,images/Transitional/Kitchen/42544.jpg,0,False,True
+images/Eclectic/Kitchen/17779.jpg,images/Farmhouse/Kitchen/22332.jpg,0,False,True
+images/Eclectic/Kitchen/17878.jpg,images/Eclectic/Kitchen/17983.jpg,0,True,True
+images/Eclectic/Kitchen/17878.jpg,images/Transitional/Kitchen/41799.jpg,0,False,True
+images/Eclectic/Kitchen/17983.jpg,images/Transitional/Kitchen/41799.jpg,0,False,True
+images/Eclectic/Kitchen/18345.jpg,images/Mid-Century Modern/Kitchen/29923.jpg,0,False,True
+images/Eclectic/Living Room/16060.jpg,images/Eclectic/Living Room/18763.jpg,0,True,True
+images/Eclectic/Living Room/16345.jpg,images/Transitional/Living Room/43218.jpg,2,False,True
+images/Eclectic/Living Room/16696.jpg,images/Eclectic/Living Room/19106.jpg,0,True,True
+images/Eclectic/Living Room/17044.jpg,images/Transitional/Living Room/40851.jpg,0,False,True
+images/Eclectic/Living Room/17044.jpg,images/Transitional/Living Room/42825.jpg,0,False,True
+images/Eclectic/Living Room/18980.jpg,images/Mid-Century Modern/Bedroom/27885.jpg,0,False,False
+images/Farmhouse/Bathroom/19541.jpg,images/Farmhouse/Bathroom/19613.jpg,0,True,True
+images/Farmhouse/Bathroom/19897.jpg,images/Traditional/Bathroom/35418.jpg,0,False,True
+images/Farmhouse/Bathroom/20029.jpg,images/Mid-Century Modern/Bathroom/27073.jpg,0,False,True
+images/Farmhouse/Bathroom/20029.jpg,images/Mid-Century Modern/Bathroom/29120.jpg,0,False,True
+images/Farmhouse/Bathroom/20029.jpg,images/Rustic/Bathroom/32400.jpg,0,False,True
+images/Farmhouse/Bedroom/20051.jpg,images/Farmhouse/Bedroom/20321.jpg,0,True,True
+images/Farmhouse/Bedroom/20295.jpg,images/Farmhouse/Living Room/23064.jpg,0,True,False
+images/Farmhouse/Dining Room/20343.jpg,images/Farmhouse/Dining Room/22272.jpg,0,True,True
+images/Farmhouse/Dining Room/21067.jpg,images/Rustic/Dining Room/32996.jpg,0,False,True
+images/Farmhouse/Dining Room/21130.jpg,images/Traditional/Dining Room/37313.jpg,0,False,True
+images/Farmhouse/Dining Room/21695.jpg,images/Rustic/Dining Room/33487.jpg,0,False,True
+images/Farmhouse/Dining Room/22086.jpg,images/Farmhouse/Kitchen/20772.jpg,0,True,False
+images/Farmhouse/Kitchen/20574.jpg,images/Farmhouse/Kitchen/22228.jpg,0,True,True
+images/Farmhouse/Kitchen/21830.jpg,images/Mid-Century Modern/Kitchen/29251.jpg,0,False,True
+images/Farmhouse/Kitchen/22138.jpg,images/Rustic/Kitchen/33500.jpg,0,False,True
+images/Farmhouse/Kitchen/22213.jpg,images/Farmhouse/Living Room/22902.jpg,0,True,False
+images/Farmhouse/Kitchen/22258.jpg,images/Rustic/Kitchen/33595.jpg,0,False,True
+images/Farmhouse/Kitchen/22285.jpg,images/Rustic/Kitchen/33596.jpg,0,False,True
+images/Farmhouse/Living Room/20132.jpg,images/Farmhouse/Living Room/23098.jpg,0,True,True
+images/Farmhouse/Living Room/20177.jpg,images/Farmhouse/Living Room/22924.jpg,0,True,True
+images/Farmhouse/Living Room/20335.jpg,images/Farmhouse/Living Room/22486.jpg,0,True,True
+images/Farmhouse/Living Room/20400.jpg,images/Traditional/Living Room/39300.jpg,0,False,True
+images/Farmhouse/Living Room/20627.jpg,images/Farmhouse/Living Room/23068.jpg,0,True,True
+images/Farmhouse/Living Room/21533.jpg,images/Farmhouse/Living Room/22632.jpg,0,True,True
+images/Farmhouse/Living Room/22609.jpg,images/Farmhouse/Living Room/23154.jpg,0,True,True
+images/Farmhouse/Living Room/22804.jpg,images/Mediterranean/Living Room/26574.jpg,0,False,True
+images/Mediterranean/Bathroom/23616.jpg,images/Mediterranean/Dining Room/25877.jpg,0,True,False
+images/Mediterranean/Bathroom/23707.jpg,images/Mediterranean/Dining Room/25438.jpg,0,True,False
+images/Mediterranean/Bathroom/23795.jpg,images/Mediterranean/Dining Room/25949.jpg,0,True,False
+images/Mediterranean/Bathroom/23798.jpg,images/Mediterranean/Living Room/26029.jpg,0,True,False
+images/Mediterranean/Bathroom/24528.jpg,images/Mediterranean/Bathroom/24847.jpg,0,True,True
+images/Mediterranean/Bedroom/23994.jpg,images/Mediterranean/Living Room/25551.jpg,0,True,False
+images/Mediterranean/Bedroom/24247.jpg,images/Mediterranean/Bedroom/24269.jpg,0,True,True
+images/Mediterranean/Bedroom/24351.jpg,images/Mediterranean/Bedroom/24354.jpg,0,True,True
+images/Mediterranean/Bedroom/24417.jpg,images/Mediterranean/Kitchen/25559.jpg,0,True,False
+images/Mediterranean/Bedroom/24549.jpg,images/Mediterranean/Bedroom/24586.jpg,0,True,True
+images/Mediterranean/Dining Room/24984.jpg,images/Mediterranean/Living Room/26620.jpg,0,True,False
+images/Mediterranean/Dining Room/25153.jpg,images/Mediterranean/Dining Room/25827.jpg,0,True,True
+images/Mediterranean/Dining Room/25160.jpg,images/Mediterranean/Kitchen/25985.jpg,0,True,False
+images/Mediterranean/Kitchen/25561.jpg,images/Traditional/Kitchen/37820.jpg,0,False,True
+images/Mediterranean/Kitchen/26080.jpg,images/Mediterranean/Living Room/26318.jpg,0,True,False
+images/Mediterranean/Living Room/24383.jpg,images/Mediterranean/Living Room/24397.jpg,0,True,True
+images/Mediterranean/Living Room/24392.jpg,images/Mediterranean/Living Room/25036.jpg,0,True,True
+images/Mediterranean/Living Room/24456.jpg,images/Mediterranean/Living Room/26259.jpg,0,True,True
+images/Mediterranean/Living Room/24480.jpg,images/Mediterranean/Living Room/25252.jpg,0,True,True
+images/Mediterranean/Living Room/25055.jpg,images/Mediterranean/Living Room/26718.jpg,0,True,True
+images/Mediterranean/Living Room/25254.jpg,images/Mediterranean/Living Room/26415.jpg,2,True,True
+images/Mediterranean/Living Room/25268.jpg,images/Mediterranean/Living Room/26858.jpg,0,True,True
+images/Mid-Century Modern/Bathroom/27056.jpg,images/Rustic/Bathroom/30776.jpg,0,False,True
+images/Mid-Century Modern/Bathroom/27073.jpg,images/Mid-Century Modern/Bathroom/29120.jpg,0,True,True
+images/Mid-Century Modern/Bathroom/27073.jpg,images/Rustic/Bathroom/32400.jpg,0,False,True
+images/Mid-Century Modern/Bathroom/27098.jpg,images/Traditional/Living Room/38886.jpg,0,False,False
+images/Mid-Century Modern/Bathroom/27258.jpg,images/Mid-Century Modern/Living Room/30072.jpg,2,True,False
+images/Mid-Century Modern/Bathroom/27395.jpg,images/Mid-Century Modern/Bedroom/27656.jpg,0,True,False
+images/Mid-Century Modern/Bathroom/27465.jpg,images/Mid-Century Modern/Living Room/30137.jpg,0,True,False
+images/Mid-Century Modern/Bathroom/29120.jpg,images/Rustic/Bathroom/32400.jpg,0,False,True
+images/Mid-Century Modern/Bedroom/27970.jpg,images/Mid-Century Modern/Living Room/30037.jpg,2,True,False
+images/Mid-Century Modern/Bedroom/28090.jpg,images/Traditional/Bedroom/36241.jpg,0,False,True
+images/Mid-Century Modern/Dining Room/28354.jpg,images/Mid-Century Modern/Dining Room/29156.jpg,0,True,True
+images/Mid-Century Modern/Dining Room/28877.jpg,images/Mid-Century Modern/Living Room/30247.jpg,2,True,False
+images/Mid-Century Modern/Dining Room/29049.jpg,images/Mid-Century Modern/Dining Room/29200.jpg,0,True,True
+images/Mid-Century Modern/Living Room/28778.jpg,images/Mid-Century Modern/Living Room/29649.jpg,0,True,True
+images/Mid-Century Modern/Living Room/28778.jpg,images/Mid-Century Modern/Living Room/30271.jpg,0,True,True
+images/Mid-Century Modern/Living Room/28899.jpg,images/Mid-Century Modern/Living Room/30500.jpg,0,True,True
+images/Mid-Century Modern/Living Room/29649.jpg,images/Mid-Century Modern/Living Room/30271.jpg,0,True,True
+images/Mid-Century Modern/Living Room/30108.jpg,images/Rustic/Living Room/31602.jpg,2,False,True
+images/Rustic/Bathroom/30814.jpg,images/Rustic/Dining Room/33650.jpg,0,True,False
+images/Rustic/Bathroom/31181.jpg,images/Rustic/Dining Room/31839.jpg,0,True,False
+images/Rustic/Dining Room/32094.jpg,images/Rustic/Living Room/34691.jpg,0,True,False
+images/Rustic/Dining Room/32951.jpg,images/Traditional/Living Room/39251.jpg,0,False,False
+images/Rustic/Dining Room/33708.jpg,images/Rustic/Kitchen/31898.jpg,0,True,False
+images/Rustic/Living Room/31556.jpg,images/Rustic/Living Room/34575.jpg,0,True,True
+images/Rustic/Living Room/31580.jpg,images/Rustic/Living Room/32347.jpg,0,True,True
+images/Rustic/Living Room/32503.jpg,images/Rustic/Living Room/34728.jpg,0,True,True
+images/Rustic/Living Room/33121.jpg,images/Rustic/Living Room/34699.jpg,0,True,True
+images/Rustic/Living Room/33145.jpg,images/Rustic/Living Room/34640.jpg,0,True,True
+images/Rustic/Living Room/33163.jpg,images/Rustic/Living Room/34735.jpg,0,True,True
+images/Traditional/Bathroom/34957.jpg,images/Traditional/Kitchen/38184.jpg,0,True,False
+images/Traditional/Bathroom/36091.jpg,images/Traditional/Bedroom/36108.jpg,0,True,False
+images/Traditional/Bedroom/35687.jpg,images/Traditional/Bedroom/36279.jpg,0,True,True
+images/Traditional/Bedroom/35873.jpg,images/Transitional/Bathroom/39325.jpg,8,False,False
+images/Traditional/Bedroom/36195.jpg,images/Transitional/Bedroom/40310.jpg,0,False,True
+images/Traditional/Dining Room/36624.jpg,images/Transitional/Kitchen/41874.jpg,0,False,False
+images/Traditional/Dining Room/37162.jpg,images/Traditional/Dining Room/37883.jpg,0,True,True
+images/Traditional/Living Room/36927.jpg,images/Transitional/Living Room/40747.jpg,0,False,True
+images/Traditional/Living Room/39229.jpg,images/Transitional/Living Room/40168.jpg,2,False,True
+images/Transitional/Bathroom/39503.jpg,images/Transitional/Bathroom/39746.jpg,0,True,True
+images/Transitional/Bedroom/40495.jpg,images/Transitional/Bedroom/40543.jpg,6,True,True
+images/Transitional/Dining Room/40608.jpg,images/Transitional/Dining Room/41431.jpg,0,True,True
+images/Transitional/Living Room/40652.jpg,images/Transitional/Living Room/42815.jpg,0,True,True
+images/Transitional/Living Room/40652.jpg,images/Transitional/Living Room/42878.jpg,0,True,True
+images/Transitional/Living Room/40851.jpg,images/Transitional/Living Room/42825.jpg,0,True,True
+images/Transitional/Living Room/40925.jpg,images/Transitional/Living Room/42885.jpg,0,True,True
+images/Transitional/Living Room/42815.jpg,images/Transitional/Living Room/42878.jpg,0,True,True

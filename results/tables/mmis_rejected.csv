@@ -1,0 +1,503 @@
+path,style,room,lap_var,brightness,pct_dark,pct_bright,phash,reason
+images/Art Deco/Bathroom/170.jpg,Art Deco,Bathroom,1214.243,110.295,11.171,0.087,9dca91c41fef1829,clipped_dark
+images/Art Deco/Bathroom/230.jpg,Art Deco,Bathroom,204.096,208.693,0.0,2.325,bf8fc478f96021c2,blurry
+images/Art Deco/Bathroom/252.jpg,Art Deco,Bathroom,1768.554,51.415,3.873,0.002,bae2a76d8939890d,underexposed
+images/Art Deco/Bathroom/447.jpg,Art Deco,Bathroom,3636.322,93.996,13.158,0.269,81354ec936cd9e69,clipped_dark
+images/Art Deco/Bathroom/460.jpg,Art Deco,Bathroom,1342.883,150.767,1.111,35.3,ff7a80c78093c13d,clipped_bright
+images/Art Deco/Bathroom/483.jpg,Art Deco,Bathroom,1756.777,117.56,11.127,1.518,d5d44424d50f2cdf,clipped_dark
+images/Art Deco/Bathroom/546.jpg,Art Deco,Bathroom,1007.147,42.773,1.41,0.0,90f71d4d96f0b286,underexposed
+images/Art Deco/Bathroom/598.jpg,Art Deco,Bathroom,1316.662,177.138,1.097,33.395,ee949925c16db269,clipped_bright
+images/Art Deco/Bathroom/62.jpg,Art Deco,Bathroom,1400.236,44.972,18.82,0.0,d9c6665c9e8c93a1,underexposed;clipped_dark
+images/Art Deco/Bathroom/624.jpg,Art Deco,Bathroom,199.314,153.924,0.002,0.726,c8103fcc2e3d0fe9,blurry
+images/Art Deco/Bedroom/1014.jpg,Art Deco,Bedroom,2324.153,75.221,16.199,2.174,88aa671269efd6c8,clipped_dark
+images/Art Deco/Bedroom/1072.jpg,Art Deco,Bedroom,2951.688,83.912,12.912,0.652,89322faa23e8b1cf,clipped_dark
+images/Art Deco/Bedroom/1077.jpg,Art Deco,Bedroom,1636.866,44.291,6.134,0.037,a2a36b7a5e95151c,underexposed
+images/Art Deco/Bedroom/1080.jpg,Art Deco,Bedroom,1187.752,50.224,11.855,0.327,b4416f1a4decd271,underexposed;clipped_dark
+images/Art Deco/Bedroom/1269.jpg,Art Deco,Bedroom,217.457,201.006,0.0,0.327,bbc6b14cb12cc33c,blurry
+images/Art Deco/Bedroom/1270.jpg,Art Deco,Bedroom,392.232,171.353,0.006,0.977,89ce37c1942dd2f4,duplicate
+images/Art Deco/Bedroom/1281.jpg,Art Deco,Bedroom,4132.189,100.209,7.716,1.462,86b018af275e9b69,duplicate
+images/Art Deco/Bedroom/640.jpg,Art Deco,Bedroom,1694.305,64.133,19.785,0.056,a5a04f1f974c4b9a,clipped_dark
+images/Art Deco/Bedroom/788.jpg,Art Deco,Bedroom,527.033,135.861,0.008,1.546,a10f62f843dec6d8,duplicate
+images/Art Deco/Bedroom/818.jpg,Art Deco,Bedroom,1878.883,127.344,0.848,0.587,a1e5166eac3d682e,duplicate
+images/Art Deco/Bedroom/822.jpg,Art Deco,Bedroom,428.955,48.919,0.07,0.009,a957a9c542ad5786,underexposed
+images/Art Deco/Bedroom/896.jpg,Art Deco,Bedroom,3149.527,207.283,0.186,35.226,9ef0cc27b189b4c3,clipped_bright
+images/Art Deco/Dining Room/1434.jpg,Art Deco,Dining Room,260.967,113.551,1.109,0.006,dd874e7831c1493e,blurry
+images/Art Deco/Dining Room/1463.jpg,Art Deco,Dining Room,2740.839,134.938,0.22,3.293,9736cdd84c81d1c7,duplicate
+images/Art Deco/Dining Room/1563.jpg,Art Deco,Dining Room,694.487,135.552,0.114,0.006,d2e0b55b9c87fc08,duplicate
+images/Art Deco/Dining Room/1605.jpg,Art Deco,Dining Room,3464.787,132.961,0.259,2.4,be853a49865aa16f,duplicate
+images/Art Deco/Dining Room/1648.jpg,Art Deco,Dining Room,895.871,63.88,0.745,0.0,e525ba48c63a95e6,duplicate
+images/Art Deco/Dining Room/1963.jpg,Art Deco,Dining Room,338.892,48.907,0.066,0.002,a957a9c542ad5786,underexposed
+images/Art Deco/Dining Room/2015.jpg,Art Deco,Dining Room,2035.919,62.382,17.113,0.09,9cc81dcb34c69abc,clipped_dark
+images/Art Deco/Dining Room/2016.jpg,Art Deco,Dining Room,244.405,111.172,0.002,0.081,cdc880377f35c49a,blurry
+images/Art Deco/Dining Room/2347.jpg,Art Deco,Dining Room,1148.834,169.497,2.426,32.787,ebc09e3cc16db072,clipped_bright
+images/Art Deco/Dining Room/2606.jpg,Art Deco,Dining Room,1076.656,87.748,1.543,0.146,bd03de45c2bdc2c2,duplicate
+images/Art Deco/Dining Room/2710.jpg,Art Deco,Dining Room,1113.752,180.896,1.791,41.312,bbc5843ac8e533cc,clipped_bright
+images/Art Deco/Kitchen/2305.jpg,Art Deco,Kitchen,1579.654,105.371,0.491,0.003,d2e3d700d50aea1f,duplicate
+images/Art Deco/Kitchen/2381.jpg,Art Deco,Kitchen,4926.251,146.335,16.087,2.023,fe2f9cc089c5e1a4,clipped_dark
+images/Art Deco/Kitchen/2619.jpg,Art Deco,Kitchen,1097.818,208.69,0.14,33.124,af2990d2c66c1b9b,clipped_bright
+images/Art Deco/Kitchen/2782.jpg,Art Deco,Kitchen,1711.073,150.792,0.145,0.063,f2afa5d081355a5a,duplicate
+images/Art Deco/Kitchen/2793.jpg,Art Deco,Kitchen,1938.318,132.019,0.754,0.127,aea611399e4ae5e4,duplicate
+images/Art Deco/Kitchen/2814.jpg,Art Deco,Kitchen,216.399,147.655,0.058,0.0,a695873919c2cad7,blurry
+images/Art Deco/Kitchen/2856.jpg,Art Deco,Kitchen,1118.605,119.571,0.075,0.0,fcf8480fb16d4e0c,duplicate
+images/Art Deco/Kitchen/2865.jpg,Art Deco,Kitchen,1157.08,119.11,15.703,0.012,ebd6240bf02f8770,clipped_dark
+images/Art Deco/Living Room/1029.jpg,Art Deco,Living Room,834.303,51.155,1.151,0.008,f00fee11eb0ceb30,underexposed
+images/Art Deco/Living Room/1054.jpg,Art Deco,Living Room,796.328,52.863,6.981,1.488,aa6a1555e2f55c25,underexposed
+images/Art Deco/Living Room/1131.jpg,Art Deco,Living Room,1667.812,55.866,2.58,0.737,a1ff434ca29a2d35,underexposed
+images/Art Deco/Living Room/1424.jpg,Art Deco,Living Room,1985.114,76.366,16.054,0.018,aabd869e819a782b,clipped_dark
+images/Art Deco/Living Room/1776.jpg,Art Deco,Living Room,1012.519,164.79,0.221,7.28,92b5a846d16bb1d9,duplicate
+images/Art Deco/Living Room/2082.jpg,Art Deco,Living Room,2043.851,134.695,0.006,0.565,c3ffc89d2195b00b,duplicate
+images/Art Deco/Living Room/2632.jpg,Art Deco,Living Room,1459.116,68.75,2.652,0.009,d16cc936cd2ec649,duplicate
+images/Art Deco/Living Room/2904.jpg,Art Deco,Living Room,817.106,88.592,1.547,0.0,8ca95ee28d1f4996,duplicate
+images/Art Deco/Living Room/2915.jpg,Art Deco,Living Room,1971.397,106.393,1.587,0.423,94694d16c27de68e,duplicate
+images/Art Deco/Living Room/2933.jpg,Art Deco,Living Room,2592.953,96.71,2.258,1.482,95859ada95728d35,duplicate
+images/Art Deco/Living Room/2940.jpg,Art Deco,Living Room,1207.763,77.625,0.751,0.002,e36497dc3822cd6c,duplicate
+images/Art Deco/Living Room/2948.jpg,Art Deco,Living Room,1040.653,131.427,0.235,2.101,d303fc788ddc0ccc,duplicate
+images/Art Deco/Living Room/3026.jpg,Art Deco,Living Room,3514.237,95.31,0.871,0.836,d61fc143c6e08eec,duplicate
+images/Art Deco/Living Room/3052.jpg,Art Deco,Living Room,2100.073,126.161,0.708,1.242,9a720c456bc745cf,duplicate
+images/Art Deco/Living Room/3136.jpg,Art Deco,Living Room,1234.806,52.576,3.514,0.07,e44fdb608e5096ad,underexposed
+images/Art Deco/Living Room/3151.jpg,Art Deco,Living Room,877.257,174.399,0.18,0.11,e085b46acb31d29f,duplicate
+images/Art Deco/Living Room/675.jpg,Art Deco,Living Room,1006.447,37.601,4.416,0.0,987836277a2d2b9a,underexposed
+images/Art Deco/Living Room/694.jpg,Art Deco,Living Room,3090.752,146.016,2.293,2.39,b3b344d32cc6d12e,duplicate
+images/Art Deco/Living Room/767.jpg,Art Deco,Living Room,1663.839,128.361,0.067,0.043,df88862bd8e05fd0,duplicate
+images/Bohemian/Bathroom/3194.jpg,Bohemian,Bathroom,269.364,110.88,0.003,1.83,baaccc3cb64c4cb4,blurry
+images/Bohemian/Bathroom/3206.jpg,Bohemian,Bathroom,721.261,171.592,0.002,0.089,f5859238977d6426,duplicate
+images/Bohemian/Bathroom/3302.jpg,Bohemian,Bathroom,148.121,225.53,0.0,14.693,d0b56e63cf1ac107,blurry
+images/Bohemian/Bathroom/3304.jpg,Bohemian,Bathroom,854.531,173.106,0.044,1.227,97e852cf3ad4218e,duplicate
+images/Bohemian/Bathroom/3309.jpg,Bohemian,Bathroom,822.915,135.46,0.031,3.943,9d8808fdf1d72236,duplicate
+images/Bohemian/Bathroom/3329.jpg,Bohemian,Bathroom,799.351,186.601,0.099,0.383,b9d067f63a8102de,duplicate
+images/Bohemian/Bathroom/3344.jpg,Bohemian,Bathroom,2433.768,124.405,12.148,0.775,fde48205bc38758b,clipped_dark
+images/Bohemian/Bathroom/3474.jpg,Bohemian,Bathroom,1164.885,170.499,0.108,0.0,d78eaec1d150a53a,duplicate
+images/Bohemian/Bathroom/3507.jpg,Bohemian,Bathroom,755.724,123.989,0.0,0.119,fcfc43e732388311,duplicate
+images/Bohemian/Bathroom/3551.jpg,Bohemian,Bathroom,1494.379,191.716,0.406,1.05,c0bfef00ac5b4bb0,duplicate
+images/Bohemian/Bathroom/3568.jpg,Bohemian,Bathroom,260.424,135.737,0.023,1.007,ec8cd3339e66518c,blurry
+images/Bohemian/Bathroom/3570.jpg,Bohemian,Bathroom,183.339,160.242,0.002,0.076,8460e9b23e3f4b4b,blurry
+images/Bohemian/Bathroom/3635.jpg,Bohemian,Bathroom,209.348,191.846,0.044,0.989,8bbc09eb3a626eb0,blurry
+images/Bohemian/Bathroom/3710.jpg,Bohemian,Bathroom,1737.084,165.25,0.0,2.823,a4ac99c2d9cdd259,duplicate
+images/Bohemian/Bathroom/3719.jpg,Bohemian,Bathroom,2473.477,201.355,0.0,10.104,9919dcf6c855e294,duplicate
+images/Bohemian/Bathroom/3747.jpg,Bohemian,Bathroom,174.046,149.117,0.011,0.003,e1fe0701fdfc8103,blurry
+images/Bohemian/Bedroom/3868.jpg,Bohemian,Bedroom,1127.646,183.865,0.0,2.414,eba8ccb38078a54f,duplicate
+images/Bohemian/Bedroom/4045.jpg,Bohemian,Bedroom,1209.289,169.481,0.096,0.003,cdb24865951ae66d,duplicate
+images/Bohemian/Bedroom/4095.jpg,Bohemian,Bedroom,649.002,147.579,0.249,0.056,c0867b98f3e4a55a,duplicate
+images/Bohemian/Bedroom/4130.jpg,Bohemian,Bedroom,1169.284,160.858,0.125,1.604,f6cc47379825cb41,duplicate
+images/Bohemian/Bedroom/4225.jpg,Bohemian,Bedroom,1180.264,183.615,0.204,2.48,d6ad33d0e816c43e,duplicate
+images/Bohemian/Bedroom/4437.jpg,Bohemian,Bedroom,269.366,76.479,0.446,0.0,a8975660ad5e16ad,blurry
+images/Bohemian/Dining Room/4483.jpg,Bohemian,Dining Room,1028.917,200.227,0.012,44.093,80c5ff32c5e92a87,clipped_bright
+images/Bohemian/Dining Room/4498.jpg,Bohemian,Dining Room,1836.493,206.222,0.284,59.111,bea6c1591a347c4b,clipped_bright
+images/Bohemian/Dining Room/4513.jpg,Bohemian,Dining Room,1293.52,203.937,0.099,35.474,abd8d427fa90623a,clipped_bright
+images/Bohemian/Dining Room/4642.jpg,Bohemian,Dining Room,776.918,163.826,0.021,32.55,bd8d683263983ccd,clipped_bright
+images/Bohemian/Dining Room/4698.jpg,Bohemian,Dining Room,1910.576,211.12,0.298,61.563,bea6c1591a36744b,clipped_bright
+images/Bohemian/Dining Room/4713.jpg,Bohemian,Dining Room,1641.286,208.061,0.133,37.492,b9961bcd989ce432,clipped_bright
+images/Bohemian/Dining Room/4734.jpg,Bohemian,Dining Room,880.749,193.76,0.108,41.965,de8fa1305ac3353c,clipped_bright
+images/Bohemian/Dining Room/4757.jpg,Bohemian,Dining Room,3294.492,211.974,0.406,38.087,ba8c27785a35875a,clipped_bright
+images/Bohemian/Dining Room/4764.jpg,Bohemian,Dining Room,1184.828,228.125,0.005,44.446,bc52832df2cc0cf3,clipped_bright
+images/Bohemian/Dining Room/4819.jpg,Bohemian,Dining Room,1411.992,141.129,0.029,2.907,afaa212f74d93a90,duplicate
+images/Bohemian/Dining Room/4881.jpg,Bohemian,Dining Room,612.866,114.421,2.396,3.477,ecc4fa5bd2b81541,duplicate
+images/Bohemian/Dining Room/4900.jpg,Bohemian,Dining Room,1271.1,160.631,0.299,33.539,8a1ef5e1e4df9900,clipped_bright
+images/Bohemian/Dining Room/4922.jpg,Bohemian,Dining Room,1203.572,163.485,0.017,11.707,98f8c727e1a8e685,duplicate
+images/Bohemian/Dining Room/4941.jpg,Bohemian,Dining Room,1723.673,119.82,7.057,2.654,80cd334e3f3bc9a4,duplicate
+images/Bohemian/Dining Room/4977.jpg,Bohemian,Dining Room,1333.796,191.835,0.066,39.864,ba989577664a909d,clipped_bright
+images/Bohemian/Dining Room/5009.jpg,Bohemian,Dining Room,974.492,179.426,0.041,35.86,9595ca68a997f438,clipped_bright
+images/Bohemian/Dining Room/5017.jpg,Bohemian,Dining Room,661.621,212.262,0.0,32.823,bf95c23719902dc3,clipped_bright
+images/Bohemian/Dining Room/5032.jpg,Bohemian,Dining Room,1037.94,132.711,3.778,0.505,f0133f0201fdc3fa,duplicate
+images/Bohemian/Dining Room/5044.jpg,Bohemian,Dining Room,1714.626,200.824,0.505,38.577,f6d2a92d07c0f853,clipped_bright
+images/Bohemian/Dining Room/5073.jpg,Bohemian,Dining Room,1411.122,135.146,0.194,0.679,e0ddce5ce3428dd0,duplicate
+images/Bohemian/Dining Room/5099.jpg,Bohemian,Dining Room,994.311,173.884,0.568,33.086,ee90906f8b59943e,clipped_bright
+images/Bohemian/Dining Room/5102.jpg,Bohemian,Dining Room,1100.53,181.096,0.107,33.182,fb838434eed8f103,clipped_bright
+images/Bohemian/Dining Room/5138.jpg,Bohemian,Dining Room,991.838,191.576,0.188,40.096,ac9cc363c3371c33,clipped_bright
+images/Bohemian/Dining Room/5142.jpg,Bohemian,Dining Room,1021.196,167.945,0.751,40.163,e8b7865695695a07,clipped_bright
+images/Bohemian/Dining Room/5170.jpg,Bohemian,Dining Room,1196.965,99.911,0.916,0.826,c181b65e5dc6929e,duplicate
+images/Bohemian/Kitchen/5221.jpg,Bohemian,Kitchen,1644.279,93.564,13.17,0.33,882cd2738d1f6b95,clipped_dark
+images/Bohemian/Kitchen/5259.jpg,Bohemian,Kitchen,1330.938,194.085,0.203,0.13,f3d9a680c4730db6,duplicate
+images/Bohemian/Kitchen/5266.jpg,Bohemian,Kitchen,2647.812,155.779,0.465,0.452,faeae5b80ec590c4,duplicate
+images/Bohemian/Kitchen/5322.jpg,Bohemian,Kitchen,878.798,48.691,6.143,0.04,9a668b51a655e1b5,underexposed
+images/Bohemian/Kitchen/5442.jpg,Bohemian,Kitchen,1467.768,127.012,23.825,0.558,bdb3024a533d3a6c,clipped_dark
+images/Bohemian/Kitchen/5452.jpg,Bohemian,Kitchen,1690.426,162.093,0.229,2.368,aacd9632edca1705,duplicate
+images/Bohemian/Kitchen/5671.jpg,Bohemian,Kitchen,1357.705,198.724,0.002,8.83,805d3fc0772da077,duplicate
+images/Bohemian/Living Room/6114.jpg,Bohemian,Living Room,901.846,165.577,0.005,0.006,cbe9423d86e21dd8,duplicate
+images/Bohemian/Living Room/6301.jpg,Bohemian,Living Room,3133.732,85.555,24.719,1.164,c9c03437366c6b3b,clipped_dark
+images/Coastal/Bathroom/6470.jpg,Coastal,Bathroom,549.25,233.951,0.035,36.227,a79de3c1707788e0,clipped_bright
+images/Coastal/Bathroom/6552.jpg,Coastal,Bathroom,1579.168,209.199,1.437,54.37,b2c1dd97d16c29c2,clipped_bright
+images/Coastal/Bathroom/6577.jpg,Coastal,Bathroom,240.547,145.843,0.003,0.0,aeba29d9b186cc31,blurry
+images/Coastal/Bathroom/6595.jpg,Coastal,Bathroom,255.02,188.195,0.003,0.874,d05a8eb331d64eb1,blurry
+images/Coastal/Bathroom/6628.jpg,Coastal,Bathroom,823.913,221.754,0.078,1.083,de8b34992798e728,duplicate
+images/Coastal/Bathroom/6784.jpg,Coastal,Bathroom,1542.523,202.761,0.334,38.78,bb9dc4e668d0c16a,clipped_bright
+images/Coastal/Bathroom/6833.jpg,Coastal,Bathroom,58.648,219.173,0.0,13.744,c0b5bf4a958b4674,blurry
+images/Coastal/Bathroom/6887.jpg,Coastal,Bathroom,137.139,207.491,0.0,2.271,9aede55a85a15a25,blurry
+images/Coastal/Bathroom/6977.jpg,Coastal,Bathroom,151.05,151.382,0.0,0.0,aae86097b53ac393,blurry
+images/Coastal/Bathroom/7005.jpg,Coastal,Bathroom,1054.817,225.669,0.0,43.433,9eada54aa1f05a5a,clipped_bright
+images/Coastal/Bathroom/7014.jpg,Coastal,Bathroom,1672.682,137.753,0.002,2.829,a4add9cad9c0da49,duplicate
+images/Coastal/Bathroom/7073.jpg,Coastal,Bathroom,142.642,188.502,0.0,1.785,80ce7fe1ffa0e280,blurry
+images/Coastal/Bedroom/7258.jpg,Coastal,Bedroom,151.758,196.679,0.0,2.315,d3ff4c803376cc90,blurry
+images/Coastal/Bedroom/7413.jpg,Coastal,Bedroom,194.197,218.682,0.0,1.733,95bf48cf116613cc,blurry
+images/Coastal/Bedroom/7473.jpg,Coastal,Bedroom,264.466,188.443,0.009,0.006,e19a84213adffb0c,blurry
+images/Coastal/Bedroom/7545.jpg,Coastal,Bedroom,263.428,142.089,1.123,0.0,e59a5da3007dfe02,blurry
+images/Coastal/Bedroom/7601.jpg,Coastal,Bedroom,559.816,83.841,7.053,0.026,cdc532426cdfc13a,duplicate
+images/Coastal/Bedroom/7800.jpg,Coastal,Bedroom,427.78,207.771,0.076,3.516,f4ab599465fa84d0,duplicate
+images/Coastal/Bedroom/7846.jpg,Coastal,Bedroom,1017.117,201.255,0.034,32.065,eaa18dd2987a95cc,clipped_bright
+images/Coastal/Dining Room/7956.jpg,Coastal,Dining Room,1734.572,148.18,1.115,0.072,a98d4ad2d1ce609f,duplicate
+images/Coastal/Dining Room/9098.jpg,Coastal,Dining Room,781.087,195.326,0.177,40.633,fe95816a6e8531ca,clipped_bright
+images/Coastal/Kitchen/8893.jpg,Coastal,Kitchen,255.497,180.395,0.0,0.0,ada819dbb2d293c1,blurry
+images/Coastal/Kitchen/9058.jpg,Coastal,Kitchen,1785.601,82.278,11.552,0.099,be5b6804e378a6a3,clipped_dark
+images/Coastal/Kitchen/9060.jpg,Coastal,Kitchen,267.315,153.258,0.006,0.0,da8c2db2d21b2cd6,blurry
+images/Coastal/Kitchen/9061.jpg,Coastal,Kitchen,249.459,176.719,0.0,0.009,97aaa9a9a6a60dd8,blurry
+images/Coastal/Kitchen/9169.jpg,Coastal,Kitchen,140.498,164.058,0.003,0.14,8a8f7532cb71148f,blurry
+images/Coastal/Kitchen/9183.jpg,Coastal,Kitchen,1414.053,162.556,0.584,0.749,ed9671d8a2ed2815,duplicate
+images/Coastal/Kitchen/9199.jpg,Coastal,Kitchen,857.187,138.008,0.166,0.067,f2f39e499b847241,duplicate
+images/Coastal/Kitchen/9227.jpg,Coastal,Kitchen,539.431,203.872,0.0,4.523,fd95a26a1e1445ab,duplicate
+images/Coastal/Kitchen/9236.jpg,Coastal,Kitchen,1134.979,149.992,0.104,0.179,e598a5b852671d99,duplicate
+images/Coastal/Kitchen/9295.jpg,Coastal,Kitchen,501.751,184.05,0.035,3.81,9fe06dc050f09f0f,duplicate
+images/Coastal/Living Room/10102.jpg,Coastal,Living Room,778.888,140.378,0.293,0.015,bc95c26ec1839c5d,duplicate
+images/Coastal/Living Room/7450.jpg,Coastal,Living Room,1106.575,194.933,0.008,8.665,f0b6954b70a97a91,duplicate
+images/Coastal/Living Room/7751.jpg,Coastal,Living Room,1449.283,192.186,0.026,13.934,b6a28350ed8cf4b3,duplicate
+images/Coastal/Living Room/7862.jpg,Coastal,Living Room,747.61,144.967,0.392,2.226,e3f95c368265d423,duplicate
+images/Coastal/Living Room/8136.jpg,Coastal,Living Room,1603.31,193.228,0.049,38.425,b386dc38cc4e69a6,clipped_bright
+images/Coastal/Living Room/9378.jpg,Coastal,Living Room,897.173,120.859,0.284,0.293,c0914f67ac19f2ce,duplicate
+images/Coastal/Living Room/9477.jpg,Coastal,Living Room,2671.25,142.875,0.45,0.749,8d84ca3725f34f91,duplicate
+images/Coastal/Living Room/9542.jpg,Coastal,Living Room,1240.128,220.53,0.0,38.594,ba98c1359765d06b,clipped_bright
+images/Coastal/Living Room/9567.jpg,Coastal,Living Room,1339.349,220.732,0.002,36.359,fae3da09f01685d8,clipped_bright
+images/Coastal/Living Room/9708.jpg,Coastal,Living Room,1062.55,173.638,0.145,3.351,c780eb99b47f8065,duplicate
+images/Contemporary/Bathroom/10178.jpg,Contemporary,Bathroom,511.66,187.276,0.076,0.209,89e0f61e81fd7e80,duplicate
+images/Contemporary/Bathroom/10218.jpg,Contemporary,Bathroom,176.772,155.925,0.003,0.003,948912673da997e9,blurry
+images/Contemporary/Bathroom/10370.jpg,Contemporary,Bathroom,1821.684,118.827,5.481,0.11,96b6c15a696c9bc4,duplicate
+images/Contemporary/Bathroom/10381.jpg,Contemporary,Bathroom,2757.078,46.125,4.704,0.038,c3c13c343e63e39c,underexposed
+images/Contemporary/Bathroom/10500.jpg,Contemporary,Bathroom,256.325,108.673,0.002,0.003,fe62852f801f72e1,blurry
+images/Contemporary/Bathroom/10528.jpg,Contemporary,Bathroom,268.357,161.462,0.034,0.064,c92ae1d25e5ad435,blurry
+images/Contemporary/Bathroom/10651.jpg,Contemporary,Bathroom,218.323,169.742,0.005,0.575,b8d22ca55ce19e8b,blurry
+images/Contemporary/Bathroom/10665.jpg,Contemporary,Bathroom,2311.948,104.271,5.121,7.06,a02d6b0e76ce3c8b,duplicate
+images/Contemporary/Bedroom/10992.jpg,Contemporary,Bedroom,884.899,137.858,0.055,0.575,db10b4eb9a6a8a17,duplicate
+images/Contemporary/Bedroom/11011.jpg,Contemporary,Bedroom,1023.761,156.246,0.577,0.069,96c90307fc7837c9,duplicate
+images/Contemporary/Bedroom/11495.jpg,Contemporary,Bedroom,227.3,155.478,0.02,1.631,95a466c6f476e432,blurry
+images/Contemporary/Bedroom/11553.jpg,Contemporary,Bedroom,687.962,104.484,14.465,27.76,aed6aa8455692d96,clipped_dark
+images/Contemporary/Bedroom/11579.jpg,Contemporary,Bedroom,88.99,155.697,0.124,0.018,c399ee9a48a43373,blurry
+images/Contemporary/Bedroom/11652.jpg,Contemporary,Bedroom,200.025,135.252,0.204,0.323,a894697386cb6b17,blurry
+images/Contemporary/Bedroom/11751.jpg,Contemporary,Bedroom,1720.915,170.483,1.845,5.048,f7dfe05c8a208d70,duplicate
+images/Contemporary/Bedroom/11810.jpg,Contemporary,Bedroom,353.489,60.974,24.696,0.049,87ce79612790662f,clipped_dark
+images/Contemporary/Bedroom/11949.jpg,Contemporary,Bedroom,1102.881,88.334,0.407,0.005,ccfc073982cef186,duplicate
+images/Contemporary/Bedroom/12075.jpg,Contemporary,Bedroom,198.919,118.529,0.346,0.145,f1f06e8e813f8784,blurry
+images/Contemporary/Bedroom/12125.jpg,Contemporary,Bedroom,191.609,87.379,5.774,1.866,ec801dd587dbb80b,blurry
+images/Contemporary/Bedroom/12173.jpg,Contemporary,Bedroom,94.464,166.021,0.002,0.307,e0c05fb8f4cbe834,blurry
+images/Contemporary/Bedroom/12202.jpg,Contemporary,Bedroom,97.388,155.725,0.143,0.038,c399ee9a48a43373,blurry
+images/Contemporary/Bedroom/12207.jpg,Contemporary,Bedroom,509.495,85.732,12.668,0.302,921c29f14e836f6e,clipped_dark
+images/Contemporary/Bedroom/12349.jpg,Contemporary,Bedroom,709.648,144.731,0.496,5.177,dfbc1c9743603163,duplicate
+images/Contemporary/Dining Room/12724.jpg,Contemporary,Dining Room,3617.303,195.755,0.378,32.312,bafc8505f8e2b078,clipped_bright
+images/Contemporary/Dining Room/13000.jpg,Contemporary,Dining Room,1579.708,155.834,0.548,0.357,e2ea953e98903dc6,duplicate
+images/Contemporary/Dining Room/13009.jpg,Contemporary,Dining Room,1455.395,156.793,0.537,4.039,e6d6b909f409bac2,duplicate
+images/Contemporary/Dining Room/13097.jpg,Contemporary,Dining Room,1319.958,136.142,0.119,0.023,959dc0847e31dc3b,duplicate
+images/Contemporary/Dining Room/13780.jpg,Contemporary,Dining Room,1434.31,170.361,0.035,3.619,cf92f089c6d0b16e,duplicate
+images/Contemporary/Kitchen/13379.jpg,Contemporary,Kitchen,230.834,177.936,0.003,2.055,e1875a9f0ee4b982,blurry
+images/Contemporary/Kitchen/13398.jpg,Contemporary,Kitchen,2075.529,104.639,17.677,2.879,df3ca01fb182ce38,clipped_dark
+images/Contemporary/Kitchen/13445.jpg,Contemporary,Kitchen,229.289,160.577,0.003,0.005,853a4ab945679e99,blurry
+images/Contemporary/Kitchen/13557.jpg,Contemporary,Kitchen,945.946,102.104,23.901,0.179,e1a30f661c9d1e17,clipped_dark
+images/Contemporary/Kitchen/13561.jpg,Contemporary,Kitchen,587.82,119.628,0.163,0.076,b3cb64753b743112,duplicate
+images/Contemporary/Kitchen/13769.jpg,Contemporary,Kitchen,1419.912,208.404,0.258,58.588,be38c1cf90e33b18,clipped_bright
+images/Contemporary/Kitchen/13775.jpg,Contemporary,Kitchen,1791.916,231.023,0.233,44.966,af8c92cbcc96d8e0,clipped_bright
+images/Contemporary/Kitchen/13777.jpg,Contemporary,Kitchen,208.304,134.655,0.043,0.987,c19e3e310cc69b6d,blurry
+images/Contemporary/Kitchen/13885.jpg,Contemporary,Kitchen,1676.465,88.674,13.277,0.407,aab92bd7c105a6e4,clipped_dark
+images/Contemporary/Kitchen/13922.jpg,Contemporary,Kitchen,765.992,55.869,2.881,0.014,c542add0b33dc23d,underexposed
+images/Contemporary/Kitchen/14013.jpg,Contemporary,Kitchen,1999.032,122.266,13.141,6.526,abdfe05094e06e63,clipped_dark
+images/Contemporary/Kitchen/14174.jpg,Contemporary,Kitchen,249.634,77.954,0.388,0.247,ebae1dd1e04cd0b1,blurry
+images/Contemporary/Living Room/12094.jpg,Contemporary,Living Room,1626.481,72.22,1.712,0.037,aa69949c61d4db65,duplicate
+images/Contemporary/Living Room/14486.jpg,Contemporary,Living Room,1942.878,170.741,0.27,0.145,89b7ce78f704a053,duplicate
+images/Contemporary/Living Room/14529.jpg,Contemporary,Living Room,2507.081,153.711,0.16,2.483,86f97906f9765c08,duplicate
+images/Eclectic/Bathroom/15299.jpg,Eclectic,Bathroom,798.368,184.085,0.058,40.979,e9c3c16b31656d31,clipped_bright
+images/Eclectic/Bathroom/15435.jpg,Eclectic,Bathroom,2072.364,80.895,14.31,0.401,ab1c7ee52bdc0423,clipped_dark
+images/Eclectic/Bathroom/15455.jpg,Eclectic,Bathroom,221.194,184.343,0.0,0.429,ec8318c233e8bff0,blurry
+images/Eclectic/Bathroom/15602.jpg,Eclectic,Bathroom,1962.191,154.49,1.656,0.108,e5d9404fe1c437a6,duplicate
+images/Eclectic/Bathroom/15795.jpg,Eclectic,Bathroom,144.12,130.261,0.0,0.148,c294f16c9a43bcb3,blurry
+images/Eclectic/Bathroom/15844.jpg,Eclectic,Bathroom,258.277,192.755,0.002,6.575,ec4a9249933c933f,blurry
+images/Eclectic/Bathroom/15964.jpg,Eclectic,Bathroom,251.491,179.393,0.009,1.854,f9ce9620847926de,blurry
+images/Eclectic/Bathroom/16004.jpg,Eclectic,Bathroom,604.524,29.702,3.535,0.015,d2d5a4533d64978a,underexposed
+images/Eclectic/Bedroom/16419.jpg,Eclectic,Bedroom,980.057,109.586,1.309,2.231,c3f0691eb1770d19,duplicate
+images/Eclectic/Bedroom/16514.jpg,Eclectic,Bedroom,1168.24,153.219,0.085,1.84,c1b86297b362558f,duplicate
+images/Eclectic/Bedroom/16848.jpg,Eclectic,Bedroom,1664.494,71.028,7.764,0.876,9ab1f744e12799c8,duplicate
+images/Eclectic/Dining Room/16248.jpg,Eclectic,Dining Room,3484.408,107.131,0.809,1.076,de06291a7327da87,duplicate
+images/Eclectic/Dining Room/17008.jpg,Eclectic,Dining Room,802.591,128.726,0.15,0.308,bbfd8d2b64484a86,duplicate
+images/Eclectic/Dining Room/17115.jpg,Eclectic,Dining Room,2206.744,151.962,0.552,0.546,9184aa87fc29c6fa,duplicate
+images/Eclectic/Dining Room/17206.jpg,Eclectic,Dining Room,2745.756,181.397,0.375,4.829,d0cdd7f28cb03583,duplicate
+images/Eclectic/Dining Room/17439.jpg,Eclectic,Dining Room,4025.78,142.686,0.424,0.433,a88cc593e1cea1f3,duplicate
+images/Eclectic/Dining Room/17476.jpg,Eclectic,Dining Room,1049.824,85.575,6.963,0.018,94c209ce7f3e6bc0,duplicate
+images/Eclectic/Dining Room/17561.jpg,Eclectic,Dining Room,1657.976,163.148,1.271,0.029,ea85d639c46eb192,duplicate
+images/Eclectic/Kitchen/16576.jpg,Eclectic,Kitchen,1174.523,90.687,0.555,0.241,85a75b5cb6395922,duplicate
+images/Eclectic/Kitchen/17725.jpg,Eclectic,Kitchen,1037.122,139.594,0.165,0.029,e1e48e9a98c56b72,duplicate
+images/Eclectic/Kitchen/17878.jpg,Eclectic,Kitchen,1117.923,143.196,2.902,0.365,9ce11b74cb2d1693,duplicate
+images/Eclectic/Kitchen/17983.jpg,Eclectic,Kitchen,1058.261,143.129,3.098,0.366,9ce11b74cb2d1693,duplicate
+images/Eclectic/Kitchen/18063.jpg,Eclectic,Kitchen,1497.33,129.91,0.313,3.018,f7c1ac4ea0336ba8,duplicate
+images/Eclectic/Kitchen/18090.jpg,Eclectic,Kitchen,916.397,86.991,16.003,0.085,909d6785911bc33f,clipped_dark
+images/Eclectic/Kitchen/18122.jpg,Eclectic,Kitchen,250.148,164.902,0.006,0.075,c1a1cf8cff3130cc,blurry
+images/Eclectic/Kitchen/18372.jpg,Eclectic,Kitchen,462.245,42.638,5.489,0.0,ff12362798dce230,underexposed
+images/Eclectic/Kitchen/18441.jpg,Eclectic,Kitchen,1160.439,126.685,0.182,0.327,d48d8af2e1f6b80c,duplicate
+images/Eclectic/Living Room/16424.jpg,Eclectic,Living Room,2063.73,125.528,1.859,0.104,f9f3962d20d83196,duplicate
+images/Eclectic/Living Room/17044.jpg,Eclectic,Living Room,1766.156,147.048,0.607,2.336,82b14ddf33e0b81d,duplicate
+images/Eclectic/Living Room/17162.jpg,Eclectic,Living Room,2709.898,150.734,0.537,1.141,c5bd8723c980f999,duplicate
+images/Eclectic/Living Room/17908.jpg,Eclectic,Living Room,748.812,168.207,0.049,2.69,89bfcc223f1441e7,duplicate
+images/Eclectic/Living Room/18763.jpg,Eclectic,Living Room,1982.356,86.973,0.873,0.114,99724434c79566af,duplicate
+images/Eclectic/Living Room/19106.jpg,Eclectic,Living Room,2357.66,94.162,1.082,0.018,8f9f482543e0d59d,duplicate
+images/Farmhouse/Bathroom/19541.jpg,Farmhouse,Bathroom,820.717,138.94,0.073,1.59,e2f41543999c27ea,duplicate
+images/Farmhouse/Bathroom/19616.jpg,Farmhouse,Bathroom,898.635,181.772,0.293,0.029,ebc03635c95a4e69,duplicate
+images/Farmhouse/Bathroom/19744.jpg,Farmhouse,Bathroom,261.785,191.885,0.047,0.945,8bbc09eb3a626eb0,blurry
+images/Farmhouse/Bathroom/19897.jpg,Farmhouse,Bathroom,1174.985,165.775,0.003,0.45,9df0964ceea63312,duplicate
+images/Farmhouse/Bathroom/20029.jpg,Farmhouse,Bathroom,1263.963,117.176,0.894,0.192,d5e51a82bc5f8874,duplicate
+images/Farmhouse/Bedroom/20184.jpg,Farmhouse,Bedroom,763.063,207.741,0.055,49.077,fa99a44eb934cb24,clipped_bright
+images/Farmhouse/Bedroom/20321.jpg,Farmhouse,Bedroom,1654.347,132.715,1.512,4.651,d89a25d4c638c2ef,duplicate
+images/Farmhouse/Bedroom/20456.jpg,Farmhouse,Bedroom,2965.071,144.141,23.378,4.918,d6ae0d60295f463b,clipped_dark
+images/Farmhouse/Bedroom/20464.jpg,Farmhouse,Bedroom,504.493,195.431,0.16,49.181,e1b63c6332cd9c34,clipped_bright
+images/Farmhouse/Bedroom/20524.jpg,Farmhouse,Bedroom,947.977,137.407,13.684,0.243,b38b4ca45bc14f5a,clipped_dark
+images/Farmhouse/Bedroom/20553.jpg,Farmhouse,Bedroom,511.004,146.424,14.09,0.014,d1cc3170c76aa79c,clipped_dark
+images/Farmhouse/Bedroom/20796.jpg,Farmhouse,Bedroom,238.139,184.711,0.481,0.002,bff0c0871b782167,blurry
+images/Farmhouse/Dining Room/20343.jpg,Farmhouse,Dining Room,1943.723,173.655,0.102,0.296,88f5074ff00e5fe0,duplicate
+images/Farmhouse/Dining Room/21695.jpg,Farmhouse,Dining Room,1002.976,122.993,2.216,0.539,eeb413374d4943c6,duplicate
+images/Farmhouse/Dining Room/22086.jpg,Farmhouse,Dining Room,1591.958,164.479,0.221,0.642,b4c3ab3c83347a99,duplicate
+images/Farmhouse/Dining Room/22194.jpg,Farmhouse,Dining Room,1565.373,125.104,26.66,2.475,aec2713f11344779,clipped_dark
+images/Farmhouse/Dining Room/22272.jpg,Farmhouse,Dining Room,1746.442,173.619,0.089,0.31,88f5074ff00e5fe0,duplicate
+images/Farmhouse/Kitchen/20574.jpg,Farmhouse,Kitchen,951.851,183.367,0.008,3.099,924a12b8e5aebd27,duplicate
+images/Farmhouse/Kitchen/20772.jpg,Farmhouse,Kitchen,1382.994,164.469,0.189,0.62,b4c3ab3c83347a99,duplicate
+images/Farmhouse/Kitchen/21830.jpg,Farmhouse,Kitchen,1260.347,139.765,0.793,0.49,e99e3685c143cce6,duplicate
+images/Farmhouse/Kitchen/21900.jpg,Farmhouse,Kitchen,1530.177,189.108,0.035,3.453,a0def5cf9728218a,duplicate
+images/Farmhouse/Kitchen/21923.jpg,Farmhouse,Kitchen,1981.524,197.202,0.0,35.066,bbc09e68947ea163,clipped_bright
+images/Farmhouse/Kitchen/22260.jpg,Farmhouse,Kitchen,1068.638,188.081,0.002,1.535,d5eac595b52ac03a,duplicate
+images/Farmhouse/Kitchen/22332.jpg,Farmhouse,Kitchen,513.526,167.488,0.079,0.275,ebc19fd098692336,duplicate
+images/Farmhouse/Living Room/21533.jpg,Farmhouse,Living Room,735.453,143.545,0.018,0.848,8bbf40f692e51607,duplicate
+images/Farmhouse/Living Room/22486.jpg,Farmhouse,Living Room,1333.964,171.795,0.323,2.164,ec951a2c7c0e2cdb,duplicate
+images/Farmhouse/Living Room/22504.jpg,Farmhouse,Living Room,2718.953,210.219,0.049,46.706,bf17d168cf94a450,clipped_bright
+images/Farmhouse/Living Room/22902.jpg,Farmhouse,Living Room,1300.792,175.836,0.357,0.74,e0e214ef92c633ce,duplicate
+images/Farmhouse/Living Room/22924.jpg,Farmhouse,Living Room,1690.597,148.906,0.005,0.026,e6b2a10f956c5a56,duplicate
+images/Farmhouse/Living Room/23064.jpg,Farmhouse,Living Room,2072.344,167.967,0.403,15.018,eb2ad495838595f4,duplicate
+images/Farmhouse/Living Room/23068.jpg,Farmhouse,Living Room,1490.786,185.878,0.056,0.534,a9df06b61a692e2c,duplicate
+images/Farmhouse/Living Room/23098.jpg,Farmhouse,Living Room,1470.498,142.376,0.476,0.053,e5e35a81a6ac5972,duplicate
+images/Farmhouse/Living Room/23154.jpg,Farmhouse,Living Room,767.274,181.727,0.005,4.723,9ca5c16263993eda,duplicate
+images/Farmhouse/Living Room/23206.jpg,Farmhouse,Living Room,1468.668,209.843,0.168,49.763,a627d8d83d2f81f0,clipped_bright
+images/Farmhouse/Living Room/23217.jpg,Farmhouse,Living Room,1337.928,227.031,0.008,50.203,861ee5a1d37c3e06,clipped_bright
+images/Mediterranean/Bathroom/23327.jpg,Mediterranean,Bathroom,1549.884,200.792,0.081,49.237,e9873096cf30cf68,clipped_bright
+images/Mediterranean/Bathroom/23400.jpg,Mediterranean,Bathroom,707.399,190.288,0.012,32.555,ae34d1cbfa05c09b,clipped_bright
+images/Mediterranean/Bathroom/23445.jpg,Mediterranean,Bathroom,1141.277,192.645,0.006,41.476,c295ad2ff4c0cd52,clipped_bright
+images/Mediterranean/Bathroom/23518.jpg,Mediterranean,Bathroom,515.705,160.943,0.006,32.794,afcdd0c2c01ec7c6,clipped_bright
+images/Mediterranean/Bathroom/23748.jpg,Mediterranean,Bathroom,1075.264,70.983,45.001,0.087,95c16e3e6a9938e4,clipped_dark
+images/Mediterranean/Bathroom/23922.jpg,Mediterranean,Bathroom,113.028,166.174,0.0,0.053,b7ca1629c8936d93,blurry
+images/Mediterranean/Bathroom/23938.jpg,Mediterranean,Bathroom,546.891,196.764,0.026,33.676,bfe096d0849ea52d,clipped_bright
+images/Mediterranean/Bathroom/23939.jpg,Mediterranean,Bathroom,1510.761,208.853,0.023,40.289,ec993e62c51c9336,clipped_bright
+images/Mediterranean/Bathroom/24528.jpg,Mediterranean,Bathroom,344.718,124.977,0.026,6.514,ff7a65913824107e,duplicate
+images/Mediterranean/Bedroom/24154.jpg,Mediterranean,Bedroom,1635.002,146.381,0.14,0.146,ba8f564cb3c4ca23,duplicate
+images/Mediterranean/Bedroom/24202.jpg,Mediterranean,Bedroom,196.604,163.288,0.0,0.011,bef7c2ad708107c8,blurry
+images/Mediterranean/Bedroom/24269.jpg,Mediterranean,Bedroom,486.144,207.782,0.076,3.517,f4ab599465fa84d0,duplicate
+images/Mediterranean/Bedroom/24274.jpg,Mediterranean,Bedroom,1368.235,174.158,1.602,41.164,fa90c16f94d0cb1b,clipped_bright
+images/Mediterranean/Bedroom/24351.jpg,Mediterranean,Bedroom,458.554,114.136,0.05,0.629,d3e60c3935d2e117,duplicate
+images/Mediterranean/Bedroom/24362.jpg,Mediterranean,Bedroom,219.189,190.054,0.0,5.31,c41be34d9986d9a6,blurry
+images/Mediterranean/Bedroom/24488.jpg,Mediterranean,Bedroom,1100.783,161.5,0.278,39.987,aac19d7ef0310dc3,clipped_bright
+images/Mediterranean/Bedroom/24536.jpg,Mediterranean,Bedroom,1187.546,59.474,14.61,0.339,d52e7984f43182f9,clipped_dark
+images/Mediterranean/Bedroom/24549.jpg,Mediterranean,Bedroom,141.616,178.688,0.095,0.0,9fe0253fc003bfe0,blurry
+images/Mediterranean/Bedroom/24562.jpg,Mediterranean,Bedroom,157.713,157.073,0.0,0.51,f5904b2fc10778b5,blurry
+images/Mediterranean/Bedroom/24571.jpg,Mediterranean,Bedroom,204.961,172.572,0.0,0.998,94de98368a67b0ce,blurry
+images/Mediterranean/Bedroom/24586.jpg,Mediterranean,Bedroom,167.917,178.728,0.081,0.0,9fe0253fc003bfe0,blurry
+images/Mediterranean/Dining Room/24686.jpg,Mediterranean,Dining Room,2077.708,155.728,0.211,3.214,bd7c7874d0a0a536,duplicate
+images/Mediterranean/Dining Room/25160.jpg,Mediterranean,Dining Room,1603.252,160.325,0.134,0.49,94c2eb7c5c22cb65,duplicate
+images/Mediterranean/Dining Room/25438.jpg,Mediterranean,Dining Room,2204.13,131.723,0.69,0.055,eb685454894b97b6,duplicate
+images/Mediterranean/Dining Room/25827.jpg,Mediterranean,Dining Room,958.25,151.505,0.427,4.463,8c9a57e169a566a3,duplicate
+images/Mediterranean/Dining Room/25877.jpg,Mediterranean,Dining Room,996.574,150.469,0.691,0.534,efc26cc19e218bd2,duplicate
+images/Mediterranean/Dining Room/25949.jpg,Mediterranean,Dining Room,3192.549,104.586,2.08,0.124,9aa5075aa553d07d,duplicate
+images/Mediterranean/Dining Room/26078.jpg,Mediterranean,Dining Room,2857.055,85.99,24.121,2.324,adbd726e0d4a125a,clipped_dark
+images/Mediterranean/Kitchen/25512.jpg,Mediterranean,Kitchen,248.992,166.463,0.0,0.002,a4c12bface34c2e9,blurry
+images/Mediterranean/Kitchen/25544.jpg,Mediterranean,Kitchen,879.464,218.292,0.038,38.205,bbc0951fe437c0b1,clipped_bright
+images/Mediterranean/Kitchen/25559.jpg,Mediterranean,Kitchen,2676.337,136.714,0.255,0.114,9af234cd42d19fd0,duplicate
+images/Mediterranean/Kitchen/25561.jpg,Mediterranean,Kitchen,995.084,48.391,1.888,0.51,ab2a2afb2a82447f,underexposed
+images/Mediterranean/Kitchen/25613.jpg,Mediterranean,Kitchen,2153.818,200.219,0.682,46.744,af1f857298e1e069,clipped_bright
+images/Mediterranean/Kitchen/25620.jpg,Mediterranean,Kitchen,1943.592,84.725,24.048,0.797,82c27d3f75252a35,clipped_dark
+images/Mediterranean/Kitchen/25785.jpg,Mediterranean,Kitchen,2012.981,164.052,4.111,5.998,dfe19e8cd09e2161,duplicate
+images/Mediterranean/Kitchen/26126.jpg,Mediterranean,Kitchen,199.12,154.895,0.0,0.432,ea9510f54738952f,blurry
+images/Mediterranean/Living Room/24383.jpg,Mediterranean,Living Room,999.369,154.604,0.087,5.415,a2d8a525da6ad535,duplicate
+images/Mediterranean/Living Room/24480.jpg,Mediterranean,Living Room,1006.309,140.609,0.206,3.0,96f18b2f31666519,duplicate
+images/Mediterranean/Living Room/24481.jpg,Mediterranean,Living Room,1739.588,80.007,24.217,1.968,888d56d37f729264,clipped_dark
+images/Mediterranean/Living Room/24490.jpg,Mediterranean,Living Room,1135.418,201.457,0.017,40.404,fa9cc033a7c04c7b,clipped_bright
+images/Mediterranean/Living Room/25036.jpg,Mediterranean,Living Room,2151.716,108.341,2.06,0.128,d9706031d2bafacc,duplicate
+images/Mediterranean/Living Room/25055.jpg,Mediterranean,Living Room,1425.717,140.487,0.293,0.015,bec296ad2ee0833a,duplicate
+images/Mediterranean/Living Room/25254.jpg,Mediterranean,Living Room,639.183,152.855,0.16,0.0,cae5190be552c71d,duplicate
+images/Mediterranean/Living Room/25268.jpg,Mediterranean,Living Room,1556.838,115.527,0.275,0.031,90f97e387d822ac5,duplicate
+images/Mediterranean/Living Room/25551.jpg,Mediterranean,Living Room,1441.568,115.83,0.697,0.096,fe46a96513e1529c,duplicate
+images/Mediterranean/Living Room/26029.jpg,Mediterranean,Living Room,581.594,163.654,0.099,0.461,9f9d40c0736fb582,duplicate
+images/Mediterranean/Living Room/26259.jpg,Mediterranean,Living Room,1573.697,188.246,0.046,2.438,a4da671ce110dbec,duplicate
+images/Mediterranean/Living Room/26318.jpg,Mediterranean,Living Room,1131.124,195.681,0.02,1.9,da811c66ea1ce57a,duplicate
+images/Mediterranean/Living Room/26574.jpg,Mediterranean,Living Room,702.579,165.521,0.087,0.098,ae9f2ad650c2b7c0,duplicate
+images/Mediterranean/Living Room/26620.jpg,Mediterranean,Living Room,854.924,131.382,0.261,0.719,d5cd19ecd13b4d04,duplicate
+images/Mid-Century Modern/Bathroom/26918.jpg,Mid-Century Modern,Bathroom,83.778,194.247,0.0,0.0,80ff53ad3e2ac03a,blurry
+images/Mid-Century Modern/Bathroom/27044.jpg,Mid-Century Modern,Bathroom,683.492,198.588,0.078,43.913,a9d8d62798b12dcc,clipped_bright
+images/Mid-Century Modern/Bathroom/27276.jpg,Mid-Century Modern,Bathroom,255.598,176.015,0.0,2.09,95813a688378ee3f,blurry
+images/Mid-Century Modern/Bathroom/27354.jpg,Mid-Century Modern,Bathroom,2254.875,215.791,0.121,36.118,9322ceccbc79b158,clipped_bright
+images/Mid-Century Modern/Bathroom/27419.jpg,Mid-Century Modern,Bathroom,211.086,196.065,0.0,6.056,d8d83e2ca5ad454e,blurry
+images/Mid-Century Modern/Bathroom/27512.jpg,Mid-Century Modern,Bathroom,143.745,187.378,0.0,19.121,aa92c53d956d90d5,blurry
+images/Mid-Century Modern/Bathroom/27521.jpg,Mid-Century Modern,Bathroom,195.599,176.081,0.0,0.24,f4c07d30cb170cf6,blurry
+images/Mid-Century Modern/Bathroom/29120.jpg,Mid-Century Modern,Bathroom,1136.243,116.723,1.451,0.194,d5e51a82bc5f8874,duplicate
+images/Mid-Century Modern/Bedroom/27624.jpg,Mid-Century Modern,Bedroom,867.576,204.731,0.02,44.91,daeaa1156cf01a6d,clipped_bright
+images/Mid-Century Modern/Bedroom/27656.jpg,Mid-Century Modern,Bedroom,2862.821,125.216,1.408,3.532,b32d8cc4bad683b8,duplicate
+images/Mid-Century Modern/Bedroom/27885.jpg,Mid-Century Modern,Bedroom,1702.985,156.788,0.401,1.115,b1b2c959e2c1ea1e,duplicate
+images/Mid-Century Modern/Bedroom/27970.jpg,Mid-Century Modern,Bedroom,2660.999,149.329,0.958,0.229,dac1ef3a845e7380,duplicate
+images/Mid-Century Modern/Bedroom/28090.jpg,Mid-Century Modern,Bedroom,926.0,137.608,0.276,0.009,9ae78c3267d89259,duplicate
+images/Mid-Century Modern/Bedroom/28134.jpg,Mid-Century Modern,Bedroom,619.233,155.547,0.168,2.379,d28d79560ecae5b0,duplicate
+images/Mid-Century Modern/Dining Room/28750.jpg,Mid-Century Modern,Dining Room,1552.088,126.793,0.096,0.203,94d2a9bdd28ed883,duplicate
+images/Mid-Century Modern/Dining Room/28877.jpg,Mid-Century Modern,Dining Room,1597.942,146.178,1.411,1.682,c9dc24c2e034fa7e,duplicate
+images/Mid-Century Modern/Dining Room/28896.jpg,Mid-Century Modern,Dining Room,2011.914,204.129,0.072,0.763,eb8495688ed36c71,duplicate
+images/Mid-Century Modern/Dining Room/29049.jpg,Mid-Century Modern,Dining Room,2668.489,181.564,0.041,1.52,bad8dd2d6820b8cb,duplicate
+images/Mid-Century Modern/Dining Room/29156.jpg,Mid-Century Modern,Dining Room,1297.667,151.214,0.786,1.173,b99224cb33adde60,duplicate
+images/Mid-Century Modern/Kitchen/29130.jpg,Mid-Century Modern,Kitchen,565.883,199.397,0.008,50.789,ac8acc93ce363399,clipped_bright
+images/Mid-Century Modern/Kitchen/29523.jpg,Mid-Century Modern,Kitchen,357.311,55.927,3.688,0.002,d54a2574cb568c6d,underexposed
+images/Mid-Century Modern/Kitchen/29774.jpg,Mid-Century Modern,Kitchen,244.421,160.945,0.002,1.451,c2bb4d703248cdb7,blurry
+images/Mid-Century Modern/Kitchen/29782.jpg,Mid-Century Modern,Kitchen,1254.084,197.735,0.256,3.763,8de57092e7198679,duplicate
+images/Mid-Century Modern/Kitchen/29920.jpg,Mid-Century Modern,Kitchen,2426.989,212.683,0.296,40.636,eaa48d589db5466a,clipped_bright
+images/Mid-Century Modern/Kitchen/29923.jpg,Mid-Century Modern,Kitchen,365.33,180.742,0.0,1.195,a4805bbbc57c21d7,duplicate
+images/Mid-Century Modern/Living Room/27832.jpg,Mid-Century Modern,Living Room,899.55,181.61,0.269,0.139,8fc9f860d59b9660,duplicate
+images/Mid-Century Modern/Living Room/28245.jpg,Mid-Century Modern,Living Room,767.016,188.382,0.0,2.428,f08f1c66ab5136d1,duplicate
+images/Mid-Century Modern/Living Room/29649.jpg,Mid-Century Modern,Living Room,1178.966,149.775,0.047,0.008,9cc71136673a6587,duplicate
+images/Mid-Century Modern/Living Room/30072.jpg,Mid-Century Modern,Living Room,1565.421,92.474,0.62,0.0,cac2257bc4a17ace,duplicate
+images/Mid-Century Modern/Living Room/30137.jpg,Mid-Century Modern,Living Room,971.338,144.054,0.105,0.499,ffc6b42f0b1f9001,duplicate
+images/Mid-Century Modern/Living Room/30271.jpg,Mid-Century Modern,Living Room,1178.966,149.775,0.047,0.008,9cc71136673a6587,duplicate
+images/Mid-Century Modern/Living Room/30500.jpg,Mid-Century Modern,Living Room,885.484,110.352,1.712,0.014,9db70228e48f7374,duplicate
+images/Rustic/Bathroom/30776.jpg,Rustic,Bathroom,1661.911,188.172,0.166,4.518,f484d967208b1f7a,duplicate
+images/Rustic/Bathroom/30814.jpg,Rustic,Bathroom,1512.717,100.153,0.009,0.011,d51e6b49cf73101a,duplicate
+images/Rustic/Bathroom/31264.jpg,Rustic,Bathroom,2963.684,113.002,24.001,0.023,aa9f1d631c706798,clipped_dark
+images/Rustic/Bathroom/31295.jpg,Rustic,Bathroom,1141.92,158.446,0.554,2.814,cbeb9466e1996443,duplicate
+images/Rustic/Bathroom/32400.jpg,Rustic,Bathroom,1087.829,116.72,0.946,0.198,d5e51a82bc5f8874,duplicate
+images/Rustic/Bedroom/31434.jpg,Rustic,Bedroom,976.511,137.889,0.05,0.537,db10b4eb9a6a8a17,duplicate
+images/Rustic/Bedroom/31719.jpg,Rustic,Bedroom,1108.412,79.846,24.126,0.786,82ab5d76614d1ea5,clipped_dark
+images/Rustic/Bedroom/31764.jpg,Rustic,Bedroom,237.246,220.731,0.002,0.073,d7e8153fc01eb560,blurry
+images/Rustic/Bedroom/31782.jpg,Rustic,Bedroom,1004.596,170.45,0.038,32.242,d1d0ae0fb9f1c21c,clipped_bright
+images/Rustic/Bedroom/31978.jpg,Rustic,Bedroom,453.645,132.693,0.105,32.458,9816b6e8e943e69a,clipped_bright
+images/Rustic/Bedroom/32211.jpg,Rustic,Bedroom,1298.167,97.718,11.159,2.65,85ce6db15a3579c0,clipped_dark
+images/Rustic/Dining Room/31839.jpg,Rustic,Dining Room,627.722,138.713,0.061,3.627,d22f524497b274cd,duplicate
+images/Rustic/Dining Room/31951.jpg,Rustic,Dining Room,940.551,42.179,9.357,0.079,dc6c0f239c4ce39c,underexposed
+images/Rustic/Dining Room/32319.jpg,Rustic,Dining Room,780.12,197.634,0.148,34.117,bec6c939c2952d4a,clipped_bright
+images/Rustic/Dining Room/32996.jpg,Rustic,Dining Room,1151.503,150.785,0.017,0.047,cd8ab6b1c3740c73,duplicate
+images/Rustic/Dining Room/33708.jpg,Rustic,Dining Room,1236.987,98.902,1.698,0.888,ef7a18c48fc743a0,duplicate
+images/Rustic/Dining Room/33842.jpg,Rustic,Dining Room,255.978,210.82,0.0,0.127,afd025b6422ff087,blurry
+images/Rustic/Dining Room/33883.jpg,Rustic,Dining Room,243.535,90.637,1.015,0.003,8767693cb16389b4,blurry
+images/Rustic/Kitchen/33213.jpg,Rustic,Kitchen,971.994,162.015,0.11,0.148,fd8788c078af462b,duplicate
+images/Rustic/Kitchen/33343.jpg,Rustic,Kitchen,2248.297,93.155,1.282,0.037,cbfc622360daf4c8,duplicate
+images/Rustic/Kitchen/33500.jpg,Rustic,Kitchen,1836.518,106.051,0.336,0.429,93c61c19abd353b1,duplicate
+images/Rustic/Kitchen/33595.jpg,Rustic,Kitchen,1925.4,155.007,0.108,0.761,f8ce21868ba3ce95,duplicate
+images/Rustic/Kitchen/33596.jpg,Rustic,Kitchen,2091.128,172.743,0.201,5.527,9d906f8d2719609f,duplicate
+images/Rustic/Kitchen/33810.jpg,Rustic,Kitchen,1878.86,87.096,13.536,0.911,c0a4791b2fe25ed8,clipped_dark
+images/Rustic/Kitchen/33849.jpg,Rustic,Kitchen,204.097,78.644,0.043,0.003,c29e25191b7366c7,blurry
+images/Rustic/Kitchen/33928.jpg,Rustic,Kitchen,257.071,84.796,0.847,0.0,c1507a2b0fc7a5ad,blurry
+images/Rustic/Living Room/31602.jpg,Rustic,Living Room,2227.74,124.641,0.374,1.39,9fa15c43b92cc35a,duplicate
+images/Rustic/Living Room/32347.jpg,Rustic,Living Room,2349.655,112.929,2.139,1.636,e0b17e143cd499ad,duplicate
+images/Rustic/Living Room/34191.jpg,Rustic,Living Room,1072.872,141.887,0.992,1.767,82b59b43b5ca55b8,duplicate
+images/Rustic/Living Room/34195.jpg,Rustic,Living Room,1354.778,47.316,3.183,0.002,89795636a968d353,underexposed
+images/Rustic/Living Room/34575.jpg,Rustic,Living Room,1412.577,121.158,1.164,0.609,b8d063b638cdc52e,duplicate
+images/Rustic/Living Room/34640.jpg,Rustic,Living Room,1511.23,121.435,1.16,0.661,dccd3b331c622ee0,duplicate
+images/Rustic/Living Room/34691.jpg,Rustic,Living Room,1764.902,145.397,0.04,0.044,e116aa0f1f795629,duplicate
+images/Rustic/Living Room/34699.jpg,Rustic,Living Room,1090.675,152.647,0.963,0.159,a8d456ab54807fc7,duplicate
+images/Rustic/Living Room/34728.jpg,Rustic,Living Room,2500.195,135.369,0.369,1.088,f2e91ee4138ca5c3,duplicate
+images/Rustic/Living Room/34735.jpg,Rustic,Living Room,877.284,182.634,0.005,2.744,b78e79439a548ae1,duplicate
+images/Rustic/Living Room/34774.jpg,Rustic,Living Room,1385.667,225.051,0.003,36.301,baef04f184d0335e,clipped_bright
+images/Traditional/Bathroom/34882.jpg,Traditional,Bathroom,269.166,173.301,0.002,0.713,91d41638cfc6698f,blurry
+images/Traditional/Bathroom/34985.jpg,Traditional,Bathroom,1110.52,224.583,0.034,52.536,eaf19596a4656338,clipped_bright
+images/Traditional/Bathroom/35027.jpg,Traditional,Bathroom,895.716,197.093,0.0,43.53,9893c76cb6d12c96,clipped_bright
+images/Traditional/Bathroom/35035.jpg,Traditional,Bathroom,874.919,206.482,0.003,35.529,b8c4876a356c789b,clipped_bright
+images/Traditional/Bathroom/35077.jpg,Traditional,Bathroom,241.384,137.574,0.047,3.979,e0e01f8f6eb0e661,blurry
+images/Traditional/Bathroom/35108.jpg,Traditional,Bathroom,254.326,161.364,0.0,3.798,a9ae52d5963085d7,blurry
+images/Traditional/Bathroom/35201.jpg,Traditional,Bathroom,821.046,158.29,0.032,0.002,e5d41a6ab5653e48,duplicate
+images/Traditional/Bathroom/35602.jpg,Traditional,Bathroom,656.122,189.881,0.809,34.5,9689e974e30e789c,clipped_bright
+images/Traditional/Bathroom/36091.jpg,Traditional,Bathroom,405.031,100.985,3.555,0.044,a3a75e9861579e21,duplicate
+images/Traditional/Bedroom/35873.jpg,Traditional,Bedroom,1280.013,166.976,0.247,3.897,bac2356c863dc993,duplicate
+images/Traditional/Bedroom/35917.jpg,Traditional,Bedroom,247.603,206.39,0.0,0.296,c5b8879a24c7657c,blurry
+images/Traditional/Bedroom/35932.jpg,Traditional,Bedroom,265.358,164.446,0.029,0.009,ae6815ca3d908bcf,blurry
+images/Traditional/Bedroom/35999.jpg,Traditional,Bedroom,2153.415,118.902,0.29,0.0,d0344f377c613ccc,duplicate
+images/Traditional/Bedroom/36105.jpg,Traditional,Bedroom,577.493,150.985,0.003,0.002,ff6bd05a82d05ae0,duplicate
+images/Traditional/Bedroom/36195.jpg,Traditional,Bedroom,778.044,191.524,0.168,2.989,9a815ead953b215e,duplicate
+images/Traditional/Bedroom/36260.jpg,Traditional,Bedroom,1507.919,66.052,15.862,0.024,861671716c6c4ded,clipped_dark
+images/Traditional/Bedroom/36279.jpg,Traditional,Bedroom,971.013,167.378,0.0,0.136,ba83e03de43b3cc1,duplicate
+images/Traditional/Bedroom/36295.jpg,Traditional,Bedroom,937.651,139.813,24.193,0.69,ffbe6021187a19c3,clipped_dark
+images/Traditional/Bedroom/36360.jpg,Traditional,Bedroom,919.432,71.51,33.612,0.249,992c6a9774d88b5c,clipped_dark
+images/Traditional/Bedroom/36403.jpg,Traditional,Bedroom,773.691,172.364,4.004,39.516,ff84816b8ab403db,clipped_bright
+images/Traditional/Dining Room/36121.jpg,Traditional,Dining Room,2495.489,128.865,1.108,3.432,c29c6b19e39a17ca,duplicate
+images/Traditional/Dining Room/36624.jpg,Traditional,Dining Room,1507.09,105.804,1.453,0.049,afdb22d5d434d08a,duplicate
+images/Traditional/Dining Room/36661.jpg,Traditional,Dining Room,476.828,226.384,0.307,48.253,b6cfc8e0c1348f3c,clipped_bright
+images/Traditional/Dining Room/37007.jpg,Traditional,Dining Room,1284.218,165.235,0.027,33.148,d8e0a71ea785f04b,clipped_bright
+images/Traditional/Dining Room/37313.jpg,Traditional,Dining Room,1502.713,136.327,0.594,0.075,85c1335ef7354a26,duplicate
+images/Traditional/Dining Room/37883.jpg,Traditional,Dining Room,718.377,148.093,0.011,0.073,a5dabca1c3235e2c,duplicate
+images/Traditional/Kitchen/37506.jpg,Traditional,Kitchen,1021.215,92.882,1.802,0.153,8b346bd512cd36c3,duplicate
+images/Traditional/Kitchen/37549.jpg,Traditional,Kitchen,2122.324,46.159,8.031,0.981,c74f3896c74d1662,underexposed
+images/Traditional/Kitchen/37816.jpg,Traditional,Kitchen,635.484,183.091,0.024,0.121,8a94a54ac6b5e8f3,duplicate
+images/Traditional/Kitchen/37820.jpg,Traditional,Kitchen,1002.268,48.477,1.9,0.566,ab2a2afb2a82447f,underexposed
+images/Traditional/Kitchen/37937.jpg,Traditional,Kitchen,253.523,160.417,0.739,2.774,f866d8dc0321bd99,blurry
+images/Traditional/Kitchen/38151.jpg,Traditional,Kitchen,893.619,189.395,0.366,32.997,913d8ec4eb93132e,clipped_bright
+images/Traditional/Kitchen/38184.jpg,Traditional,Kitchen,1134.489,140.372,0.082,1.292,ecb23193c3b6c332,duplicate
+images/Traditional/Living Room/36927.jpg,Traditional,Living Room,2237.954,161.238,0.94,0.284,f8d6b92c2e291e45,duplicate
+images/Traditional/Living Room/38886.jpg,Traditional,Living Room,2353.824,182.642,0.096,1.802,b4518e0cf973314f,duplicate
+images/Traditional/Living Room/39047.jpg,Traditional,Living Room,2131.898,189.177,0.296,35.495,aed5d172d42b344a,clipped_bright
+images/Traditional/Living Room/39229.jpg,Traditional,Living Room,473.324,148.348,0.044,0.154,abf05738c295784b,duplicate
+images/Traditional/Living Room/39251.jpg,Traditional,Living Room,1309.733,150.038,0.471,0.459,fe9c005cb4e6dc94,duplicate
+images/Traditional/Living Room/39300.jpg,Traditional,Living Room,1043.95,173.465,0.075,0.124,e885d678668d7833,duplicate
+images/Transitional/Bathroom/39329.jpg,Transitional,Bathroom,1107.995,212.696,0.047,33.742,bfb5c42e3b58c026,clipped_bright
+images/Transitional/Bathroom/39503.jpg,Transitional,Bathroom,872.181,166.51,0.108,2.071,e3c8b5db5a949883,duplicate
+images/Transitional/Bathroom/39507.jpg,Transitional,Bathroom,197.815,153.132,0.647,0.003,ffd440af4b00ae2e,blurry
+images/Transitional/Bathroom/39540.jpg,Transitional,Bathroom,248.935,217.853,0.0,0.027,b0f50a9b991ae53a,blurry
+images/Transitional/Bathroom/39568.jpg,Transitional,Bathroom,131.401,192.515,0.0,0.0,8faf493958c4c2ad,blurry
+images/Transitional/Bathroom/39594.jpg,Transitional,Bathroom,200.299,148.254,0.0,0.247,8f6b503834cdc7d8,blurry
+images/Transitional/Bathroom/39603.jpg,Transitional,Bathroom,184.448,185.391,0.0,0.0,805316dd13ee1de6,blurry
+images/Transitional/Bathroom/39653.jpg,Transitional,Bathroom,593.451,201.804,0.0,39.523,ef1394dcf1661219,clipped_bright
+images/Transitional/Bathroom/39689.jpg,Transitional,Bathroom,136.995,159.544,0.002,0.002,e3799321da799c28,blurry
+images/Transitional/Bathroom/39771.jpg,Transitional,Bathroom,186.501,165.69,0.0,0.92,e2f8708e1f06e86e,blurry
+images/Transitional/Bathroom/39922.jpg,Transitional,Bathroom,707.985,236.24,0.223,61.922,a6899c36e97cd232,clipped_bright
+images/Transitional/Bathroom/39931.jpg,Transitional,Bathroom,63.727,220.906,0.0,15.228,c1942e93f485eabc,blurry
+images/Transitional/Bathroom/40017.jpg,Transitional,Bathroom,227.273,139.265,2.8,2.364,efc0b429cb365392,blurry
+images/Transitional/Bathroom/40024.jpg,Transitional,Bathroom,553.046,187.452,0.011,34.549,fcdc8332bc0d60e6,clipped_bright
+images/Transitional/Bathroom/40026.jpg,Transitional,Bathroom,179.285,201.587,0.002,3.897,ce8fb162bf0302f8,blurry
+images/Transitional/Bathroom/40061.jpg,Transitional,Bathroom,500.42,190.805,0.23,34.305,88d0b32ff470cb9c,clipped_bright
+images/Transitional/Bathroom/40087.jpg,Transitional,Bathroom,189.724,188.951,0.0,0.221,d9c32e3006e89fdc,blurry
+images/Transitional/Bathroom/40095.jpg,Transitional,Bathroom,200.048,182.701,0.002,0.095,b38786668639e13e,blurry
+images/Transitional/Bathroom/40102.jpg,Transitional,Bathroom,482.695,170.326,0.081,42.831,92e5e91a9d7046e5,clipped_bright
+images/Transitional/Bedroom/40194.jpg,Transitional,Bedroom,571.979,194.332,0.002,60.571,aff4d02bc6d03964,clipped_bright
+images/Transitional/Bedroom/40210.jpg,Transitional,Bedroom,588.215,153.901,0.003,35.26,d178af8790f8690d,clipped_bright
+images/Transitional/Bedroom/40281.jpg,Transitional,Bedroom,913.928,185.244,0.232,39.969,fab19449c5de6225,clipped_bright
+images/Transitional/Bedroom/40327.jpg,Transitional,Bedroom,770.178,208.1,0.056,42.529,8ff0f08fe06c1bd0,clipped_bright
+images/Transitional/Bedroom/40365.jpg,Transitional,Bedroom,222.054,187.121,0.009,2.271,caf2fc05d3683623,blurry
+images/Transitional/Bedroom/40434.jpg,Transitional,Bedroom,3954.329,199.838,0.104,38.419,e84a94b7d6c83374,clipped_bright
+images/Transitional/Bedroom/40543.jpg,Transitional,Bedroom,998.873,146.358,0.427,1.141,beca425e81578ea5,duplicate
+images/Transitional/Bedroom/40544.jpg,Transitional,Bedroom,2079.359,211.827,0.021,35.672,ba2bcbc2c0c52737,clipped_bright
+images/Transitional/Bedroom/40590.jpg,Transitional,Bedroom,181.974,166.162,0.0,1.877,97c872add02f9568,blurry
+images/Transitional/Bedroom/40635.jpg,Transitional,Bedroom,2072.53,186.288,0.261,37.3,fa9de7909d86c806,clipped_bright
+images/Transitional/Bedroom/40657.jpg,Transitional,Bedroom,1694.149,102.209,11.394,0.018,e2c44ccc9be023fb,clipped_dark
+images/Transitional/Bedroom/40710.jpg,Transitional,Bedroom,1261.449,117.841,17.004,2.56,87b9438ff0bc031b,clipped_dark
+images/Transitional/Bedroom/40838.jpg,Transitional,Bedroom,173.061,108.92,0.005,0.0,a7db74a20df00b74,blurry
+images/Transitional/Dining Room/40941.jpg,Transitional,Dining Room,1157.591,175.575,0.006,5.147,aad088120737dfdd,duplicate
+images/Transitional/Dining Room/40947.jpg,Transitional,Dining Room,1274.146,146.927,0.583,0.839,a2d53d68d227e8b8,duplicate
+images/Transitional/Dining Room/41020.jpg,Transitional,Dining Room,1629.731,173.142,0.568,29.616,efb69478ab43b024,duplicate
+images/Transitional/Dining Room/41053.jpg,Transitional,Dining Room,1184.822,109.192,1.758,2.905,fb958133a5210d6f,duplicate
+images/Transitional/Dining Room/41115.jpg,Transitional,Dining Room,1028.917,200.227,0.012,44.093,80c5ff32c5e92a87,clipped_bright
+images/Transitional/Dining Room/41262.jpg,Transitional,Dining Room,1302.061,169.786,0.056,0.636,b4de611bc19d6ac1,duplicate
+images/Transitional/Dining Room/41282.jpg,Transitional,Dining Room,1106.058,174.809,0.185,33.554,e89d9423a380fc9f,clipped_bright
+images/Transitional/Dining Room/41304.jpg,Transitional,Dining Room,799.409,206.971,0.084,40.251,ec964b689664933b,clipped_bright
+images/Transitional/Dining Room/41378.jpg,Transitional,Dining Room,3766.84,165.025,4.027,4.897,a881df7e2092df62,duplicate
+images/Transitional/Dining Room/41385.jpg,Transitional,Dining Room,1943.997,195.279,0.122,32.156,f4c4cb3a95cb640d,clipped_bright
+images/Transitional/Dining Room/41388.jpg,Transitional,Dining Room,204.492,147.652,0.122,0.438,acc1330eee89ccb3,blurry
+images/Transitional/Dining Room/41401.jpg,Transitional,Dining Room,998.454,137.143,0.166,0.037,d2d52d9523e2dd09,duplicate
+images/Transitional/Dining Room/41431.jpg,Transitional,Dining Room,942.721,163.925,0.012,2.332,efcb3c54700a7552,duplicate
+images/Transitional/Dining Room/41455.jpg,Transitional,Dining Room,1075.655,113.301,0.781,1.228,d1a73e5e0e6814d9,duplicate
+images/Transitional/Dining Room/41513.jpg,Transitional,Dining Room,1216.773,141.633,1.027,2.567,e1d81d5258adde52,duplicate
+images/Transitional/Dining Room/41515.jpg,Transitional,Dining Room,1145.106,203.973,0.105,35.574,abd8d427fa90623a,clipped_bright
+images/Transitional/Dining Room/41529.jpg,Transitional,Dining Room,1568.346,159.729,0.182,0.098,f4cf2d2d8374ac28,duplicate
+images/Transitional/Dining Room/41576.jpg,Transitional,Dining Room,1691.364,189.019,0.209,9.833,c49f543cd32dd582,duplicate
+images/Transitional/Dining Room/41602.jpg,Transitional,Dining Room,2145.459,122.83,0.224,0.095,9eccf1c83fac70c0,duplicate
+images/Transitional/Dining Room/41624.jpg,Transitional,Dining Room,1374.025,124.752,0.221,0.002,b35494a8a4abab6b,duplicate
+images/Transitional/Dining Room/41625.jpg,Transitional,Dining Room,932.424,102.189,0.034,0.076,bbd1066ae4ca19f4,duplicate
+images/Transitional/Dining Room/41641.jpg,Transitional,Dining Room,827.848,215.736,0.311,55.255,bf33d148c8c8cd96,clipped_bright
+images/Transitional/Dining Room/41647.jpg,Transitional,Dining Room,2191.497,108.673,0.583,0.134,dbc69029db2d3932,duplicate
+images/Transitional/Dining Room/41687.jpg,Transitional,Dining Room,516.008,189.497,0.008,11.299,a4c7784bc658cdd2,duplicate
+images/Transitional/Dining Room/41708.jpg,Transitional,Dining Room,1672.667,178.157,0.381,26.906,eb85947aba90af24,duplicate
+images/Transitional/Dining Room/41716.jpg,Transitional,Dining Room,1468.437,206.543,0.043,33.578,a3cdcc72938ff410,clipped_bright
+images/Transitional/Kitchen/41799.jpg,Transitional,Kitchen,1058.261,143.129,3.098,0.366,9ce11b74cb2d1693,duplicate
+images/Transitional/Kitchen/41874.jpg,Transitional,Kitchen,1656.122,105.872,1.453,0.046,afdb22d5d434d08a,duplicate
+images/Transitional/Kitchen/41875.jpg,Transitional,Kitchen,1500.208,211.063,0.082,40.536,bf97a93ce0648e0a,clipped_bright
+images/Transitional/Kitchen/41950.jpg,Transitional,Kitchen,1178.873,172.397,0.131,2.087,b4c05fed24afa18a,duplicate
+images/Transitional/Kitchen/42141.jpg,Transitional,Kitchen,680.587,134.583,1.677,0.523,809659ab76e89769,duplicate
+images/Transitional/Kitchen/42190.jpg,Transitional,Kitchen,789.239,136.612,0.134,0.83,ee10c1e8def0622f,duplicate
+images/Transitional/Kitchen/42310.jpg,Transitional,Kitchen,1109.395,212.671,0.188,44.826,eb29377482d48c1f,clipped_bright
+images/Transitional/Kitchen/42465.jpg,Transitional,Kitchen,1764.434,203.63,0.0,38.278,d8b4c3c3cbc3c34a,clipped_bright
+images/Transitional/Kitchen/42512.jpg,Transitional,Kitchen,655.337,215.339,0.003,36.879,9be4a11bc60d35e6,clipped_bright
+images/Transitional/Living Room/40652.jpg,Transitional,Living Room,879.948,194.463,0.002,1.804,b6c1c838d9267337,duplicate
+images/Transitional/Living Room/40753.jpg,Transitional,Living Room,2621.317,211.74,0.066,39.925,eeb3c0ccb968520f,clipped_bright
+images/Transitional/Living Room/42764.jpg,Transitional,Living Room,1624.445,95.722,13.11,0.383,9746605c4df99959,clipped_dark
+images/Transitional/Living Room/42815.jpg,Transitional,Living Room,946.607,194.47,0.003,1.782,b6c1c838d9267337,duplicate
+images/Transitional/Living Room/42825.jpg,Transitional,Living Room,1766.156,147.048,0.607,2.336,82b14ddf33e0b81d,duplicate
+images/Transitional/Living Room/42881.jpg,Transitional,Living Room,1182.686,195.37,0.006,6.107,80a2ddfdf484099f,duplicate
+images/Transitional/Living Room/42885.jpg,Transitional,Living Room,1450.935,162.318,0.056,5.104,910cfa17c53b8c73,duplicate
+images/Transitional/Living Room/43102.jpg,Transitional,Living Room,2696.1,203.526,0.415,39.583,8ff8f007f083cc1d,clipped_bright
+images/Transitional/Living Room/43218.jpg,Transitional,Living Room,1813.88,119.234,0.769,0.197,a60cf1c51db39be0,duplicate

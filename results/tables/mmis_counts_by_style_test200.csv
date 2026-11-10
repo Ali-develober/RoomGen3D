@@ -1,0 +1,13 @@
+style,before,after,rejected,kept_pct
+Art Deco,12,9,3,75.0
+Bohemian,18,16,2,88.9
+Coastal,16,12,4,75.0
+Contemporary,18,16,2,88.9
+Eclectic,26,23,3,88.5
+Farmhouse,19,13,6,68.4
+Mediterranean,19,17,2,89.5
+Mid-Century Modern,10,10,0,100.0
+Rustic,20,19,1,95.0
+Traditional,20,18,2,90.0
+Transitional,22,16,6,72.7
+TOTAL,200,169,31,84.5

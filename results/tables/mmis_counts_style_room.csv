@@ -1,0 +1,56 @@
+style,room,before,after,rejected,kept_pct
+Art Deco,Bathroom,146,136,10,93.2
+Art Deco,Bedroom,146,134,12,91.8
+Art Deco,Dining Room,146,135,11,92.5
+Art Deco,Kitchen,146,138,8,94.5
+Art Deco,Living Room,146,127,19,87.0
+Bohemian,Bathroom,146,130,16,89.0
+Bohemian,Bedroom,146,140,6,95.9
+Bohemian,Dining Room,146,121,25,82.9
+Bohemian,Kitchen,146,139,7,95.2
+Bohemian,Living Room,146,144,2,98.6
+Coastal,Bathroom,146,134,12,91.8
+Coastal,Bedroom,146,139,7,95.2
+Coastal,Dining Room,146,144,2,98.6
+Coastal,Kitchen,146,136,10,93.2
+Coastal,Living Room,146,136,10,93.2
+Contemporary,Bathroom,146,138,8,94.5
+Contemporary,Bedroom,146,131,15,89.7
+Contemporary,Dining Room,146,141,5,96.6
+Contemporary,Kitchen,146,134,12,91.8
+Contemporary,Living Room,146,143,3,97.9
+Eclectic,Bathroom,146,138,8,94.5
+Eclectic,Bedroom,146,143,3,97.9
+Eclectic,Dining Room,146,139,7,95.2
+Eclectic,Kitchen,146,137,9,93.8
+Eclectic,Living Room,146,140,6,95.9
+Farmhouse,Bathroom,146,141,5,96.6
+Farmhouse,Bedroom,146,139,7,95.2
+Farmhouse,Dining Room,146,141,5,96.6
+Farmhouse,Kitchen,146,139,7,95.2
+Farmhouse,Living Room,146,135,11,92.5
+Mediterranean,Bathroom,146,137,9,93.8
+Mediterranean,Bedroom,146,134,12,91.8
+Mediterranean,Dining Room,146,139,7,95.2
+Mediterranean,Kitchen,146,138,8,94.5
+Mediterranean,Living Room,146,132,14,90.4
+Mid-Century Modern,Bathroom,146,138,8,94.5
+Mid-Century Modern,Bedroom,146,140,6,95.9
+Mid-Century Modern,Dining Room,146,141,5,96.6
+Mid-Century Modern,Kitchen,146,140,6,95.9
+Mid-Century Modern,Living Room,146,139,7,95.2
+Rustic,Bathroom,146,141,5,96.6
+Rustic,Bedroom,146,140,6,95.9
+Rustic,Dining Room,146,139,7,95.2
+Rustic,Kitchen,146,138,8,94.5
+Rustic,Living Room,146,135,11,92.5
+Traditional,Bathroom,146,137,9,93.8
+Traditional,Bedroom,146,135,11,92.5
+Traditional,Dining Room,146,140,6,95.9
+Traditional,Kitchen,146,139,7,95.2
+Traditional,Living Room,146,140,6,95.9
+Transitional,Bathroom,146,127,19,87.0
+Transitional,Bedroom,146,133,13,91.1
+Transitional,Dining Room,146,120,26,82.2
+Transitional,Kitchen,146,137,9,93.8
+Transitional,Living Room,146,137,9,93.8

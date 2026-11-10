@@ -1,0 +1,55 @@
+style,room,before,after,rejected,kept_pct
+Art Deco,Bathroom,1,0,1,0.0
+Art Deco,Bedroom,3,2,1,66.7
+Art Deco,Dining Room,3,2,1,66.7
+Art Deco,Kitchen,4,4,0,100.0
+Art Deco,Living Room,1,1,0,100.0
+Bohemian,Bathroom,5,5,0,100.0
+Bohemian,Bedroom,4,3,1,75.0
+Bohemian,Dining Room,6,5,1,83.3
+Bohemian,Kitchen,1,1,0,100.0
+Bohemian,Living Room,2,2,0,100.0
+Coastal,Bathroom,1,1,0,100.0
+Coastal,Bedroom,3,1,2,33.3
+Coastal,Dining Room,3,3,0,100.0
+Coastal,Kitchen,5,5,0,100.0
+Coastal,Living Room,4,2,2,50.0
+Contemporary,Bathroom,5,5,0,100.0
+Contemporary,Bedroom,3,3,0,100.0
+Contemporary,Dining Room,2,2,0,100.0
+Contemporary,Kitchen,6,4,2,66.7
+Contemporary,Living Room,2,2,0,100.0
+Eclectic,Bathroom,7,6,1,85.7
+Eclectic,Bedroom,5,5,0,100.0
+Eclectic,Dining Room,6,4,2,66.7
+Eclectic,Kitchen,5,5,0,100.0
+Eclectic,Living Room,3,3,0,100.0
+Farmhouse,Bathroom,1,1,0,100.0
+Farmhouse,Bedroom,5,4,1,80.0
+Farmhouse,Dining Room,5,2,3,40.0
+Farmhouse,Kitchen,5,3,2,60.0
+Farmhouse,Living Room,3,3,0,100.0
+Mediterranean,Bathroom,5,4,1,80.0
+Mediterranean,Bedroom,3,3,0,100.0
+Mediterranean,Dining Room,2,2,0,100.0
+Mediterranean,Kitchen,3,3,0,100.0
+Mediterranean,Living Room,6,5,1,83.3
+Mid-Century Modern,Bathroom,1,1,0,100.0
+Mid-Century Modern,Bedroom,3,3,0,100.0
+Mid-Century Modern,Dining Room,1,1,0,100.0
+Mid-Century Modern,Kitchen,2,2,0,100.0
+Mid-Century Modern,Living Room,3,3,0,100.0
+Rustic,Bathroom,3,3,0,100.0
+Rustic,Bedroom,8,7,1,87.5
+Rustic,Dining Room,4,4,0,100.0
+Rustic,Kitchen,2,2,0,100.0
+Rustic,Living Room,3,3,0,100.0
+Traditional,Bathroom,7,5,2,71.4
+Traditional,Bedroom,3,3,0,100.0
+Traditional,Dining Room,3,3,0,100.0
+Traditional,Kitchen,7,7,0,100.0
+Transitional,Bathroom,6,4,2,66.7
+Transitional,Bedroom,3,3,0,100.0
+Transitional,Dining Room,3,2,1,66.7
+Transitional,Kitchen,8,5,3,62.5
+Transitional,Living Room,2,2,0,100.0

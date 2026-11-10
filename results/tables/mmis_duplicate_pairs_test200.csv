@@ -1,0 +1,26 @@
+path_a,path_b,hamming,same_style,same_room
+images/Eclectic/Bathroom/15782.jpg,images/Contemporary/Bathroom/10662.jpg,18,False,True
+images/Rustic/Living Room/32347.jpg,images/Contemporary/Kitchen/13777.jpg,18,False,False
+images/Eclectic/Dining Room/18528.jpg,images/Farmhouse/Dining Room/21544.jpg,16,False,True
+images/Rustic/Bathroom/31121.jpg,images/Rustic/Bedroom/31497.jpg,18,True,False
+images/Eclectic/Living Room/16571.jpg,images/Eclectic/Dining Room/17104.jpg,18,True,False
+images/Mediterranean/Living Room/25340.jpg,images/Mediterranean/Bathroom/23445.jpg,16,True,False
+images/Coastal/Living Room/8949.jpg,images/Transitional/Bedroom/40252.jpg,14,False,False
+images/Bohemian/Living Room/6266.jpg,images/Coastal/Living Room/9557.jpg,18,False,True
+images/Bohemian/Dining Room/4648.jpg,images/Contemporary/Bathroom/10493.jpg,18,False,False
+images/Farmhouse/Dining Room/21632.jpg,images/Traditional/Bedroom/35791.jpg,18,False,False
+images/Transitional/Kitchen/41992.jpg,images/Contemporary/Living Room/14282.jpg,18,False,False
+images/Traditional/Kitchen/37814.jpg,images/Transitional/Kitchen/42170.jpg,18,False,True
+images/Mid-Century Modern/Living Room/30271.jpg,images/Coastal/Bedroom/7163.jpg,18,False,False
+images/Mediterranean/Bathroom/23271.jpg,images/Art Deco/Bedroom/756.jpg,18,False,False
+images/Mediterranean/Bathroom/23271.jpg,images/Farmhouse/Kitchen/22144.jpg,18,False,False
+images/Contemporary/Kitchen/13923.jpg,images/Art Deco/Bathroom/179.jpg,18,False,False
+images/Bohemian/Bedroom/4256.jpg,images/Transitional/Bedroom/40252.jpg,18,False,True
+images/Mediterranean/Bedroom/24394.jpg,images/Farmhouse/Dining Room/20589.jpg,18,False,False
+images/Eclectic/Bedroom/16581.jpg,images/Mediterranean/Living Room/26564.jpg,18,False,False
+images/Mediterranean/Bedroom/24009.jpg,images/Traditional/Bathroom/35641.jpg,18,False,False
+images/Coastal/Bedroom/7738.jpg,images/Coastal/Bedroom/7802.jpg,18,True,True
+images/Coastal/Bedroom/7738.jpg,images/Farmhouse/Dining Room/21531.jpg,18,False,False
+images/Farmhouse/Kitchen/20479.jpg,images/Transitional/Bathroom/41844.jpg,18,False,False
+images/Transitional/Kitchen/41875.jpg,images/Transitional/Kitchen/42219.jpg,18,True,True
+images/Farmhouse/Kitchen/21664.jpg,images/Eclectic/Living Room/16293.jpg,16,False,False
