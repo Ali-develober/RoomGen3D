@@ -1,0 +1,56 @@
+style,room,train,fid_holdout
+Art Deco,Bathroom,127,9
+Art Deco,Bedroom,125,9
+Art Deco,Dining Room,126,9
+Art Deco,Kitchen,129,9
+Art Deco,Living Room,117,10
+Bohemian,Bathroom,121,9
+Bohemian,Bedroom,131,9
+Bohemian,Dining Room,112,9
+Bohemian,Kitchen,130,9
+Bohemian,Living Room,135,9
+Coastal,Bathroom,125,9
+Coastal,Bedroom,130,9
+Coastal,Dining Room,135,9
+Coastal,Kitchen,127,9
+Coastal,Living Room,127,9
+Contemporary,Bathroom,129,9
+Contemporary,Bedroom,122,9
+Contemporary,Dining Room,132,9
+Contemporary,Kitchen,125,9
+Contemporary,Living Room,134,9
+Eclectic,Bathroom,129,9
+Eclectic,Bedroom,134,9
+Eclectic,Dining Room,130,9
+Eclectic,Kitchen,127,10
+Eclectic,Living Room,131,9
+Farmhouse,Bathroom,132,9
+Farmhouse,Bedroom,130,9
+Farmhouse,Dining Room,132,9
+Farmhouse,Kitchen,130,9
+Farmhouse,Living Room,126,9
+Mediterranean,Bathroom,128,9
+Mediterranean,Bedroom,125,9
+Mediterranean,Dining Room,130,9
+Mediterranean,Kitchen,129,9
+Mediterranean,Living Room,122,10
+Mid-Century Modern,Bathroom,129,9
+Mid-Century Modern,Bedroom,131,9
+Mid-Century Modern,Dining Room,132,9
+Mid-Century Modern,Kitchen,131,9
+Mid-Century Modern,Living Room,130,9
+Rustic,Bathroom,131,10
+Rustic,Bedroom,131,9
+Rustic,Dining Room,130,9
+Rustic,Kitchen,129,9
+Rustic,Living Room,126,9
+Traditional,Bathroom,128,9
+Traditional,Bedroom,126,9
+Traditional,Dining Room,131,9
+Traditional,Kitchen,130,9
+Traditional,Living Room,131,9
+Transitional,Bathroom,118,9
+Transitional,Bedroom,124,9
+Transitional,Dining Room,111,9
+Transitional,Kitchen,128,9
+Transitional,Living Room,127,10

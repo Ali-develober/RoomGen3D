@@ -87,6 +87,25 @@ def balanced_subset(labels: pd.DataFrame, total: int = 8000, seed: int = 42) -> 
     return sub
 
 
+def holdout_split(df: pd.DataFrame, n_holdout: int = 500, seed: int = 42) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Split into (train, holdout) with the holdout balanced across (style, room) cells.
+
+    Every cell gives floor(n / n_cells) images; the remainder comes one image each
+    from randomly chosen cells, so the holdout has exactly n_holdout images.
+    """
+    rng = np.random.default_rng(seed)
+    cells = sorted(df.groupby(["style", "room"]).groups)
+    base, extra = divmod(n_holdout, len(cells))
+    bonus = set(map(tuple, np.array(cells, dtype=object)[rng.choice(len(cells), extra, replace=False)]))
+    picks = []
+    for cell, g in df.groupby(["style", "room"]):
+        k = base + (1 if cell in bonus else 0)
+        picks.append(g.sample(n=k, random_state=seed))
+    hold = pd.concat(picks)
+    train = df.drop(hold.index)
+    return train.reset_index(drop=True), hold.reset_index(drop=True)
+
+
 # --------------------------------------------------------------------------- #
 # Reading single files out of a remote zip on Google Drive
 # --------------------------------------------------------------------------- #
