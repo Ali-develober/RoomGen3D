@@ -107,6 +107,8 @@ We use a **subset of MMIS** (e.g., 5–10K images after cleaning) to fit local G
    - Rank: 4–16 | LR: 1e-4 | Steps: ~2–5K | fp16 | gradient checkpointing | 8-bit Adam | batch 1 + gradient accumulation.
 5. Save checkpoints; select the best by validation FID / CLIP Score.
 
+**Done:** rank 8, alpha 8, LR 1e-4 cosine, 3,000 steps × grad-accum 4, 512 px, fp16, on 7,028 cleaned MMIS images. CLAHE was not applied to training images; the preprocessing was bicubic upsampling plus a light unsharp mask (`src/preprocessing.py`). Peak VRAM was 2.9 GB, and training took about 70 min on the RTX 5060. **Selected checkpoint: step 3000** (see section 8, Results (2D)).
+
 ---
 
 ## 8. Evaluation
@@ -118,6 +120,24 @@ We use a **subset of MMIS** (e.g., 5–10K images after cleaning) to fit local G
 | CLIP Score | How well the image matches the text prompt |
 
 Comparison: **Vanilla SD v1.5 vs. SD v1.5 + our LoRA**.
+
+#### Results (2D)
+Protocol: 500 held-out MMIS captions (never used in training, 9–10 per style×room cell), one image per caption per model, same seed per caption across models, DDIM 30 steps, CFG 7.5, 512×512. FID and KID use Inception-v3 features against the 500 real held-out images, with generated images downscaled to 256×256 to match MMIS. KID is mean ± std over 100 random subsets of 100. CLIP Score uses ViT-L/14 and is reported as mean ± std per image. Code: `src/evaluate.py`, `scripts/eval_2d.py`.
+
+| Model | FID ↓ | KID ×10³ ↓ | CLIP Score ↑ |
+|---|---|---|---|
+| SD v1.5 (base) | 64.5 | 19.1 ± 2.4 | **27.9 ± 1.9** |
+| + LoRA step 1000 | 55.0 | 11.4 ± 2.2 | 26.8 ± 2.1 |
+| + LoRA step 2000 | 54.9 | 10.5 ± 2.2 | 27.0 ± 2.1 |
+| + LoRA step 3000 | **54.6** | **10.2 ± 2.1** | 27.0 ± 2.2 |
+| *Real held-out MMIS images* | – | – | *22.8 ± 3.1* |
+
+**Chosen checkpoint: `checkpoints/lora_mmis/step_03000`** (lowest FID and KID; rule: mean FID/KID rank, CLIP as tiebreaker).
+
+- The LoRA makes generations much closer to real MMIS interiors: FID drops by 15% (64.5 → 54.6) and KID roughly halves (19.1 → 10.2). That gap is about four times the KID std.
+- The three checkpoints are nearly tied. Their KID differences (11.4 / 10.5 / 10.2) are smaller than one std. Most of the gain comes in the first 1,000 steps, and later steps add a little.
+- CLIP Score falls by about 1 point (27.9 → 27.0, about half a per-image std). The real MMIS images themselves score only 22.8 on the same captions, so moving toward the MMIS look costs some text alignment as CLIP measures it. This is a trade-off rather than a failure, but objective 1 is only met for FID/KID.
+- Figures: `results/figures/eval_2d_metrics.png` (metrics) and `results/figures/eval_2d_qualitative.png` (6 captions × real + 4 models). Tables: `results/tables/eval_2d.csv` and `eval_2d_clip_per_image.csv`.
 
 ### Depth / 3D
 | Metric | Measures |
@@ -209,7 +229,7 @@ RoomGen3D/
 
 ## 13. Objectives (Measurable)
 
-1. Train a LoRA that improves FID and CLIP Score over vanilla SD v1.5.
+1. Train a LoRA that improves FID and CLIP Score over vanilla SD v1.5. *Status: FID 64.5 → 54.6 and KID 19.1 → 10.2 ×10³ (met). CLIP 27.9 → 27.0 (not met; see section 8).*
 2. Show that preprocessing reduces depth error (AbsRel/RMSE) on NYU Depth V2.
 3. Show that preprocessing improves robustness under noise, blur, and low light.
 4. Produce a 3D mesh from any generated design in under ~1 minute on a GPU.

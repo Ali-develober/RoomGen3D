@@ -1,0 +1,2501 @@
+model,idx,caption,clip_score
+sd15_base,0,an art deco style bathroom,29.6403
+sd15_base,1,an art deco style bathroom,29.4662
+sd15_base,2,an art deco style bathroom,29.4279
+sd15_base,3,an art deco style bathroom,28.2755
+sd15_base,4,an art deco style bathroom,28.2992
+sd15_base,5,an art deco style bathroom,27.2390
+sd15_base,6,an art deco style bathroom,28.8886
+sd15_base,7,an art deco style bathroom,27.3426
+sd15_base,8,an art deco style bathroom,28.9568
+sd15_base,9,an art deco style bedroom,28.5600
+sd15_base,10,an art deco style bedroom,26.3740
+sd15_base,11,an art deco style bedroom,27.5489
+sd15_base,12,an art deco style bedroom,28.2958
+sd15_base,13,an art deco style bedroom,28.8316
+sd15_base,14,an art deco style bedroom,28.5882
+sd15_base,15,an art deco style bedroom,26.8268
+sd15_base,16,an art deco style bedroom,27.0062
+sd15_base,17,an art deco style bedroom,30.3933
+sd15_base,18,an art deco style dining room,29.3851
+sd15_base,19,an art deco style dining room,29.7007
+sd15_base,20,an art deco style dining room,26.8337
+sd15_base,21,an art deco style dining room,28.6976
+sd15_base,22,an art deco style dining room,26.5497
+sd15_base,23,an art deco style dining room,29.8307
+sd15_base,24,an art deco style dining room,29.1098
+sd15_base,25,an art deco style dining room,27.4893
+sd15_base,26,an art deco style dining room,27.5971
+sd15_base,27,an art deco style kitchen,30.1277
+sd15_base,28,an art deco style kitchen,28.0799
+sd15_base,29,an art deco style kitchen,28.0233
+sd15_base,30,an art deco style kitchen,32.3553
+sd15_base,31,an art deco style kitchen,29.4683
+sd15_base,32,an art deco style kitchen,28.0080
+sd15_base,33,an art deco style kitchen,24.2647
+sd15_base,34,an art deco style kitchen,30.4112
+sd15_base,35,an art deco style kitchen,28.1646
+sd15_base,36,an art deco style living room,27.6985
+sd15_base,37,an art deco style living room,26.3926
+sd15_base,38,an art deco style living room,28.2936
+sd15_base,39,an art deco style living room,26.4620
+sd15_base,40,an art deco style living room,25.1438
+sd15_base,41,an art deco style living room,28.7943
+sd15_base,42,an art deco style living room,29.5564
+sd15_base,43,an art deco style living room,28.8185
+sd15_base,44,an art deco style living room,28.0311
+sd15_base,45,an art deco style living room,25.6276
+sd15_base,46,a bohemian style bathroom,31.4823
+sd15_base,47,a bohemian style bathroom,32.1504
+sd15_base,48,a bohemian style bathroom,31.6745
+sd15_base,49,a bohemian style bathroom,30.0714
+sd15_base,50,a bohemian style bathroom,30.2413
+sd15_base,51,a bohemian style bathroom,32.9838
+sd15_base,52,a bohemian style bathroom,29.6555
+sd15_base,53,a bohemian style bathroom,30.6885
+sd15_base,54,a bohemian style bathroom,34.4612
+sd15_base,55,a bohemian style bedroom,31.5120
+sd15_base,56,a bohemian style bedroom,33.1689
+sd15_base,57,a bohemian style bedroom,33.2443
+sd15_base,58,a bohemian style bedroom,29.5237
+sd15_base,59,a bohemian style bedroom,31.8681
+sd15_base,60,a bohemian style bedroom,29.6725
+sd15_base,61,a bohemian style bedroom,29.7668
+sd15_base,62,a bohemian style bedroom,31.9314
+sd15_base,63,a bohemian style bedroom,32.6977
+sd15_base,64,a bohemian style dining room,27.3316
+sd15_base,65,a bohemian style dining room,30.5570
+sd15_base,66,a bohemian style dining room,28.7032
+sd15_base,67,a bohemian style dining room,29.2973
+sd15_base,68,a bohemian style dining room,27.7944
+sd15_base,69,a bohemian style dining room,31.2985
+sd15_base,70,a bohemian style dining room,28.5789
+sd15_base,71,a bohemian style dining room,29.5928
+sd15_base,72,a bohemian style dining room,28.9351
+sd15_base,73,a bohemian style kitchen,31.4531
+sd15_base,74,a bohemian style kitchen,29.5059
+sd15_base,75,a bohemian style kitchen,29.1522
+sd15_base,76,a bohemian style kitchen,29.1702
+sd15_base,77,a bohemian style kitchen,30.9058
+sd15_base,78,a bohemian style kitchen,31.2987
+sd15_base,79,a bohemian style kitchen,28.9116
+sd15_base,80,a bohemian style kitchen,32.6858
+sd15_base,81,a bohemian style kitchen,30.0856
+sd15_base,82,a bohemian style living room,28.9897
+sd15_base,83,a bohemian style living room,29.9226
+sd15_base,84,a bohemian style living room,30.5511
+sd15_base,85,a bohemian style living room,29.4375
+sd15_base,86,a bohemian style living room,29.1158
+sd15_base,87,a bohemian style living room,30.7910
+sd15_base,88,a bohemian style living room,31.8715
+sd15_base,89,a bohemian style living room,32.2368
+sd15_base,90,a bohemian style living room,30.8912
+sd15_base,91,a coastal style bathroom,26.8498
+sd15_base,92,a coastal style bathroom,30.0004
+sd15_base,93,a coastal style bathroom,25.7022
+sd15_base,94,a coastal style bathroom,28.5960
+sd15_base,95,a coastal style bathroom,27.8322
+sd15_base,96,a coastal style bathroom,29.8622
+sd15_base,97,a coastal style bathroom,28.3083
+sd15_base,98,a coastal style bathroom,29.7526
+sd15_base,99,a coastal style bathroom,27.5102
+sd15_base,100,a coastal style bedroom,25.4470
+sd15_base,101,a coastal style bedroom,29.1109
+sd15_base,102,a coastal style bedroom,30.1643
+sd15_base,103,a coastal style bedroom,30.3258
+sd15_base,104,a coastal style bedroom,27.9658
+sd15_base,105,a coastal style bedroom,27.3277
+sd15_base,106,a coastal style bedroom,30.4619
+sd15_base,107,a coastal style bedroom,30.3039
+sd15_base,108,a coastal style bedroom,29.8435
+sd15_base,109,a coastal style dining room,28.2366
+sd15_base,110,a coastal style dining room,30.0663
+sd15_base,111,a coastal style dining room,28.2720
+sd15_base,112,a coastal style dining room,27.5833
+sd15_base,113,a coastal style dining room,29.2045
+sd15_base,114,a coastal style dining room,28.7527
+sd15_base,115,a coastal style dining room,27.7861
+sd15_base,116,a coastal style dining room,27.0795
+sd15_base,117,a coastal style dining room,27.9515
+sd15_base,118,a coastal style kitchen,26.1438
+sd15_base,119,a coastal style kitchen,26.2934
+sd15_base,120,a coastal style kitchen,26.6054
+sd15_base,121,a coastal style kitchen,25.3265
+sd15_base,122,a coastal style kitchen,26.1928
+sd15_base,123,a coastal style kitchen,27.4345
+sd15_base,124,a coastal style kitchen,27.3839
+sd15_base,125,a coastal style kitchen,24.9394
+sd15_base,126,a coastal style kitchen,25.8192
+sd15_base,127,a coastal style living room,28.9806
+sd15_base,128,a coastal style living room,31.5326
+sd15_base,129,a coastal style living room,30.4403
+sd15_base,130,a coastal style living room,29.7079
+sd15_base,131,a coastal style living room,29.1801
+sd15_base,132,a coastal style living room,27.4280
+sd15_base,133,a coastal style living room,26.0197
+sd15_base,134,a coastal style living room,27.1063
+sd15_base,135,a coastal style living room,30.3923
+sd15_base,136,a contemporary style bathroom,26.5865
+sd15_base,137,a contemporary style bathroom,26.8987
+sd15_base,138,a contemporary style bathroom,24.4942
+sd15_base,139,a contemporary style bathroom,27.0026
+sd15_base,140,a contemporary style bathroom,27.6612
+sd15_base,141,a contemporary style bathroom,25.5700
+sd15_base,142,a contemporary style bathroom,26.5146
+sd15_base,143,a contemporary style bathroom,27.2284
+sd15_base,144,a contemporary style bathroom,26.0267
+sd15_base,145,a contemporary style bedroom,26.2836
+sd15_base,146,a contemporary style bedroom,26.8020
+sd15_base,147,a contemporary style bedroom,28.9145
+sd15_base,148,a contemporary style bedroom,27.8677
+sd15_base,149,a contemporary style bedroom,26.9116
+sd15_base,150,a contemporary style bedroom,27.0927
+sd15_base,151,a contemporary style bedroom,27.9204
+sd15_base,152,a contemporary style bedroom,27.0451
+sd15_base,153,a contemporary style bedroom,27.1975
+sd15_base,154,a contemporary style dining room,27.9127
+sd15_base,155,a contemporary style dining room,28.0072
+sd15_base,156,a contemporary style dining room,27.2670
+sd15_base,157,a contemporary style dining room,26.5050
+sd15_base,158,a contemporary style dining room,27.8292
+sd15_base,159,a contemporary style dining room,27.4222
+sd15_base,160,a contemporary style dining room,28.0766
+sd15_base,161,a contemporary style dining room,28.1776
+sd15_base,162,a contemporary style dining room,28.1690
+sd15_base,163,a contemporary style kitchen,24.7496
+sd15_base,164,a contemporary style kitchen,26.3176
+sd15_base,165,a contemporary style kitchen,25.3933
+sd15_base,166,a contemporary style kitchen,25.0180
+sd15_base,167,a contemporary style kitchen,26.5179
+sd15_base,168,a contemporary style kitchen,24.5899
+sd15_base,169,a contemporary style kitchen,25.3788
+sd15_base,170,a contemporary style kitchen,27.0178
+sd15_base,171,a contemporary style kitchen,25.6268
+sd15_base,172,a contemporary style living room,26.5692
+sd15_base,173,a contemporary style living room,26.8567
+sd15_base,174,a contemporary style living room,27.5935
+sd15_base,175,a contemporary style living room,27.3536
+sd15_base,176,a contemporary style living room,26.3698
+sd15_base,177,a contemporary style living room,26.4670
+sd15_base,178,a contemporary style living room,27.0153
+sd15_base,179,a contemporary style living room,27.6493
+sd15_base,180,a contemporary style living room,26.3728
+sd15_base,181,an eclectic style bathroom,27.7038
+sd15_base,182,an eclectic style bathroom,27.2967
+sd15_base,183,an eclectic style bathroom,27.5714
+sd15_base,184,an eclectic style bathroom,25.6847
+sd15_base,185,an eclectic style bathroom,26.1621
+sd15_base,186,an eclectic style bathroom,26.5872
+sd15_base,187,an eclectic style bathroom,28.9740
+sd15_base,188,an eclectic style bathroom,24.1793
+sd15_base,189,an eclectic style bathroom,27.9490
+sd15_base,190,an eclectic style bedroom,28.4298
+sd15_base,191,an eclectic style bedroom,26.6572
+sd15_base,192,an eclectic style bedroom,26.3712
+sd15_base,193,an eclectic style bedroom,28.2387
+sd15_base,194,an eclectic style bedroom,25.5916
+sd15_base,195,an eclectic style bedroom,26.7411
+sd15_base,196,an eclectic style bedroom,26.3647
+sd15_base,197,an eclectic style bedroom,25.9753
+sd15_base,198,an eclectic style bedroom,26.3504
+sd15_base,199,an eclectic style dining room,27.3113
+sd15_base,200,an eclectic style dining room,28.2917
+sd15_base,201,an eclectic style dining room,28.1420
+sd15_base,202,an eclectic style dining room,26.4338
+sd15_base,203,an eclectic style dining room,29.3867
+sd15_base,204,an eclectic style dining room,26.2491
+sd15_base,205,an eclectic style dining room,28.4457
+sd15_base,206,an eclectic style dining room,26.2357
+sd15_base,207,an eclectic style dining room,27.5549
+sd15_base,208,an eclectic style kitchen,26.5202
+sd15_base,209,an eclectic style kitchen,27.2855
+sd15_base,210,an eclectic style kitchen,27.2707
+sd15_base,211,an eclectic style kitchen,26.5543
+sd15_base,212,an eclectic style kitchen,26.3832
+sd15_base,213,an eclectic style kitchen,27.3761
+sd15_base,214,an eclectic style kitchen,25.9979
+sd15_base,215,an eclectic style kitchen,26.6126
+sd15_base,216,an eclectic style kitchen,27.0512
+sd15_base,217,an eclectic style kitchen,26.4421
+sd15_base,218,an eclectic style living room,26.0659
+sd15_base,219,an eclectic style living room,25.6325
+sd15_base,220,an eclectic style living room,26.7569
+sd15_base,221,an eclectic style living room,26.2457
+sd15_base,222,an eclectic style living room,26.6871
+sd15_base,223,an eclectic style living room,27.6696
+sd15_base,224,an eclectic style living room,25.4772
+sd15_base,225,an eclectic style living room,27.1809
+sd15_base,226,an eclectic style living room,26.3740
+sd15_base,227,a farmhouse style bathroom,30.4527
+sd15_base,228,a farmhouse style bathroom,29.0210
+sd15_base,229,a farmhouse style bathroom,29.5950
+sd15_base,230,a farmhouse style bathroom,28.8981
+sd15_base,231,a farmhouse style bathroom,27.5927
+sd15_base,232,a farmhouse style bathroom,28.7502
+sd15_base,233,a farmhouse style bathroom,29.2864
+sd15_base,234,a farmhouse style bathroom,23.3647
+sd15_base,235,a farmhouse style bathroom,27.2769
+sd15_base,236,a farmhouse style bedroom,28.9742
+sd15_base,237,a farmhouse style bedroom,28.1451
+sd15_base,238,a farmhouse style bedroom,27.3748
+sd15_base,239,a farmhouse style bedroom,25.3444
+sd15_base,240,a farmhouse style bedroom,29.6175
+sd15_base,241,a farmhouse style bedroom,29.3516
+sd15_base,242,a farmhouse style bedroom,30.6673
+sd15_base,243,a farmhouse style bedroom,27.2614
+sd15_base,244,a farmhouse style bedroom,27.0190
+sd15_base,245,a farmhouse style dining room,28.3730
+sd15_base,246,a farmhouse style dining room,29.4270
+sd15_base,247,a farmhouse style dining room,28.6633
+sd15_base,248,a farmhouse style dining room,27.9419
+sd15_base,249,a farmhouse style dining room,28.1786
+sd15_base,250,a farmhouse style dining room,28.9278
+sd15_base,251,a farmhouse style dining room,28.7651
+sd15_base,252,a farmhouse style dining room,28.9681
+sd15_base,253,a farmhouse style dining room,29.3449
+sd15_base,254,a farmhouse style kitchen,27.1961
+sd15_base,255,a farmhouse style kitchen,28.2216
+sd15_base,256,a farmhouse style kitchen,28.3361
+sd15_base,257,a farmhouse style kitchen,26.0600
+sd15_base,258,a farmhouse style kitchen,27.3514
+sd15_base,259,a farmhouse style kitchen,27.9567
+sd15_base,260,a farmhouse style kitchen,26.2113
+sd15_base,261,a farmhouse style kitchen,24.8777
+sd15_base,262,a farmhouse style kitchen,28.2965
+sd15_base,263,a farmhouse style living room,27.8435
+sd15_base,264,a farmhouse style living room,28.1134
+sd15_base,265,a farmhouse style living room,27.6228
+sd15_base,266,a farmhouse style living room,27.5222
+sd15_base,267,a farmhouse style living room,29.4286
+sd15_base,268,a farmhouse style living room,26.2072
+sd15_base,269,a farmhouse style living room,28.4843
+sd15_base,270,a farmhouse style living room,27.5335
+sd15_base,271,a farmhouse style living room,28.5489
+sd15_base,272,a mediterranean style bathroom,24.9899
+sd15_base,273,a mediterranean style bathroom,30.4631
+sd15_base,274,a mediterranean style bathroom,30.6334
+sd15_base,275,a mediterranean style bathroom,27.5591
+sd15_base,276,a mediterranean style bathroom,30.7070
+sd15_base,277,a mediterranean style bathroom,29.7633
+sd15_base,278,a mediterranean style bathroom,31.0137
+sd15_base,279,a mediterranean style bathroom,31.0868
+sd15_base,280,a mediterranean style bathroom,26.8026
+sd15_base,281,a mediterranean style bedroom,24.1798
+sd15_base,282,a mediterranean style bedroom,25.9832
+sd15_base,283,a mediterranean style bedroom,28.2929
+sd15_base,284,a mediterranean style bedroom,27.9860
+sd15_base,285,a mediterranean style bedroom,25.8743
+sd15_base,286,a mediterranean style bedroom,27.0059
+sd15_base,287,a mediterranean style bedroom,29.1992
+sd15_base,288,a mediterranean style bedroom,28.9083
+sd15_base,289,a mediterranean style bedroom,27.8769
+sd15_base,290,a mediterranean style dining room,27.9593
+sd15_base,291,a mediterranean style dining room,28.5658
+sd15_base,292,a mediterranean style dining room,28.3114
+sd15_base,293,a mediterranean style dining room,28.3743
+sd15_base,294,a mediterranean style dining room,26.2603
+sd15_base,295,a mediterranean style dining room,28.8821
+sd15_base,296,a mediterranean style dining room,27.4702
+sd15_base,297,a mediterranean style dining room,27.0050
+sd15_base,298,a mediterranean style dining room,28.8663
+sd15_base,299,a mediterranean style kitchen,27.8810
+sd15_base,300,a mediterranean style kitchen,27.2774
+sd15_base,301,a mediterranean style kitchen,28.5199
+sd15_base,302,a mediterranean style kitchen,28.3314
+sd15_base,303,a mediterranean style kitchen,28.8156
+sd15_base,304,a mediterranean style kitchen,27.2061
+sd15_base,305,a mediterranean style kitchen,28.5643
+sd15_base,306,a mediterranean style kitchen,25.1615
+sd15_base,307,a mediterranean style kitchen,31.2290
+sd15_base,308,a mediterranean style living room,28.5558
+sd15_base,309,a mediterranean style living room,26.6112
+sd15_base,310,a mediterranean style living room,27.9610
+sd15_base,311,a mediterranean style living room,27.3511
+sd15_base,312,a mediterranean style living room,26.5821
+sd15_base,313,a mediterranean style living room,30.9480
+sd15_base,314,a mediterranean style living room,29.4407
+sd15_base,315,a mediterranean style living room,30.5751
+sd15_base,316,a mediterranean style living room,28.7537
+sd15_base,317,a mediterranean style living room,29.1860
+sd15_base,318,a mid-century modern style bathroom,24.0224
+sd15_base,319,a mid-century modern style bathroom,25.4408
+sd15_base,320,a mid-century modern style bathroom,25.4778
+sd15_base,321,a mid-century modern style bathroom,26.9885
+sd15_base,322,a mid-century modern style bathroom,25.9034
+sd15_base,323,a mid-century modern style bathroom,25.7863
+sd15_base,324,a mid-century modern style bathroom,26.5363
+sd15_base,325,a mid-century modern style bathroom,26.0007
+sd15_base,326,a mid-century modern style bathroom,26.4381
+sd15_base,327,a mid-century modern style bedroom,27.9262
+sd15_base,328,a mid-century modern style bedroom,29.0925
+sd15_base,329,a mid-century modern style bedroom,25.5261
+sd15_base,330,a mid-century modern style bedroom,28.7714
+sd15_base,331,a mid-century modern style bedroom,28.2385
+sd15_base,332,a mid-century modern style bedroom,26.4940
+sd15_base,333,a mid-century modern style bedroom,27.9686
+sd15_base,334,a mid-century modern style bedroom,26.3222
+sd15_base,335,a mid-century modern style bedroom,28.4283
+sd15_base,336,a mid-century modern style dining room,29.0596
+sd15_base,337,a mid-century modern style dining room,31.1361
+sd15_base,338,a mid-century modern style dining room,30.2013
+sd15_base,339,a mid-century modern style dining room,31.1923
+sd15_base,340,a mid-century modern style dining room,29.5606
+sd15_base,341,a mid-century modern style dining room,29.8848
+sd15_base,342,a mid-century modern style dining room,29.2914
+sd15_base,343,a mid-century modern style dining room,28.4833
+sd15_base,344,a mid-century modern style dining room,29.3528
+sd15_base,345,a mid-century modern style kitchen,27.7180
+sd15_base,346,a mid-century modern style kitchen,27.0348
+sd15_base,347,a mid-century modern style kitchen,27.4276
+sd15_base,348,a mid-century modern style kitchen,29.1515
+sd15_base,349,a mid-century modern style kitchen,29.4605
+sd15_base,350,a mid-century modern style kitchen,25.8397
+sd15_base,351,a mid-century modern style kitchen,28.0790
+sd15_base,352,a mid-century modern style kitchen,25.8932
+sd15_base,353,a mid-century modern style kitchen,27.7068
+sd15_base,354,a mid-century modern style living room,28.1409
+sd15_base,355,a mid-century modern style living room,28.8072
+sd15_base,356,a mid-century modern style living room,26.9554
+sd15_base,357,a mid-century modern style living room,29.3002
+sd15_base,358,a mid-century modern style living room,27.5086
+sd15_base,359,a mid-century modern style living room,28.5332
+sd15_base,360,a mid-century modern style living room,27.5905
+sd15_base,361,a mid-century modern style living room,28.1987
+sd15_base,362,a mid-century modern style living room,27.7446
+sd15_base,363,a rustic style bathroom,32.4080
+sd15_base,364,a rustic style bathroom,31.8088
+sd15_base,365,a rustic style bathroom,33.2473
+sd15_base,366,a rustic style bathroom,30.1312
+sd15_base,367,a rustic style bathroom,31.4675
+sd15_base,368,a rustic style bathroom,30.4446
+sd15_base,369,a rustic style bathroom,32.0368
+sd15_base,370,a rustic style bathroom,30.6035
+sd15_base,371,a rustic style bathroom,30.9343
+sd15_base,372,a rustic style bathroom,31.5481
+sd15_base,373,a rustic style bedroom,29.8365
+sd15_base,374,a rustic style bedroom,30.2334
+sd15_base,375,a rustic style bedroom,29.0961
+sd15_base,376,a rustic style bedroom,29.2104
+sd15_base,377,a rustic style bedroom,28.4215
+sd15_base,378,a rustic style bedroom,27.2942
+sd15_base,379,a rustic style bedroom,27.8949
+sd15_base,380,a rustic style bedroom,30.4599
+sd15_base,381,a rustic style bedroom,28.2209
+sd15_base,382,a rustic style dining room,28.6116
+sd15_base,383,a rustic style dining room,29.3258
+sd15_base,384,a rustic style dining room,29.0802
+sd15_base,385,a rustic style dining room,28.2325
+sd15_base,386,a rustic style dining room,28.2953
+sd15_base,387,a rustic style dining room,28.5512
+sd15_base,388,a rustic style dining room,27.8479
+sd15_base,389,a rustic style dining room,27.3337
+sd15_base,390,a rustic style dining room,30.0594
+sd15_base,391,a rustic style kitchen,29.0769
+sd15_base,392,a rustic style kitchen,30.9475
+sd15_base,393,a rustic style kitchen,30.3595
+sd15_base,394,a rustic style kitchen,29.1911
+sd15_base,395,a rustic style kitchen,30.6202
+sd15_base,396,a rustic style kitchen,30.3230
+sd15_base,397,a rustic style kitchen,31.7981
+sd15_base,398,a rustic style kitchen,30.7458
+sd15_base,399,a rustic style kitchen,29.2619
+sd15_base,400,a rustic style living room,26.3986
+sd15_base,401,a rustic style living room,28.5550
+sd15_base,402,a rustic style living room,29.5585
+sd15_base,403,a rustic style living room,29.6021
+sd15_base,404,a rustic style living room,29.0013
+sd15_base,405,a rustic style living room,27.6115
+sd15_base,406,a rustic style living room,29.6744
+sd15_base,407,a rustic style living room,26.4061
+sd15_base,408,a rustic style living room,27.8632
+sd15_base,409,a traditional style bathroom,27.4619
+sd15_base,410,a traditional style bathroom,28.0882
+sd15_base,411,a traditional style bathroom,25.6245
+sd15_base,412,a traditional style bathroom,25.0266
+sd15_base,413,a traditional style bathroom,26.8173
+sd15_base,414,a traditional style bathroom,26.5385
+sd15_base,415,a traditional style bathroom,26.3557
+sd15_base,416,a traditional style bathroom,26.1150
+sd15_base,417,a traditional style bathroom,26.5599
+sd15_base,418,a traditional style bedroom,24.7353
+sd15_base,419,a traditional style bedroom,23.5046
+sd15_base,420,a traditional style bedroom,23.9493
+sd15_base,421,a traditional style bedroom,24.4946
+sd15_base,422,a traditional style bedroom,25.6970
+sd15_base,423,a traditional style bedroom,26.5875
+sd15_base,424,a traditional style bedroom,27.8891
+sd15_base,425,a traditional style bedroom,26.7512
+sd15_base,426,a traditional style bedroom,25.5583
+sd15_base,427,a traditional style dining room,26.1833
+sd15_base,428,a traditional style dining room,25.5695
+sd15_base,429,a traditional style dining room,26.6559
+sd15_base,430,a traditional style dining room,26.9526
+sd15_base,431,a traditional style dining room,25.7694
+sd15_base,432,a traditional style dining room,26.3943
+sd15_base,433,a traditional style dining room,27.0525
+sd15_base,434,a traditional style dining room,25.7261
+sd15_base,435,a traditional style dining room,26.7571
+sd15_base,436,a traditional style kitchen,27.4466
+sd15_base,437,a traditional style kitchen,26.8180
+sd15_base,438,a traditional style kitchen,26.9764
+sd15_base,439,a traditional style kitchen,26.0451
+sd15_base,440,a traditional style kitchen,26.8946
+sd15_base,441,a traditional style kitchen,26.5093
+sd15_base,442,a traditional style kitchen,25.2984
+sd15_base,443,a traditional style kitchen,26.8854
+sd15_base,444,a traditional style kitchen,24.1299
+sd15_base,445,a traditional style living room,25.4308
+sd15_base,446,a traditional style living room,24.1866
+sd15_base,447,a traditional style living room,26.6721
+sd15_base,448,a traditional style living room,25.6334
+sd15_base,449,a traditional style living room,26.4014
+sd15_base,450,a traditional style living room,24.0197
+sd15_base,451,a traditional style living room,25.1079
+sd15_base,452,a traditional style living room,24.7032
+sd15_base,453,a traditional style living room,26.8568
+sd15_base,454,a transitional style bathroom,27.1738
+sd15_base,455,a transitional style bathroom,26.3839
+sd15_base,456,a transitional style bathroom,26.5040
+sd15_base,457,a transitional style bathroom,26.1144
+sd15_base,458,a transitional style bathroom,26.4149
+sd15_base,459,a transitional style bathroom,26.4949
+sd15_base,460,a transitional style bathroom,24.5800
+sd15_base,461,a transitional style bathroom,24.3933
+sd15_base,462,a transitional style bathroom,24.2522
+sd15_base,463,a transitional style bedroom,26.2511
+sd15_base,464,a transitional style bedroom,26.3383
+sd15_base,465,a transitional style bedroom,26.1071
+sd15_base,466,a transitional style bedroom,27.2828
+sd15_base,467,a transitional style bedroom,26.9065
+sd15_base,468,a transitional style bedroom,25.4850
+sd15_base,469,a transitional style bedroom,25.7937
+sd15_base,470,a transitional style bedroom,27.0642
+sd15_base,471,a transitional style bedroom,26.5218
+sd15_base,472,a transitional style dining room,29.6392
+sd15_base,473,a transitional style dining room,28.4872
+sd15_base,474,a transitional style dining room,27.3057
+sd15_base,475,a transitional style dining room,28.6985
+sd15_base,476,a transitional style dining room,29.6443
+sd15_base,477,a transitional style dining room,28.0155
+sd15_base,478,a transitional style dining room,28.8193
+sd15_base,479,a transitional style dining room,29.0015
+sd15_base,480,a transitional style dining room,29.6413
+sd15_base,481,a transitional style kitchen,25.8315
+sd15_base,482,a transitional style kitchen,25.7142
+sd15_base,483,a transitional style kitchen,25.4756
+sd15_base,484,a transitional style kitchen,25.0809
+sd15_base,485,a transitional style kitchen,26.1357
+sd15_base,486,a transitional style kitchen,24.6909
+sd15_base,487,a transitional style kitchen,26.3040
+sd15_base,488,a transitional style kitchen,25.5347
+sd15_base,489,a transitional style kitchen,27.1245
+sd15_base,490,a transitional style living room,28.1153
+sd15_base,491,a transitional style living room,26.9870
+sd15_base,492,a transitional style living room,27.1425
+sd15_base,493,a transitional style living room,27.8905
+sd15_base,494,a transitional style living room,25.9947
+sd15_base,495,a transitional style living room,25.9696
+sd15_base,496,a transitional style living room,25.6857
+sd15_base,497,a transitional style living room,26.0457
+sd15_base,498,a transitional style living room,26.6383
+sd15_base,499,a transitional style living room,26.3477
+lora_step1000,0,an art deco style bathroom,29.7664
+lora_step1000,1,an art deco style bathroom,29.8609
+lora_step1000,2,an art deco style bathroom,29.3167
+lora_step1000,3,an art deco style bathroom,27.6034
+lora_step1000,4,an art deco style bathroom,26.2588
+lora_step1000,5,an art deco style bathroom,27.1620
+lora_step1000,6,an art deco style bathroom,31.8516
+lora_step1000,7,an art deco style bathroom,29.5644
+lora_step1000,8,an art deco style bathroom,27.6047
+lora_step1000,9,an art deco style bedroom,26.4643
+lora_step1000,10,an art deco style bedroom,27.0167
+lora_step1000,11,an art deco style bedroom,25.5289
+lora_step1000,12,an art deco style bedroom,25.7988
+lora_step1000,13,an art deco style bedroom,27.5692
+lora_step1000,14,an art deco style bedroom,28.4509
+lora_step1000,15,an art deco style bedroom,26.1971
+lora_step1000,16,an art deco style bedroom,24.4813
+lora_step1000,17,an art deco style bedroom,25.4616
+lora_step1000,18,an art deco style dining room,28.8682
+lora_step1000,19,an art deco style dining room,28.4335
+lora_step1000,20,an art deco style dining room,27.5745
+lora_step1000,21,an art deco style dining room,27.9341
+lora_step1000,22,an art deco style dining room,29.6344
+lora_step1000,23,an art deco style dining room,28.8385
+lora_step1000,24,an art deco style dining room,28.6575
+lora_step1000,25,an art deco style dining room,29.4673
+lora_step1000,26,an art deco style dining room,28.0961
+lora_step1000,27,an art deco style kitchen,28.5173
+lora_step1000,28,an art deco style kitchen,26.2351
+lora_step1000,29,an art deco style kitchen,28.0823
+lora_step1000,30,an art deco style kitchen,31.4897
+lora_step1000,31,an art deco style kitchen,27.0384
+lora_step1000,32,an art deco style kitchen,27.0571
+lora_step1000,33,an art deco style kitchen,27.0474
+lora_step1000,34,an art deco style kitchen,26.5361
+lora_step1000,35,an art deco style kitchen,25.3030
+lora_step1000,36,an art deco style living room,28.1698
+lora_step1000,37,an art deco style living room,28.4862
+lora_step1000,38,an art deco style living room,26.4486
+lora_step1000,39,an art deco style living room,25.2217
+lora_step1000,40,an art deco style living room,28.5355
+lora_step1000,41,an art deco style living room,28.5163
+lora_step1000,42,an art deco style living room,27.9337
+lora_step1000,43,an art deco style living room,27.1603
+lora_step1000,44,an art deco style living room,24.8175
+lora_step1000,45,an art deco style living room,25.0210
+lora_step1000,46,a bohemian style bathroom,30.4711
+lora_step1000,47,a bohemian style bathroom,27.2364
+lora_step1000,48,a bohemian style bathroom,34.1773
+lora_step1000,49,a bohemian style bathroom,29.3793
+lora_step1000,50,a bohemian style bathroom,27.8310
+lora_step1000,51,a bohemian style bathroom,33.7686
+lora_step1000,52,a bohemian style bathroom,30.1805
+lora_step1000,53,a bohemian style bathroom,29.4065
+lora_step1000,54,a bohemian style bathroom,35.1439
+lora_step1000,55,a bohemian style bedroom,31.8813
+lora_step1000,56,a bohemian style bedroom,33.0901
+lora_step1000,57,a bohemian style bedroom,32.9535
+lora_step1000,58,a bohemian style bedroom,30.2272
+lora_step1000,59,a bohemian style bedroom,30.8404
+lora_step1000,60,a bohemian style bedroom,31.1160
+lora_step1000,61,a bohemian style bedroom,29.5859
+lora_step1000,62,a bohemian style bedroom,31.4701
+lora_step1000,63,a bohemian style bedroom,31.8785
+lora_step1000,64,a bohemian style dining room,29.5504
+lora_step1000,65,a bohemian style dining room,30.2402
+lora_step1000,66,a bohemian style dining room,30.9733
+lora_step1000,67,a bohemian style dining room,29.4150
+lora_step1000,68,a bohemian style dining room,30.1373
+lora_step1000,69,a bohemian style dining room,30.0424
+lora_step1000,70,a bohemian style dining room,30.5651
+lora_step1000,71,a bohemian style dining room,27.9551
+lora_step1000,72,a bohemian style dining room,28.6843
+lora_step1000,73,a bohemian style kitchen,28.3043
+lora_step1000,74,a bohemian style kitchen,28.1772
+lora_step1000,75,a bohemian style kitchen,29.4057
+lora_step1000,76,a bohemian style kitchen,28.8563
+lora_step1000,77,a bohemian style kitchen,30.9392
+lora_step1000,78,a bohemian style kitchen,29.5619
+lora_step1000,79,a bohemian style kitchen,29.3346
+lora_step1000,80,a bohemian style kitchen,32.2201
+lora_step1000,81,a bohemian style kitchen,30.8291
+lora_step1000,82,a bohemian style living room,28.2726
+lora_step1000,83,a bohemian style living room,29.6883
+lora_step1000,84,a bohemian style living room,28.7856
+lora_step1000,85,a bohemian style living room,29.5742
+lora_step1000,86,a bohemian style living room,28.1157
+lora_step1000,87,a bohemian style living room,30.5120
+lora_step1000,88,a bohemian style living room,30.9739
+lora_step1000,89,a bohemian style living room,31.0731
+lora_step1000,90,a bohemian style living room,30.8821
+lora_step1000,91,a coastal style bathroom,26.7279
+lora_step1000,92,a coastal style bathroom,26.8883
+lora_step1000,93,a coastal style bathroom,23.4022
+lora_step1000,94,a coastal style bathroom,29.7162
+lora_step1000,95,a coastal style bathroom,25.4594
+lora_step1000,96,a coastal style bathroom,28.4558
+lora_step1000,97,a coastal style bathroom,26.1649
+lora_step1000,98,a coastal style bathroom,26.5307
+lora_step1000,99,a coastal style bathroom,25.1253
+lora_step1000,100,a coastal style bedroom,24.3284
+lora_step1000,101,a coastal style bedroom,26.8340
+lora_step1000,102,a coastal style bedroom,26.9123
+lora_step1000,103,a coastal style bedroom,26.0778
+lora_step1000,104,a coastal style bedroom,27.6455
+lora_step1000,105,a coastal style bedroom,26.2437
+lora_step1000,106,a coastal style bedroom,27.5616
+lora_step1000,107,a coastal style bedroom,28.5958
+lora_step1000,108,a coastal style bedroom,27.8515
+lora_step1000,109,a coastal style dining room,28.2065
+lora_step1000,110,a coastal style dining room,30.2270
+lora_step1000,111,a coastal style dining room,25.0862
+lora_step1000,112,a coastal style dining room,26.6572
+lora_step1000,113,a coastal style dining room,26.2123
+lora_step1000,114,a coastal style dining room,24.7178
+lora_step1000,115,a coastal style dining room,24.5714
+lora_step1000,116,a coastal style dining room,23.6515
+lora_step1000,117,a coastal style dining room,25.2511
+lora_step1000,118,a coastal style kitchen,27.8148
+lora_step1000,119,a coastal style kitchen,25.2227
+lora_step1000,120,a coastal style kitchen,24.3717
+lora_step1000,121,a coastal style kitchen,24.3559
+lora_step1000,122,a coastal style kitchen,24.8635
+lora_step1000,123,a coastal style kitchen,24.1694
+lora_step1000,124,a coastal style kitchen,26.0319
+lora_step1000,125,a coastal style kitchen,26.7535
+lora_step1000,126,a coastal style kitchen,24.6492
+lora_step1000,127,a coastal style living room,25.5641
+lora_step1000,128,a coastal style living room,26.7882
+lora_step1000,129,a coastal style living room,28.5174
+lora_step1000,130,a coastal style living room,27.4183
+lora_step1000,131,a coastal style living room,28.8680
+lora_step1000,132,a coastal style living room,27.1577
+lora_step1000,133,a coastal style living room,23.9588
+lora_step1000,134,a coastal style living room,26.6445
+lora_step1000,135,a coastal style living room,26.8383
+lora_step1000,136,a contemporary style bathroom,26.0865
+lora_step1000,137,a contemporary style bathroom,26.0650
+lora_step1000,138,a contemporary style bathroom,25.1864
+lora_step1000,139,a contemporary style bathroom,25.8121
+lora_step1000,140,a contemporary style bathroom,25.5390
+lora_step1000,141,a contemporary style bathroom,26.1256
+lora_step1000,142,a contemporary style bathroom,24.7866
+lora_step1000,143,a contemporary style bathroom,24.1423
+lora_step1000,144,a contemporary style bathroom,25.2136
+lora_step1000,145,a contemporary style bedroom,26.6708
+lora_step1000,146,a contemporary style bedroom,23.1051
+lora_step1000,147,a contemporary style bedroom,26.6415
+lora_step1000,148,a contemporary style bedroom,27.0856
+lora_step1000,149,a contemporary style bedroom,26.3637
+lora_step1000,150,a contemporary style bedroom,25.4888
+lora_step1000,151,a contemporary style bedroom,26.3744
+lora_step1000,152,a contemporary style bedroom,25.3538
+lora_step1000,153,a contemporary style bedroom,25.3234
+lora_step1000,154,a contemporary style dining room,26.8223
+lora_step1000,155,a contemporary style dining room,28.1434
+lora_step1000,156,a contemporary style dining room,26.7342
+lora_step1000,157,a contemporary style dining room,25.6754
+lora_step1000,158,a contemporary style dining room,27.7468
+lora_step1000,159,a contemporary style dining room,25.5329
+lora_step1000,160,a contemporary style dining room,27.2023
+lora_step1000,161,a contemporary style dining room,26.8516
+lora_step1000,162,a contemporary style dining room,27.0002
+lora_step1000,163,a contemporary style kitchen,25.4194
+lora_step1000,164,a contemporary style kitchen,24.7573
+lora_step1000,165,a contemporary style kitchen,25.4846
+lora_step1000,166,a contemporary style kitchen,24.6930
+lora_step1000,167,a contemporary style kitchen,25.5967
+lora_step1000,168,a contemporary style kitchen,25.2304
+lora_step1000,169,a contemporary style kitchen,25.4504
+lora_step1000,170,a contemporary style kitchen,25.8843
+lora_step1000,171,a contemporary style kitchen,25.7857
+lora_step1000,172,a contemporary style living room,24.6246
+lora_step1000,173,a contemporary style living room,24.0133
+lora_step1000,174,a contemporary style living room,25.4685
+lora_step1000,175,a contemporary style living room,26.6468
+lora_step1000,176,a contemporary style living room,22.0269
+lora_step1000,177,a contemporary style living room,25.1752
+lora_step1000,178,a contemporary style living room,25.5141
+lora_step1000,179,a contemporary style living room,25.6781
+lora_step1000,180,a contemporary style living room,25.3018
+lora_step1000,181,an eclectic style bathroom,25.7890
+lora_step1000,182,an eclectic style bathroom,26.1889
+lora_step1000,183,an eclectic style bathroom,26.4116
+lora_step1000,184,an eclectic style bathroom,24.9821
+lora_step1000,185,an eclectic style bathroom,27.1396
+lora_step1000,186,an eclectic style bathroom,26.1988
+lora_step1000,187,an eclectic style bathroom,28.4263
+lora_step1000,188,an eclectic style bathroom,24.5882
+lora_step1000,189,an eclectic style bathroom,26.1541
+lora_step1000,190,an eclectic style bedroom,26.9406
+lora_step1000,191,an eclectic style bedroom,23.8433
+lora_step1000,192,an eclectic style bedroom,26.4629
+lora_step1000,193,an eclectic style bedroom,26.4945
+lora_step1000,194,an eclectic style bedroom,25.4935
+lora_step1000,195,an eclectic style bedroom,25.8818
+lora_step1000,196,an eclectic style bedroom,25.3781
+lora_step1000,197,an eclectic style bedroom,27.7353
+lora_step1000,198,an eclectic style bedroom,25.1379
+lora_step1000,199,an eclectic style dining room,25.4565
+lora_step1000,200,an eclectic style dining room,28.3801
+lora_step1000,201,an eclectic style dining room,25.6118
+lora_step1000,202,an eclectic style dining room,24.3474
+lora_step1000,203,an eclectic style dining room,24.1233
+lora_step1000,204,an eclectic style dining room,27.1587
+lora_step1000,205,an eclectic style dining room,25.4676
+lora_step1000,206,an eclectic style dining room,25.3429
+lora_step1000,207,an eclectic style dining room,27.2838
+lora_step1000,208,an eclectic style kitchen,26.0104
+lora_step1000,209,an eclectic style kitchen,26.3900
+lora_step1000,210,an eclectic style kitchen,25.1205
+lora_step1000,211,an eclectic style kitchen,26.2775
+lora_step1000,212,an eclectic style kitchen,26.7566
+lora_step1000,213,an eclectic style kitchen,25.5095
+lora_step1000,214,an eclectic style kitchen,26.5070
+lora_step1000,215,an eclectic style kitchen,24.6462
+lora_step1000,216,an eclectic style kitchen,26.3923
+lora_step1000,217,an eclectic style kitchen,26.9302
+lora_step1000,218,an eclectic style living room,25.9402
+lora_step1000,219,an eclectic style living room,25.4112
+lora_step1000,220,an eclectic style living room,24.1288
+lora_step1000,221,an eclectic style living room,25.8255
+lora_step1000,222,an eclectic style living room,26.1349
+lora_step1000,223,an eclectic style living room,26.0579
+lora_step1000,224,an eclectic style living room,25.1585
+lora_step1000,225,an eclectic style living room,24.3306
+lora_step1000,226,an eclectic style living room,25.5699
+lora_step1000,227,a farmhouse style bathroom,27.0538
+lora_step1000,228,a farmhouse style bathroom,26.6408
+lora_step1000,229,a farmhouse style bathroom,28.2896
+lora_step1000,230,a farmhouse style bathroom,25.7516
+lora_step1000,231,a farmhouse style bathroom,24.8624
+lora_step1000,232,a farmhouse style bathroom,26.6214
+lora_step1000,233,a farmhouse style bathroom,28.3737
+lora_step1000,234,a farmhouse style bathroom,23.7303
+lora_step1000,235,a farmhouse style bathroom,24.6979
+lora_step1000,236,a farmhouse style bedroom,26.3032
+lora_step1000,237,a farmhouse style bedroom,27.9701
+lora_step1000,238,a farmhouse style bedroom,24.9524
+lora_step1000,239,a farmhouse style bedroom,24.8900
+lora_step1000,240,a farmhouse style bedroom,26.2585
+lora_step1000,241,a farmhouse style bedroom,30.7293
+lora_step1000,242,a farmhouse style bedroom,25.0704
+lora_step1000,243,a farmhouse style bedroom,26.1926
+lora_step1000,244,a farmhouse style bedroom,29.6212
+lora_step1000,245,a farmhouse style dining room,27.2654
+lora_step1000,246,a farmhouse style dining room,27.4595
+lora_step1000,247,a farmhouse style dining room,28.8279
+lora_step1000,248,a farmhouse style dining room,26.8706
+lora_step1000,249,a farmhouse style dining room,25.8515
+lora_step1000,250,a farmhouse style dining room,28.8742
+lora_step1000,251,a farmhouse style dining room,30.0462
+lora_step1000,252,a farmhouse style dining room,27.6181
+lora_step1000,253,a farmhouse style dining room,28.1811
+lora_step1000,254,a farmhouse style kitchen,25.6584
+lora_step1000,255,a farmhouse style kitchen,25.9708
+lora_step1000,256,a farmhouse style kitchen,27.4944
+lora_step1000,257,a farmhouse style kitchen,25.5871
+lora_step1000,258,a farmhouse style kitchen,27.0948
+lora_step1000,259,a farmhouse style kitchen,24.6227
+lora_step1000,260,a farmhouse style kitchen,26.9389
+lora_step1000,261,a farmhouse style kitchen,22.2608
+lora_step1000,262,a farmhouse style kitchen,26.3660
+lora_step1000,263,a farmhouse style living room,28.6271
+lora_step1000,264,a farmhouse style living room,25.1397
+lora_step1000,265,a farmhouse style living room,24.5529
+lora_step1000,266,a farmhouse style living room,25.8372
+lora_step1000,267,a farmhouse style living room,27.4523
+lora_step1000,268,a farmhouse style living room,26.0140
+lora_step1000,269,a farmhouse style living room,24.4752
+lora_step1000,270,a farmhouse style living room,27.6072
+lora_step1000,271,a farmhouse style living room,25.1880
+lora_step1000,272,a mediterranean style bathroom,24.9640
+lora_step1000,273,a mediterranean style bathroom,30.8763
+lora_step1000,274,a mediterranean style bathroom,28.4013
+lora_step1000,275,a mediterranean style bathroom,26.1397
+lora_step1000,276,a mediterranean style bathroom,28.5436
+lora_step1000,277,a mediterranean style bathroom,29.3963
+lora_step1000,278,a mediterranean style bathroom,25.8644
+lora_step1000,279,a mediterranean style bathroom,28.4580
+lora_step1000,280,a mediterranean style bathroom,23.5691
+lora_step1000,281,a mediterranean style bedroom,24.3491
+lora_step1000,282,a mediterranean style bedroom,26.6735
+lora_step1000,283,a mediterranean style bedroom,26.8469
+lora_step1000,284,a mediterranean style bedroom,25.6710
+lora_step1000,285,a mediterranean style bedroom,27.3999
+lora_step1000,286,a mediterranean style bedroom,24.3163
+lora_step1000,287,a mediterranean style bedroom,28.6553
+lora_step1000,288,a mediterranean style bedroom,27.0578
+lora_step1000,289,a mediterranean style bedroom,25.1852
+lora_step1000,290,a mediterranean style dining room,28.1669
+lora_step1000,291,a mediterranean style dining room,27.2629
+lora_step1000,292,a mediterranean style dining room,28.2475
+lora_step1000,293,a mediterranean style dining room,27.5705
+lora_step1000,294,a mediterranean style dining room,26.2113
+lora_step1000,295,a mediterranean style dining room,26.7045
+lora_step1000,296,a mediterranean style dining room,26.8962
+lora_step1000,297,a mediterranean style dining room,26.9303
+lora_step1000,298,a mediterranean style dining room,27.7034
+lora_step1000,299,a mediterranean style kitchen,28.9475
+lora_step1000,300,a mediterranean style kitchen,29.2153
+lora_step1000,301,a mediterranean style kitchen,27.9213
+lora_step1000,302,a mediterranean style kitchen,28.1335
+lora_step1000,303,a mediterranean style kitchen,26.4120
+lora_step1000,304,a mediterranean style kitchen,23.8725
+lora_step1000,305,a mediterranean style kitchen,27.7810
+lora_step1000,306,a mediterranean style kitchen,26.7526
+lora_step1000,307,a mediterranean style kitchen,24.9872
+lora_step1000,308,a mediterranean style living room,23.3918
+lora_step1000,309,a mediterranean style living room,25.3694
+lora_step1000,310,a mediterranean style living room,27.9262
+lora_step1000,311,a mediterranean style living room,24.4882
+lora_step1000,312,a mediterranean style living room,25.3276
+lora_step1000,313,a mediterranean style living room,26.9327
+lora_step1000,314,a mediterranean style living room,26.9847
+lora_step1000,315,a mediterranean style living room,28.6140
+lora_step1000,316,a mediterranean style living room,27.8923
+lora_step1000,317,a mediterranean style living room,25.9197
+lora_step1000,318,a mid-century modern style bathroom,23.6957
+lora_step1000,319,a mid-century modern style bathroom,23.1183
+lora_step1000,320,a mid-century modern style bathroom,24.6777
+lora_step1000,321,a mid-century modern style bathroom,25.4322
+lora_step1000,322,a mid-century modern style bathroom,24.3114
+lora_step1000,323,a mid-century modern style bathroom,22.6517
+lora_step1000,324,a mid-century modern style bathroom,26.8897
+lora_step1000,325,a mid-century modern style bathroom,24.7943
+lora_step1000,326,a mid-century modern style bathroom,24.4779
+lora_step1000,327,a mid-century modern style bedroom,28.1490
+lora_step1000,328,a mid-century modern style bedroom,24.3363
+lora_step1000,329,a mid-century modern style bedroom,26.7416
+lora_step1000,330,a mid-century modern style bedroom,28.3256
+lora_step1000,331,a mid-century modern style bedroom,27.5528
+lora_step1000,332,a mid-century modern style bedroom,25.8525
+lora_step1000,333,a mid-century modern style bedroom,26.3690
+lora_step1000,334,a mid-century modern style bedroom,24.4428
+lora_step1000,335,a mid-century modern style bedroom,27.5269
+lora_step1000,336,a mid-century modern style dining room,26.9988
+lora_step1000,337,a mid-century modern style dining room,29.8705
+lora_step1000,338,a mid-century modern style dining room,27.7721
+lora_step1000,339,a mid-century modern style dining room,30.2030
+lora_step1000,340,a mid-century modern style dining room,27.7913
+lora_step1000,341,a mid-century modern style dining room,24.5628
+lora_step1000,342,a mid-century modern style dining room,30.2809
+lora_step1000,343,a mid-century modern style dining room,27.5660
+lora_step1000,344,a mid-century modern style dining room,29.0608
+lora_step1000,345,a mid-century modern style kitchen,23.0607
+lora_step1000,346,a mid-century modern style kitchen,24.5946
+lora_step1000,347,a mid-century modern style kitchen,26.9837
+lora_step1000,348,a mid-century modern style kitchen,27.8962
+lora_step1000,349,a mid-century modern style kitchen,27.8837
+lora_step1000,350,a mid-century modern style kitchen,25.3757
+lora_step1000,351,a mid-century modern style kitchen,28.4954
+lora_step1000,352,a mid-century modern style kitchen,23.3295
+lora_step1000,353,a mid-century modern style kitchen,26.1814
+lora_step1000,354,a mid-century modern style living room,26.5921
+lora_step1000,355,a mid-century modern style living room,28.0282
+lora_step1000,356,a mid-century modern style living room,25.8148
+lora_step1000,357,a mid-century modern style living room,27.6099
+lora_step1000,358,a mid-century modern style living room,28.9404
+lora_step1000,359,a mid-century modern style living room,24.9468
+lora_step1000,360,a mid-century modern style living room,26.6166
+lora_step1000,361,a mid-century modern style living room,27.5785
+lora_step1000,362,a mid-century modern style living room,27.8203
+lora_step1000,363,a rustic style bathroom,31.2227
+lora_step1000,364,a rustic style bathroom,30.9136
+lora_step1000,365,a rustic style bathroom,29.5533
+lora_step1000,366,a rustic style bathroom,31.5377
+lora_step1000,367,a rustic style bathroom,31.3481
+lora_step1000,368,a rustic style bathroom,31.1158
+lora_step1000,369,a rustic style bathroom,31.9120
+lora_step1000,370,a rustic style bathroom,29.9865
+lora_step1000,371,a rustic style bathroom,28.0825
+lora_step1000,372,a rustic style bathroom,27.1304
+lora_step1000,373,a rustic style bedroom,26.6969
+lora_step1000,374,a rustic style bedroom,26.5150
+lora_step1000,375,a rustic style bedroom,28.4392
+lora_step1000,376,a rustic style bedroom,28.9105
+lora_step1000,377,a rustic style bedroom,27.9147
+lora_step1000,378,a rustic style bedroom,26.3854
+lora_step1000,379,a rustic style bedroom,28.0487
+lora_step1000,380,a rustic style bedroom,29.1838
+lora_step1000,381,a rustic style bedroom,27.8843
+lora_step1000,382,a rustic style dining room,28.1637
+lora_step1000,383,a rustic style dining room,27.5885
+lora_step1000,384,a rustic style dining room,26.3258
+lora_step1000,385,a rustic style dining room,28.7729
+lora_step1000,386,a rustic style dining room,27.4351
+lora_step1000,387,a rustic style dining room,29.3599
+lora_step1000,388,a rustic style dining room,26.0875
+lora_step1000,389,a rustic style dining room,29.5892
+lora_step1000,390,a rustic style dining room,28.0008
+lora_step1000,391,a rustic style kitchen,28.1817
+lora_step1000,392,a rustic style kitchen,26.7680
+lora_step1000,393,a rustic style kitchen,28.6331
+lora_step1000,394,a rustic style kitchen,27.3968
+lora_step1000,395,a rustic style kitchen,32.2265
+lora_step1000,396,a rustic style kitchen,27.4145
+lora_step1000,397,a rustic style kitchen,29.6956
+lora_step1000,398,a rustic style kitchen,25.7740
+lora_step1000,399,a rustic style kitchen,30.1907
+lora_step1000,400,a rustic style living room,28.1604
+lora_step1000,401,a rustic style living room,25.4583
+lora_step1000,402,a rustic style living room,27.4304
+lora_step1000,403,a rustic style living room,27.7081
+lora_step1000,404,a rustic style living room,24.6216
+lora_step1000,405,a rustic style living room,25.1506
+lora_step1000,406,a rustic style living room,28.2813
+lora_step1000,407,a rustic style living room,24.9140
+lora_step1000,408,a rustic style living room,26.8120
+lora_step1000,409,a traditional style bathroom,27.6973
+lora_step1000,410,a traditional style bathroom,26.2558
+lora_step1000,411,a traditional style bathroom,26.2344
+lora_step1000,412,a traditional style bathroom,23.9598
+lora_step1000,413,a traditional style bathroom,25.1324
+lora_step1000,414,a traditional style bathroom,25.4906
+lora_step1000,415,a traditional style bathroom,26.0450
+lora_step1000,416,a traditional style bathroom,26.5548
+lora_step1000,417,a traditional style bathroom,25.8158
+lora_step1000,418,a traditional style bedroom,25.0379
+lora_step1000,419,a traditional style bedroom,24.4693
+lora_step1000,420,a traditional style bedroom,25.8930
+lora_step1000,421,a traditional style bedroom,23.9318
+lora_step1000,422,a traditional style bedroom,22.9722
+lora_step1000,423,a traditional style bedroom,26.2236
+lora_step1000,424,a traditional style bedroom,26.5798
+lora_step1000,425,a traditional style bedroom,24.5799
+lora_step1000,426,a traditional style bedroom,24.0438
+lora_step1000,427,a traditional style dining room,27.8332
+lora_step1000,428,a traditional style dining room,28.0445
+lora_step1000,429,a traditional style dining room,26.7025
+lora_step1000,430,a traditional style dining room,26.4670
+lora_step1000,431,a traditional style dining room,24.8590
+lora_step1000,432,a traditional style dining room,26.9965
+lora_step1000,433,a traditional style dining room,25.7749
+lora_step1000,434,a traditional style dining room,25.7156
+lora_step1000,435,a traditional style dining room,28.2683
+lora_step1000,436,a traditional style kitchen,25.6082
+lora_step1000,437,a traditional style kitchen,27.1666
+lora_step1000,438,a traditional style kitchen,25.2495
+lora_step1000,439,a traditional style kitchen,25.7564
+lora_step1000,440,a traditional style kitchen,27.5960
+lora_step1000,441,a traditional style kitchen,23.3471
+lora_step1000,442,a traditional style kitchen,25.7429
+lora_step1000,443,a traditional style kitchen,25.7107
+lora_step1000,444,a traditional style kitchen,24.1850
+lora_step1000,445,a traditional style living room,22.2649
+lora_step1000,446,a traditional style living room,24.2872
+lora_step1000,447,a traditional style living room,23.1344
+lora_step1000,448,a traditional style living room,23.8336
+lora_step1000,449,a traditional style living room,25.7281
+lora_step1000,450,a traditional style living room,24.4972
+lora_step1000,451,a traditional style living room,22.8716
+lora_step1000,452,a traditional style living room,23.2139
+lora_step1000,453,a traditional style living room,24.8445
+lora_step1000,454,a transitional style bathroom,25.9993
+lora_step1000,455,a transitional style bathroom,25.4597
+lora_step1000,456,a transitional style bathroom,24.2919
+lora_step1000,457,a transitional style bathroom,24.3518
+lora_step1000,458,a transitional style bathroom,24.8251
+lora_step1000,459,a transitional style bathroom,24.9163
+lora_step1000,460,a transitional style bathroom,24.6951
+lora_step1000,461,a transitional style bathroom,24.2754
+lora_step1000,462,a transitional style bathroom,22.8009
+lora_step1000,463,a transitional style bedroom,25.9227
+lora_step1000,464,a transitional style bedroom,26.1034
+lora_step1000,465,a transitional style bedroom,25.7610
+lora_step1000,466,a transitional style bedroom,26.8528
+lora_step1000,467,a transitional style bedroom,24.6180
+lora_step1000,468,a transitional style bedroom,24.0162
+lora_step1000,469,a transitional style bedroom,25.9982
+lora_step1000,470,a transitional style bedroom,25.9157
+lora_step1000,471,a transitional style bedroom,25.8081
+lora_step1000,472,a transitional style dining room,27.8724
+lora_step1000,473,a transitional style dining room,27.7794
+lora_step1000,474,a transitional style dining room,26.1118
+lora_step1000,475,a transitional style dining room,28.0898
+lora_step1000,476,a transitional style dining room,27.5763
+lora_step1000,477,a transitional style dining room,26.6634
+lora_step1000,478,a transitional style dining room,26.7172
+lora_step1000,479,a transitional style dining room,28.3566
+lora_step1000,480,a transitional style dining room,26.4294
+lora_step1000,481,a transitional style kitchen,24.8401
+lora_step1000,482,a transitional style kitchen,25.0435
+lora_step1000,483,a transitional style kitchen,25.2236
+lora_step1000,484,a transitional style kitchen,24.9126
+lora_step1000,485,a transitional style kitchen,25.8140
+lora_step1000,486,a transitional style kitchen,25.1701
+lora_step1000,487,a transitional style kitchen,24.3373
+lora_step1000,488,a transitional style kitchen,24.6407
+lora_step1000,489,a transitional style kitchen,26.6092
+lora_step1000,490,a transitional style living room,24.7373
+lora_step1000,491,a transitional style living room,25.0688
+lora_step1000,492,a transitional style living room,25.6305
+lora_step1000,493,a transitional style living room,25.1878
+lora_step1000,494,a transitional style living room,25.5514
+lora_step1000,495,a transitional style living room,24.7284
+lora_step1000,496,a transitional style living room,26.8663
+lora_step1000,497,a transitional style living room,26.3816
+lora_step1000,498,a transitional style living room,26.3759
+lora_step1000,499,a transitional style living room,25.8910
+lora_step2000,0,an art deco style bathroom,30.6698
+lora_step2000,1,an art deco style bathroom,27.5731
+lora_step2000,2,an art deco style bathroom,28.0179
+lora_step2000,3,an art deco style bathroom,27.4711
+lora_step2000,4,an art deco style bathroom,27.9172
+lora_step2000,5,an art deco style bathroom,27.5999
+lora_step2000,6,an art deco style bathroom,30.3423
+lora_step2000,7,an art deco style bathroom,29.9207
+lora_step2000,8,an art deco style bathroom,28.8564
+lora_step2000,9,an art deco style bedroom,27.7664
+lora_step2000,10,an art deco style bedroom,27.3962
+lora_step2000,11,an art deco style bedroom,25.8598
+lora_step2000,12,an art deco style bedroom,25.8112
+lora_step2000,13,an art deco style bedroom,27.8238
+lora_step2000,14,an art deco style bedroom,25.3808
+lora_step2000,15,an art deco style bedroom,27.8424
+lora_step2000,16,an art deco style bedroom,28.4343
+lora_step2000,17,an art deco style bedroom,27.6970
+lora_step2000,18,an art deco style dining room,28.6505
+lora_step2000,19,an art deco style dining room,28.2418
+lora_step2000,20,an art deco style dining room,27.9563
+lora_step2000,21,an art deco style dining room,27.9249
+lora_step2000,22,an art deco style dining room,30.2856
+lora_step2000,23,an art deco style dining room,25.8421
+lora_step2000,24,an art deco style dining room,28.4624
+lora_step2000,25,an art deco style dining room,33.2132
+lora_step2000,26,an art deco style dining room,26.2509
+lora_step2000,27,an art deco style kitchen,27.9859
+lora_step2000,28,an art deco style kitchen,25.0254
+lora_step2000,29,an art deco style kitchen,28.3845
+lora_step2000,30,an art deco style kitchen,29.7146
+lora_step2000,31,an art deco style kitchen,26.8784
+lora_step2000,32,an art deco style kitchen,26.5394
+lora_step2000,33,an art deco style kitchen,26.9528
+lora_step2000,34,an art deco style kitchen,26.7903
+lora_step2000,35,an art deco style kitchen,24.1878
+lora_step2000,36,an art deco style living room,27.8014
+lora_step2000,37,an art deco style living room,26.3775
+lora_step2000,38,an art deco style living room,26.0364
+lora_step2000,39,an art deco style living room,25.7226
+lora_step2000,40,an art deco style living room,28.6171
+lora_step2000,41,an art deco style living room,29.4748
+lora_step2000,42,an art deco style living room,25.7411
+lora_step2000,43,an art deco style living room,27.8778
+lora_step2000,44,an art deco style living room,28.1542
+lora_step2000,45,an art deco style living room,25.2259
+lora_step2000,46,a bohemian style bathroom,31.5420
+lora_step2000,47,a bohemian style bathroom,29.8314
+lora_step2000,48,a bohemian style bathroom,32.6295
+lora_step2000,49,a bohemian style bathroom,31.7017
+lora_step2000,50,a bohemian style bathroom,28.5601
+lora_step2000,51,a bohemian style bathroom,33.7558
+lora_step2000,52,a bohemian style bathroom,29.9996
+lora_step2000,53,a bohemian style bathroom,32.6766
+lora_step2000,54,a bohemian style bathroom,33.8524
+lora_step2000,55,a bohemian style bedroom,32.3369
+lora_step2000,56,a bohemian style bedroom,33.0500
+lora_step2000,57,a bohemian style bedroom,29.4780
+lora_step2000,58,a bohemian style bedroom,30.1116
+lora_step2000,59,a bohemian style bedroom,30.8758
+lora_step2000,60,a bohemian style bedroom,30.3752
+lora_step2000,61,a bohemian style bedroom,29.3730
+lora_step2000,62,a bohemian style bedroom,31.3266
+lora_step2000,63,a bohemian style bedroom,31.3680
+lora_step2000,64,a bohemian style dining room,28.6181
+lora_step2000,65,a bohemian style dining room,31.7225
+lora_step2000,66,a bohemian style dining room,31.3265
+lora_step2000,67,a bohemian style dining room,30.0546
+lora_step2000,68,a bohemian style dining room,32.0749
+lora_step2000,69,a bohemian style dining room,31.0606
+lora_step2000,70,a bohemian style dining room,30.0227
+lora_step2000,71,a bohemian style dining room,28.6589
+lora_step2000,72,a bohemian style dining room,29.8683
+lora_step2000,73,a bohemian style kitchen,29.8334
+lora_step2000,74,a bohemian style kitchen,29.5550
+lora_step2000,75,a bohemian style kitchen,31.5952
+lora_step2000,76,a bohemian style kitchen,29.5737
+lora_step2000,77,a bohemian style kitchen,30.0485
+lora_step2000,78,a bohemian style kitchen,29.1647
+lora_step2000,79,a bohemian style kitchen,28.8776
+lora_step2000,80,a bohemian style kitchen,31.5966
+lora_step2000,81,a bohemian style kitchen,30.9173
+lora_step2000,82,a bohemian style living room,27.6734
+lora_step2000,83,a bohemian style living room,29.4120
+lora_step2000,84,a bohemian style living room,30.0879
+lora_step2000,85,a bohemian style living room,29.2047
+lora_step2000,86,a bohemian style living room,28.4035
+lora_step2000,87,a bohemian style living room,30.0613
+lora_step2000,88,a bohemian style living room,30.8806
+lora_step2000,89,a bohemian style living room,30.3227
+lora_step2000,90,a bohemian style living room,30.7767
+lora_step2000,91,a coastal style bathroom,27.2421
+lora_step2000,92,a coastal style bathroom,25.4107
+lora_step2000,93,a coastal style bathroom,24.5823
+lora_step2000,94,a coastal style bathroom,30.0120
+lora_step2000,95,a coastal style bathroom,25.1585
+lora_step2000,96,a coastal style bathroom,27.4432
+lora_step2000,97,a coastal style bathroom,26.0854
+lora_step2000,98,a coastal style bathroom,28.0295
+lora_step2000,99,a coastal style bathroom,25.3539
+lora_step2000,100,a coastal style bedroom,27.6695
+lora_step2000,101,a coastal style bedroom,28.7200
+lora_step2000,102,a coastal style bedroom,27.3580
+lora_step2000,103,a coastal style bedroom,26.9794
+lora_step2000,104,a coastal style bedroom,26.1653
+lora_step2000,105,a coastal style bedroom,26.1571
+lora_step2000,106,a coastal style bedroom,26.5927
+lora_step2000,107,a coastal style bedroom,29.2955
+lora_step2000,108,a coastal style bedroom,27.9870
+lora_step2000,109,a coastal style dining room,26.6624
+lora_step2000,110,a coastal style dining room,30.5088
+lora_step2000,111,a coastal style dining room,27.3707
+lora_step2000,112,a coastal style dining room,23.3042
+lora_step2000,113,a coastal style dining room,26.0221
+lora_step2000,114,a coastal style dining room,27.3010
+lora_step2000,115,a coastal style dining room,29.5678
+lora_step2000,116,a coastal style dining room,23.8000
+lora_step2000,117,a coastal style dining room,26.5551
+lora_step2000,118,a coastal style kitchen,24.6551
+lora_step2000,119,a coastal style kitchen,25.3426
+lora_step2000,120,a coastal style kitchen,24.4786
+lora_step2000,121,a coastal style kitchen,24.0404
+lora_step2000,122,a coastal style kitchen,24.8692
+lora_step2000,123,a coastal style kitchen,24.5736
+lora_step2000,124,a coastal style kitchen,25.8641
+lora_step2000,125,a coastal style kitchen,25.2053
+lora_step2000,126,a coastal style kitchen,24.4802
+lora_step2000,127,a coastal style living room,27.4762
+lora_step2000,128,a coastal style living room,27.7715
+lora_step2000,129,a coastal style living room,28.8944
+lora_step2000,130,a coastal style living room,26.8821
+lora_step2000,131,a coastal style living room,28.5075
+lora_step2000,132,a coastal style living room,26.7037
+lora_step2000,133,a coastal style living room,25.2592
+lora_step2000,134,a coastal style living room,27.6429
+lora_step2000,135,a coastal style living room,27.7172
+lora_step2000,136,a contemporary style bathroom,26.7033
+lora_step2000,137,a contemporary style bathroom,27.1965
+lora_step2000,138,a contemporary style bathroom,24.3076
+lora_step2000,139,a contemporary style bathroom,27.3202
+lora_step2000,140,a contemporary style bathroom,25.4134
+lora_step2000,141,a contemporary style bathroom,25.0702
+lora_step2000,142,a contemporary style bathroom,25.0984
+lora_step2000,143,a contemporary style bathroom,24.7012
+lora_step2000,144,a contemporary style bathroom,25.8308
+lora_step2000,145,a contemporary style bedroom,25.7928
+lora_step2000,146,a contemporary style bedroom,26.1089
+lora_step2000,147,a contemporary style bedroom,27.3058
+lora_step2000,148,a contemporary style bedroom,26.2953
+lora_step2000,149,a contemporary style bedroom,26.0898
+lora_step2000,150,a contemporary style bedroom,26.7339
+lora_step2000,151,a contemporary style bedroom,27.5338
+lora_step2000,152,a contemporary style bedroom,25.9559
+lora_step2000,153,a contemporary style bedroom,27.3345
+lora_step2000,154,a contemporary style dining room,27.1969
+lora_step2000,155,a contemporary style dining room,27.9048
+lora_step2000,156,a contemporary style dining room,27.5600
+lora_step2000,157,a contemporary style dining room,26.1484
+lora_step2000,158,a contemporary style dining room,27.0272
+lora_step2000,159,a contemporary style dining room,26.8364
+lora_step2000,160,a contemporary style dining room,26.7067
+lora_step2000,161,a contemporary style dining room,26.5001
+lora_step2000,162,a contemporary style dining room,28.1904
+lora_step2000,163,a contemporary style kitchen,25.5862
+lora_step2000,164,a contemporary style kitchen,24.8949
+lora_step2000,165,a contemporary style kitchen,25.5964
+lora_step2000,166,a contemporary style kitchen,24.7766
+lora_step2000,167,a contemporary style kitchen,25.9774
+lora_step2000,168,a contemporary style kitchen,26.3245
+lora_step2000,169,a contemporary style kitchen,25.5593
+lora_step2000,170,a contemporary style kitchen,25.2737
+lora_step2000,171,a contemporary style kitchen,25.4703
+lora_step2000,172,a contemporary style living room,23.5981
+lora_step2000,173,a contemporary style living room,24.6443
+lora_step2000,174,a contemporary style living room,25.7825
+lora_step2000,175,a contemporary style living room,25.4860
+lora_step2000,176,a contemporary style living room,24.5524
+lora_step2000,177,a contemporary style living room,24.8539
+lora_step2000,178,a contemporary style living room,25.4676
+lora_step2000,179,a contemporary style living room,26.1382
+lora_step2000,180,a contemporary style living room,24.3325
+lora_step2000,181,an eclectic style bathroom,27.3067
+lora_step2000,182,an eclectic style bathroom,27.3766
+lora_step2000,183,an eclectic style bathroom,26.9741
+lora_step2000,184,an eclectic style bathroom,25.8332
+lora_step2000,185,an eclectic style bathroom,27.5656
+lora_step2000,186,an eclectic style bathroom,26.2979
+lora_step2000,187,an eclectic style bathroom,26.5673
+lora_step2000,188,an eclectic style bathroom,27.7901
+lora_step2000,189,an eclectic style bathroom,26.9751
+lora_step2000,190,an eclectic style bedroom,27.5452
+lora_step2000,191,an eclectic style bedroom,23.9010
+lora_step2000,192,an eclectic style bedroom,26.7746
+lora_step2000,193,an eclectic style bedroom,25.1139
+lora_step2000,194,an eclectic style bedroom,27.0303
+lora_step2000,195,an eclectic style bedroom,27.5138
+lora_step2000,196,an eclectic style bedroom,24.6705
+lora_step2000,197,an eclectic style bedroom,28.5571
+lora_step2000,198,an eclectic style bedroom,25.3400
+lora_step2000,199,an eclectic style dining room,27.1970
+lora_step2000,200,an eclectic style dining room,26.4848
+lora_step2000,201,an eclectic style dining room,26.9810
+lora_step2000,202,an eclectic style dining room,24.5982
+lora_step2000,203,an eclectic style dining room,27.5158
+lora_step2000,204,an eclectic style dining room,28.4882
+lora_step2000,205,an eclectic style dining room,26.9816
+lora_step2000,206,an eclectic style dining room,26.2074
+lora_step2000,207,an eclectic style dining room,26.3660
+lora_step2000,208,an eclectic style kitchen,26.9019
+lora_step2000,209,an eclectic style kitchen,27.6481
+lora_step2000,210,an eclectic style kitchen,26.1957
+lora_step2000,211,an eclectic style kitchen,28.1665
+lora_step2000,212,an eclectic style kitchen,27.3637
+lora_step2000,213,an eclectic style kitchen,26.1500
+lora_step2000,214,an eclectic style kitchen,25.5790
+lora_step2000,215,an eclectic style kitchen,25.9516
+lora_step2000,216,an eclectic style kitchen,25.9363
+lora_step2000,217,an eclectic style kitchen,25.6125
+lora_step2000,218,an eclectic style living room,25.2616
+lora_step2000,219,an eclectic style living room,26.8255
+lora_step2000,220,an eclectic style living room,24.5454
+lora_step2000,221,an eclectic style living room,25.8199
+lora_step2000,222,an eclectic style living room,25.3436
+lora_step2000,223,an eclectic style living room,27.4437
+lora_step2000,224,an eclectic style living room,25.8488
+lora_step2000,225,an eclectic style living room,23.6790
+lora_step2000,226,an eclectic style living room,23.9941
+lora_step2000,227,a farmhouse style bathroom,25.0084
+lora_step2000,228,a farmhouse style bathroom,26.6789
+lora_step2000,229,a farmhouse style bathroom,27.9155
+lora_step2000,230,a farmhouse style bathroom,28.1590
+lora_step2000,231,a farmhouse style bathroom,23.4189
+lora_step2000,232,a farmhouse style bathroom,24.9363
+lora_step2000,233,a farmhouse style bathroom,28.6200
+lora_step2000,234,a farmhouse style bathroom,21.0976
+lora_step2000,235,a farmhouse style bathroom,25.4782
+lora_step2000,236,a farmhouse style bedroom,25.2717
+lora_step2000,237,a farmhouse style bedroom,28.8445
+lora_step2000,238,a farmhouse style bedroom,25.3586
+lora_step2000,239,a farmhouse style bedroom,24.6440
+lora_step2000,240,a farmhouse style bedroom,26.9517
+lora_step2000,241,a farmhouse style bedroom,29.3124
+lora_step2000,242,a farmhouse style bedroom,25.4631
+lora_step2000,243,a farmhouse style bedroom,28.5320
+lora_step2000,244,a farmhouse style bedroom,28.4505
+lora_step2000,245,a farmhouse style dining room,27.7413
+lora_step2000,246,a farmhouse style dining room,26.4774
+lora_step2000,247,a farmhouse style dining room,28.9214
+lora_step2000,248,a farmhouse style dining room,26.3207
+lora_step2000,249,a farmhouse style dining room,25.6379
+lora_step2000,250,a farmhouse style dining room,27.3879
+lora_step2000,251,a farmhouse style dining room,25.0781
+lora_step2000,252,a farmhouse style dining room,29.0538
+lora_step2000,253,a farmhouse style dining room,27.9260
+lora_step2000,254,a farmhouse style kitchen,27.8432
+lora_step2000,255,a farmhouse style kitchen,26.6694
+lora_step2000,256,a farmhouse style kitchen,27.5220
+lora_step2000,257,a farmhouse style kitchen,23.8825
+lora_step2000,258,a farmhouse style kitchen,25.9163
+lora_step2000,259,a farmhouse style kitchen,24.3114
+lora_step2000,260,a farmhouse style kitchen,25.3429
+lora_step2000,261,a farmhouse style kitchen,23.1287
+lora_step2000,262,a farmhouse style kitchen,26.3406
+lora_step2000,263,a farmhouse style living room,29.3424
+lora_step2000,264,a farmhouse style living room,25.9109
+lora_step2000,265,a farmhouse style living room,25.9842
+lora_step2000,266,a farmhouse style living room,23.7545
+lora_step2000,267,a farmhouse style living room,26.3760
+lora_step2000,268,a farmhouse style living room,24.2529
+lora_step2000,269,a farmhouse style living room,23.6623
+lora_step2000,270,a farmhouse style living room,25.2917
+lora_step2000,271,a farmhouse style living room,25.8055
+lora_step2000,272,a mediterranean style bathroom,26.3503
+lora_step2000,273,a mediterranean style bathroom,29.7822
+lora_step2000,274,a mediterranean style bathroom,28.6085
+lora_step2000,275,a mediterranean style bathroom,26.9759
+lora_step2000,276,a mediterranean style bathroom,27.4753
+lora_step2000,277,a mediterranean style bathroom,26.6840
+lora_step2000,278,a mediterranean style bathroom,26.6402
+lora_step2000,279,a mediterranean style bathroom,27.4376
+lora_step2000,280,a mediterranean style bathroom,22.2171
+lora_step2000,281,a mediterranean style bedroom,22.9325
+lora_step2000,282,a mediterranean style bedroom,25.9327
+lora_step2000,283,a mediterranean style bedroom,25.7405
+lora_step2000,284,a mediterranean style bedroom,25.3722
+lora_step2000,285,a mediterranean style bedroom,27.5265
+lora_step2000,286,a mediterranean style bedroom,23.1954
+lora_step2000,287,a mediterranean style bedroom,28.2010
+lora_step2000,288,a mediterranean style bedroom,27.5896
+lora_step2000,289,a mediterranean style bedroom,24.9124
+lora_step2000,290,a mediterranean style dining room,27.0960
+lora_step2000,291,a mediterranean style dining room,26.8743
+lora_step2000,292,a mediterranean style dining room,26.8734
+lora_step2000,293,a mediterranean style dining room,27.6370
+lora_step2000,294,a mediterranean style dining room,26.8070
+lora_step2000,295,a mediterranean style dining room,27.3509
+lora_step2000,296,a mediterranean style dining room,27.8324
+lora_step2000,297,a mediterranean style dining room,27.9782
+lora_step2000,298,a mediterranean style dining room,28.4369
+lora_step2000,299,a mediterranean style kitchen,27.5976
+lora_step2000,300,a mediterranean style kitchen,28.4151
+lora_step2000,301,a mediterranean style kitchen,27.6537
+lora_step2000,302,a mediterranean style kitchen,23.7444
+lora_step2000,303,a mediterranean style kitchen,27.1762
+lora_step2000,304,a mediterranean style kitchen,23.8771
+lora_step2000,305,a mediterranean style kitchen,28.1895
+lora_step2000,306,a mediterranean style kitchen,26.7627
+lora_step2000,307,a mediterranean style kitchen,25.9249
+lora_step2000,308,a mediterranean style living room,24.9872
+lora_step2000,309,a mediterranean style living room,25.4100
+lora_step2000,310,a mediterranean style living room,25.5868
+lora_step2000,311,a mediterranean style living room,24.8755
+lora_step2000,312,a mediterranean style living room,24.3885
+lora_step2000,313,a mediterranean style living room,26.3614
+lora_step2000,314,a mediterranean style living room,28.3817
+lora_step2000,315,a mediterranean style living room,27.1015
+lora_step2000,316,a mediterranean style living room,27.1869
+lora_step2000,317,a mediterranean style living room,26.5051
+lora_step2000,318,a mid-century modern style bathroom,24.1984
+lora_step2000,319,a mid-century modern style bathroom,27.9485
+lora_step2000,320,a mid-century modern style bathroom,24.3567
+lora_step2000,321,a mid-century modern style bathroom,24.6143
+lora_step2000,322,a mid-century modern style bathroom,23.0900
+lora_step2000,323,a mid-century modern style bathroom,22.0539
+lora_step2000,324,a mid-century modern style bathroom,27.9703
+lora_step2000,325,a mid-century modern style bathroom,25.2295
+lora_step2000,326,a mid-century modern style bathroom,24.2512
+lora_step2000,327,a mid-century modern style bedroom,27.7171
+lora_step2000,328,a mid-century modern style bedroom,27.4114
+lora_step2000,329,a mid-century modern style bedroom,27.7547
+lora_step2000,330,a mid-century modern style bedroom,28.0985
+lora_step2000,331,a mid-century modern style bedroom,26.8687
+lora_step2000,332,a mid-century modern style bedroom,24.9857
+lora_step2000,333,a mid-century modern style bedroom,25.6123
+lora_step2000,334,a mid-century modern style bedroom,25.6733
+lora_step2000,335,a mid-century modern style bedroom,27.7842
+lora_step2000,336,a mid-century modern style dining room,27.5718
+lora_step2000,337,a mid-century modern style dining room,28.6827
+lora_step2000,338,a mid-century modern style dining room,29.2496
+lora_step2000,339,a mid-century modern style dining room,29.6598
+lora_step2000,340,a mid-century modern style dining room,27.8787
+lora_step2000,341,a mid-century modern style dining room,26.3985
+lora_step2000,342,a mid-century modern style dining room,30.1093
+lora_step2000,343,a mid-century modern style dining room,27.1333
+lora_step2000,344,a mid-century modern style dining room,29.1627
+lora_step2000,345,a mid-century modern style kitchen,26.2087
+lora_step2000,346,a mid-century modern style kitchen,23.5385
+lora_step2000,347,a mid-century modern style kitchen,25.5272
+lora_step2000,348,a mid-century modern style kitchen,27.8415
+lora_step2000,349,a mid-century modern style kitchen,27.4520
+lora_step2000,350,a mid-century modern style kitchen,23.9708
+lora_step2000,351,a mid-century modern style kitchen,26.1986
+lora_step2000,352,a mid-century modern style kitchen,25.5772
+lora_step2000,353,a mid-century modern style kitchen,28.3252
+lora_step2000,354,a mid-century modern style living room,27.7011
+lora_step2000,355,a mid-century modern style living room,28.4362
+lora_step2000,356,a mid-century modern style living room,25.5371
+lora_step2000,357,a mid-century modern style living room,25.9806
+lora_step2000,358,a mid-century modern style living room,25.2264
+lora_step2000,359,a mid-century modern style living room,27.7320
+lora_step2000,360,a mid-century modern style living room,27.3731
+lora_step2000,361,a mid-century modern style living room,26.8025
+lora_step2000,362,a mid-century modern style living room,26.8187
+lora_step2000,363,a rustic style bathroom,29.8065
+lora_step2000,364,a rustic style bathroom,32.1245
+lora_step2000,365,a rustic style bathroom,31.9623
+lora_step2000,366,a rustic style bathroom,32.4542
+lora_step2000,367,a rustic style bathroom,31.9717
+lora_step2000,368,a rustic style bathroom,31.3036
+lora_step2000,369,a rustic style bathroom,31.3706
+lora_step2000,370,a rustic style bathroom,29.5188
+lora_step2000,371,a rustic style bathroom,31.0132
+lora_step2000,372,a rustic style bathroom,27.0048
+lora_step2000,373,a rustic style bedroom,25.2588
+lora_step2000,374,a rustic style bedroom,27.3414
+lora_step2000,375,a rustic style bedroom,29.2093
+lora_step2000,376,a rustic style bedroom,28.9271
+lora_step2000,377,a rustic style bedroom,27.6846
+lora_step2000,378,a rustic style bedroom,25.8837
+lora_step2000,379,a rustic style bedroom,29.0372
+lora_step2000,380,a rustic style bedroom,29.5065
+lora_step2000,381,a rustic style bedroom,29.3724
+lora_step2000,382,a rustic style dining room,28.3389
+lora_step2000,383,a rustic style dining room,28.8067
+lora_step2000,384,a rustic style dining room,27.7296
+lora_step2000,385,a rustic style dining room,29.8148
+lora_step2000,386,a rustic style dining room,28.8714
+lora_step2000,387,a rustic style dining room,30.2203
+lora_step2000,388,a rustic style dining room,26.5851
+lora_step2000,389,a rustic style dining room,28.3647
+lora_step2000,390,a rustic style dining room,28.4541
+lora_step2000,391,a rustic style kitchen,28.0951
+lora_step2000,392,a rustic style kitchen,28.8265
+lora_step2000,393,a rustic style kitchen,30.9598
+lora_step2000,394,a rustic style kitchen,30.8757
+lora_step2000,395,a rustic style kitchen,31.9123
+lora_step2000,396,a rustic style kitchen,30.1858
+lora_step2000,397,a rustic style kitchen,28.8630
+lora_step2000,398,a rustic style kitchen,27.8458
+lora_step2000,399,a rustic style kitchen,29.1861
+lora_step2000,400,a rustic style living room,25.8294
+lora_step2000,401,a rustic style living room,27.1758
+lora_step2000,402,a rustic style living room,26.7196
+lora_step2000,403,a rustic style living room,27.6320
+lora_step2000,404,a rustic style living room,27.5057
+lora_step2000,405,a rustic style living room,27.0683
+lora_step2000,406,a rustic style living room,27.8699
+lora_step2000,407,a rustic style living room,25.8878
+lora_step2000,408,a rustic style living room,25.9008
+lora_step2000,409,a traditional style bathroom,28.0948
+lora_step2000,410,a traditional style bathroom,25.8332
+lora_step2000,411,a traditional style bathroom,27.2291
+lora_step2000,412,a traditional style bathroom,24.1010
+lora_step2000,413,a traditional style bathroom,23.2529
+lora_step2000,414,a traditional style bathroom,24.7955
+lora_step2000,415,a traditional style bathroom,27.3469
+lora_step2000,416,a traditional style bathroom,25.7365
+lora_step2000,417,a traditional style bathroom,25.0907
+lora_step2000,418,a traditional style bedroom,24.4061
+lora_step2000,419,a traditional style bedroom,24.7824
+lora_step2000,420,a traditional style bedroom,29.8982
+lora_step2000,421,a traditional style bedroom,23.9214
+lora_step2000,422,a traditional style bedroom,23.4908
+lora_step2000,423,a traditional style bedroom,27.9586
+lora_step2000,424,a traditional style bedroom,26.0908
+lora_step2000,425,a traditional style bedroom,26.4387
+lora_step2000,426,a traditional style bedroom,24.6632
+lora_step2000,427,a traditional style dining room,26.6843
+lora_step2000,428,a traditional style dining room,27.4649
+lora_step2000,429,a traditional style dining room,25.6783
+lora_step2000,430,a traditional style dining room,28.1998
+lora_step2000,431,a traditional style dining room,25.4179
+lora_step2000,432,a traditional style dining room,27.9337
+lora_step2000,433,a traditional style dining room,27.5155
+lora_step2000,434,a traditional style dining room,25.9147
+lora_step2000,435,a traditional style dining room,28.0950
+lora_step2000,436,a traditional style kitchen,26.1434
+lora_step2000,437,a traditional style kitchen,27.5506
+lora_step2000,438,a traditional style kitchen,25.2241
+lora_step2000,439,a traditional style kitchen,25.1455
+lora_step2000,440,a traditional style kitchen,30.4759
+lora_step2000,441,a traditional style kitchen,26.1863
+lora_step2000,442,a traditional style kitchen,25.2151
+lora_step2000,443,a traditional style kitchen,27.0055
+lora_step2000,444,a traditional style kitchen,24.5951
+lora_step2000,445,a traditional style living room,21.9267
+lora_step2000,446,a traditional style living room,24.4637
+lora_step2000,447,a traditional style living room,23.2528
+lora_step2000,448,a traditional style living room,24.5902
+lora_step2000,449,a traditional style living room,24.2754
+lora_step2000,450,a traditional style living room,23.9388
+lora_step2000,451,a traditional style living room,21.5829
+lora_step2000,452,a traditional style living room,25.3217
+lora_step2000,453,a traditional style living room,24.7029
+lora_step2000,454,a transitional style bathroom,25.5713
+lora_step2000,455,a transitional style bathroom,24.6598
+lora_step2000,456,a transitional style bathroom,24.8169
+lora_step2000,457,a transitional style bathroom,24.6686
+lora_step2000,458,a transitional style bathroom,24.9810
+lora_step2000,459,a transitional style bathroom,24.9815
+lora_step2000,460,a transitional style bathroom,22.8630
+lora_step2000,461,a transitional style bathroom,25.3511
+lora_step2000,462,a transitional style bathroom,23.7869
+lora_step2000,463,a transitional style bedroom,22.5552
+lora_step2000,464,a transitional style bedroom,25.3146
+lora_step2000,465,a transitional style bedroom,25.3765
+lora_step2000,466,a transitional style bedroom,27.3665
+lora_step2000,467,a transitional style bedroom,26.0439
+lora_step2000,468,a transitional style bedroom,23.2621
+lora_step2000,469,a transitional style bedroom,26.0533
+lora_step2000,470,a transitional style bedroom,24.5562
+lora_step2000,471,a transitional style bedroom,25.5537
+lora_step2000,472,a transitional style dining room,27.3532
+lora_step2000,473,a transitional style dining room,27.6305
+lora_step2000,474,a transitional style dining room,27.0109
+lora_step2000,475,a transitional style dining room,28.5015
+lora_step2000,476,a transitional style dining room,27.9952
+lora_step2000,477,a transitional style dining room,28.3002
+lora_step2000,478,a transitional style dining room,27.6004
+lora_step2000,479,a transitional style dining room,28.8354
+lora_step2000,480,a transitional style dining room,27.4694
+lora_step2000,481,a transitional style kitchen,25.4440
+lora_step2000,482,a transitional style kitchen,25.3243
+lora_step2000,483,a transitional style kitchen,25.6717
+lora_step2000,484,a transitional style kitchen,24.6058
+lora_step2000,485,a transitional style kitchen,25.9765
+lora_step2000,486,a transitional style kitchen,25.0954
+lora_step2000,487,a transitional style kitchen,24.6615
+lora_step2000,488,a transitional style kitchen,25.3813
+lora_step2000,489,a transitional style kitchen,26.4327
+lora_step2000,490,a transitional style living room,25.2209
+lora_step2000,491,a transitional style living room,24.1677
+lora_step2000,492,a transitional style living room,25.8255
+lora_step2000,493,a transitional style living room,24.0945
+lora_step2000,494,a transitional style living room,26.8203
+lora_step2000,495,a transitional style living room,25.0517
+lora_step2000,496,a transitional style living room,26.1914
+lora_step2000,497,a transitional style living room,24.9764
+lora_step2000,498,a transitional style living room,26.8057
+lora_step2000,499,a transitional style living room,25.7058
+lora_step3000,0,an art deco style bathroom,31.0037
+lora_step3000,1,an art deco style bathroom,29.7886
+lora_step3000,2,an art deco style bathroom,29.7721
+lora_step3000,3,an art deco style bathroom,26.8439
+lora_step3000,4,an art deco style bathroom,20.6537
+lora_step3000,5,an art deco style bathroom,27.7224
+lora_step3000,6,an art deco style bathroom,27.8326
+lora_step3000,7,an art deco style bathroom,28.7978
+lora_step3000,8,an art deco style bathroom,29.4301
+lora_step3000,9,an art deco style bedroom,28.1762
+lora_step3000,10,an art deco style bedroom,25.1273
+lora_step3000,11,an art deco style bedroom,25.5433
+lora_step3000,12,an art deco style bedroom,26.3248
+lora_step3000,13,an art deco style bedroom,28.1315
+lora_step3000,14,an art deco style bedroom,25.2888
+lora_step3000,15,an art deco style bedroom,28.6844
+lora_step3000,16,an art deco style bedroom,27.9345
+lora_step3000,17,an art deco style bedroom,27.2478
+lora_step3000,18,an art deco style dining room,28.8091
+lora_step3000,19,an art deco style dining room,27.4327
+lora_step3000,20,an art deco style dining room,28.0919
+lora_step3000,21,an art deco style dining room,28.3504
+lora_step3000,22,an art deco style dining room,29.4693
+lora_step3000,23,an art deco style dining room,29.1397
+lora_step3000,24,an art deco style dining room,29.1849
+lora_step3000,25,an art deco style dining room,31.2138
+lora_step3000,26,an art deco style dining room,28.5616
+lora_step3000,27,an art deco style kitchen,28.9139
+lora_step3000,28,an art deco style kitchen,24.6670
+lora_step3000,29,an art deco style kitchen,28.4367
+lora_step3000,30,an art deco style kitchen,29.8454
+lora_step3000,31,an art deco style kitchen,25.1721
+lora_step3000,32,an art deco style kitchen,28.0068
+lora_step3000,33,an art deco style kitchen,26.6184
+lora_step3000,34,an art deco style kitchen,27.8493
+lora_step3000,35,an art deco style kitchen,24.0689
+lora_step3000,36,an art deco style living room,27.9318
+lora_step3000,37,an art deco style living room,27.1606
+lora_step3000,38,an art deco style living room,28.1159
+lora_step3000,39,an art deco style living room,27.1487
+lora_step3000,40,an art deco style living room,28.6720
+lora_step3000,41,an art deco style living room,25.4467
+lora_step3000,42,an art deco style living room,26.2988
+lora_step3000,43,an art deco style living room,27.6116
+lora_step3000,44,an art deco style living room,25.1302
+lora_step3000,45,an art deco style living room,25.1065
+lora_step3000,46,a bohemian style bathroom,31.2268
+lora_step3000,47,a bohemian style bathroom,28.6751
+lora_step3000,48,a bohemian style bathroom,32.1766
+lora_step3000,49,a bohemian style bathroom,30.8667
+lora_step3000,50,a bohemian style bathroom,28.0816
+lora_step3000,51,a bohemian style bathroom,32.9322
+lora_step3000,52,a bohemian style bathroom,30.4739
+lora_step3000,53,a bohemian style bathroom,33.8095
+lora_step3000,54,a bohemian style bathroom,33.8529
+lora_step3000,55,a bohemian style bedroom,32.8753
+lora_step3000,56,a bohemian style bedroom,33.5357
+lora_step3000,57,a bohemian style bedroom,30.2262
+lora_step3000,58,a bohemian style bedroom,29.1927
+lora_step3000,59,a bohemian style bedroom,31.2291
+lora_step3000,60,a bohemian style bedroom,30.6490
+lora_step3000,61,a bohemian style bedroom,29.7021
+lora_step3000,62,a bohemian style bedroom,31.1802
+lora_step3000,63,a bohemian style bedroom,30.5186
+lora_step3000,64,a bohemian style dining room,28.9656
+lora_step3000,65,a bohemian style dining room,31.1540
+lora_step3000,66,a bohemian style dining room,30.4086
+lora_step3000,67,a bohemian style dining room,29.0212
+lora_step3000,68,a bohemian style dining room,32.1892
+lora_step3000,69,a bohemian style dining room,29.9735
+lora_step3000,70,a bohemian style dining room,30.4615
+lora_step3000,71,a bohemian style dining room,28.8235
+lora_step3000,72,a bohemian style dining room,29.0443
+lora_step3000,73,a bohemian style kitchen,30.2781
+lora_step3000,74,a bohemian style kitchen,28.8023
+lora_step3000,75,a bohemian style kitchen,31.9266
+lora_step3000,76,a bohemian style kitchen,29.2867
+lora_step3000,77,a bohemian style kitchen,30.4729
+lora_step3000,78,a bohemian style kitchen,29.2099
+lora_step3000,79,a bohemian style kitchen,28.8810
+lora_step3000,80,a bohemian style kitchen,31.8712
+lora_step3000,81,a bohemian style kitchen,31.3904
+lora_step3000,82,a bohemian style living room,27.7109
+lora_step3000,83,a bohemian style living room,29.7316
+lora_step3000,84,a bohemian style living room,29.7593
+lora_step3000,85,a bohemian style living room,28.9610
+lora_step3000,86,a bohemian style living room,28.6721
+lora_step3000,87,a bohemian style living room,31.4343
+lora_step3000,88,a bohemian style living room,30.7549
+lora_step3000,89,a bohemian style living room,31.3762
+lora_step3000,90,a bohemian style living room,30.5675
+lora_step3000,91,a coastal style bathroom,27.5132
+lora_step3000,92,a coastal style bathroom,25.1074
+lora_step3000,93,a coastal style bathroom,24.6963
+lora_step3000,94,a coastal style bathroom,30.0551
+lora_step3000,95,a coastal style bathroom,25.5422
+lora_step3000,96,a coastal style bathroom,28.5406
+lora_step3000,97,a coastal style bathroom,27.4728
+lora_step3000,98,a coastal style bathroom,28.6996
+lora_step3000,99,a coastal style bathroom,25.1803
+lora_step3000,100,a coastal style bedroom,27.4566
+lora_step3000,101,a coastal style bedroom,28.6752
+lora_step3000,102,a coastal style bedroom,26.3271
+lora_step3000,103,a coastal style bedroom,27.7649
+lora_step3000,104,a coastal style bedroom,25.7389
+lora_step3000,105,a coastal style bedroom,29.4179
+lora_step3000,106,a coastal style bedroom,27.0097
+lora_step3000,107,a coastal style bedroom,28.9338
+lora_step3000,108,a coastal style bedroom,27.8287
+lora_step3000,109,a coastal style dining room,25.5340
+lora_step3000,110,a coastal style dining room,30.3064
+lora_step3000,111,a coastal style dining room,27.4133
+lora_step3000,112,a coastal style dining room,24.3070
+lora_step3000,113,a coastal style dining room,26.3055
+lora_step3000,114,a coastal style dining room,27.8572
+lora_step3000,115,a coastal style dining room,27.1797
+lora_step3000,116,a coastal style dining room,24.3079
+lora_step3000,117,a coastal style dining room,27.0331
+lora_step3000,118,a coastal style kitchen,25.5802
+lora_step3000,119,a coastal style kitchen,25.4191
+lora_step3000,120,a coastal style kitchen,23.6035
+lora_step3000,121,a coastal style kitchen,24.0903
+lora_step3000,122,a coastal style kitchen,26.9849
+lora_step3000,123,a coastal style kitchen,24.8806
+lora_step3000,124,a coastal style kitchen,25.5919
+lora_step3000,125,a coastal style kitchen,25.3400
+lora_step3000,126,a coastal style kitchen,24.2210
+lora_step3000,127,a coastal style living room,27.1048
+lora_step3000,128,a coastal style living room,26.5912
+lora_step3000,129,a coastal style living room,29.4319
+lora_step3000,130,a coastal style living room,26.7553
+lora_step3000,131,a coastal style living room,29.5258
+lora_step3000,132,a coastal style living room,27.8225
+lora_step3000,133,a coastal style living room,25.2145
+lora_step3000,134,a coastal style living room,26.8088
+lora_step3000,135,a coastal style living room,27.1031
+lora_step3000,136,a contemporary style bathroom,26.7953
+lora_step3000,137,a contemporary style bathroom,27.3157
+lora_step3000,138,a contemporary style bathroom,24.4909
+lora_step3000,139,a contemporary style bathroom,26.3220
+lora_step3000,140,a contemporary style bathroom,24.3475
+lora_step3000,141,a contemporary style bathroom,25.3245
+lora_step3000,142,a contemporary style bathroom,25.8256
+lora_step3000,143,a contemporary style bathroom,24.5361
+lora_step3000,144,a contemporary style bathroom,25.4737
+lora_step3000,145,a contemporary style bedroom,26.0575
+lora_step3000,146,a contemporary style bedroom,26.9590
+lora_step3000,147,a contemporary style bedroom,27.1344
+lora_step3000,148,a contemporary style bedroom,26.5402
+lora_step3000,149,a contemporary style bedroom,26.2052
+lora_step3000,150,a contemporary style bedroom,26.5368
+lora_step3000,151,a contemporary style bedroom,27.4767
+lora_step3000,152,a contemporary style bedroom,25.7146
+lora_step3000,153,a contemporary style bedroom,26.5060
+lora_step3000,154,a contemporary style dining room,27.7452
+lora_step3000,155,a contemporary style dining room,27.8535
+lora_step3000,156,a contemporary style dining room,27.6820
+lora_step3000,157,a contemporary style dining room,26.5041
+lora_step3000,158,a contemporary style dining room,27.7524
+lora_step3000,159,a contemporary style dining room,27.1714
+lora_step3000,160,a contemporary style dining room,26.7052
+lora_step3000,161,a contemporary style dining room,26.7858
+lora_step3000,162,a contemporary style dining room,27.8094
+lora_step3000,163,a contemporary style kitchen,25.3626
+lora_step3000,164,a contemporary style kitchen,25.1522
+lora_step3000,165,a contemporary style kitchen,25.7326
+lora_step3000,166,a contemporary style kitchen,25.8965
+lora_step3000,167,a contemporary style kitchen,25.6724
+lora_step3000,168,a contemporary style kitchen,26.2513
+lora_step3000,169,a contemporary style kitchen,25.1420
+lora_step3000,170,a contemporary style kitchen,25.7269
+lora_step3000,171,a contemporary style kitchen,25.8128
+lora_step3000,172,a contemporary style living room,23.1271
+lora_step3000,173,a contemporary style living room,24.4623
+lora_step3000,174,a contemporary style living room,25.4180
+lora_step3000,175,a contemporary style living room,25.7731
+lora_step3000,176,a contemporary style living room,24.4317
+lora_step3000,177,a contemporary style living room,24.7965
+lora_step3000,178,a contemporary style living room,26.1002
+lora_step3000,179,a contemporary style living room,25.8065
+lora_step3000,180,a contemporary style living room,23.9091
+lora_step3000,181,an eclectic style bathroom,27.3479
+lora_step3000,182,an eclectic style bathroom,25.8403
+lora_step3000,183,an eclectic style bathroom,26.9051
+lora_step3000,184,an eclectic style bathroom,27.0710
+lora_step3000,185,an eclectic style bathroom,26.0713
+lora_step3000,186,an eclectic style bathroom,25.4515
+lora_step3000,187,an eclectic style bathroom,27.3336
+lora_step3000,188,an eclectic style bathroom,26.0594
+lora_step3000,189,an eclectic style bathroom,27.0522
+lora_step3000,190,an eclectic style bedroom,27.7653
+lora_step3000,191,an eclectic style bedroom,24.4817
+lora_step3000,192,an eclectic style bedroom,26.4155
+lora_step3000,193,an eclectic style bedroom,25.9300
+lora_step3000,194,an eclectic style bedroom,26.3709
+lora_step3000,195,an eclectic style bedroom,24.9871
+lora_step3000,196,an eclectic style bedroom,25.6996
+lora_step3000,197,an eclectic style bedroom,28.2094
+lora_step3000,198,an eclectic style bedroom,25.6402
+lora_step3000,199,an eclectic style dining room,25.3130
+lora_step3000,200,an eclectic style dining room,28.5159
+lora_step3000,201,an eclectic style dining room,26.6244
+lora_step3000,202,an eclectic style dining room,24.6040
+lora_step3000,203,an eclectic style dining room,26.6368
+lora_step3000,204,an eclectic style dining room,27.6982
+lora_step3000,205,an eclectic style dining room,26.6563
+lora_step3000,206,an eclectic style dining room,26.0626
+lora_step3000,207,an eclectic style dining room,26.6302
+lora_step3000,208,an eclectic style kitchen,27.4831
+lora_step3000,209,an eclectic style kitchen,26.2418
+lora_step3000,210,an eclectic style kitchen,25.7072
+lora_step3000,211,an eclectic style kitchen,27.9964
+lora_step3000,212,an eclectic style kitchen,26.8675
+lora_step3000,213,an eclectic style kitchen,26.7584
+lora_step3000,214,an eclectic style kitchen,25.3113
+lora_step3000,215,an eclectic style kitchen,24.1418
+lora_step3000,216,an eclectic style kitchen,26.3366
+lora_step3000,217,an eclectic style kitchen,25.5654
+lora_step3000,218,an eclectic style living room,25.3041
+lora_step3000,219,an eclectic style living room,27.1540
+lora_step3000,220,an eclectic style living room,25.4230
+lora_step3000,221,an eclectic style living room,25.1142
+lora_step3000,222,an eclectic style living room,24.5246
+lora_step3000,223,an eclectic style living room,26.8588
+lora_step3000,224,an eclectic style living room,25.6380
+lora_step3000,225,an eclectic style living room,24.0400
+lora_step3000,226,an eclectic style living room,24.9120
+lora_step3000,227,a farmhouse style bathroom,25.2055
+lora_step3000,228,a farmhouse style bathroom,27.0128
+lora_step3000,229,a farmhouse style bathroom,27.4224
+lora_step3000,230,a farmhouse style bathroom,29.9142
+lora_step3000,231,a farmhouse style bathroom,24.3459
+lora_step3000,232,a farmhouse style bathroom,25.2429
+lora_step3000,233,a farmhouse style bathroom,29.0084
+lora_step3000,234,a farmhouse style bathroom,21.5266
+lora_step3000,235,a farmhouse style bathroom,25.1413
+lora_step3000,236,a farmhouse style bedroom,27.2000
+lora_step3000,237,a farmhouse style bedroom,28.8816
+lora_step3000,238,a farmhouse style bedroom,26.2085
+lora_step3000,239,a farmhouse style bedroom,26.1947
+lora_step3000,240,a farmhouse style bedroom,25.0050
+lora_step3000,241,a farmhouse style bedroom,28.5077
+lora_step3000,242,a farmhouse style bedroom,25.1506
+lora_step3000,243,a farmhouse style bedroom,28.0508
+lora_step3000,244,a farmhouse style bedroom,27.6308
+lora_step3000,245,a farmhouse style dining room,27.0284
+lora_step3000,246,a farmhouse style dining room,26.9522
+lora_step3000,247,a farmhouse style dining room,26.0984
+lora_step3000,248,a farmhouse style dining room,26.3294
+lora_step3000,249,a farmhouse style dining room,25.2977
+lora_step3000,250,a farmhouse style dining room,27.1926
+lora_step3000,251,a farmhouse style dining room,25.7439
+lora_step3000,252,a farmhouse style dining room,28.1774
+lora_step3000,253,a farmhouse style dining room,28.6312
+lora_step3000,254,a farmhouse style kitchen,27.5296
+lora_step3000,255,a farmhouse style kitchen,25.3116
+lora_step3000,256,a farmhouse style kitchen,31.7907
+lora_step3000,257,a farmhouse style kitchen,26.0155
+lora_step3000,258,a farmhouse style kitchen,26.3764
+lora_step3000,259,a farmhouse style kitchen,24.7327
+lora_step3000,260,a farmhouse style kitchen,27.6323
+lora_step3000,261,a farmhouse style kitchen,23.4169
+lora_step3000,262,a farmhouse style kitchen,26.2080
+lora_step3000,263,a farmhouse style living room,29.9297
+lora_step3000,264,a farmhouse style living room,26.3532
+lora_step3000,265,a farmhouse style living room,26.3189
+lora_step3000,266,a farmhouse style living room,23.3377
+lora_step3000,267,a farmhouse style living room,28.3039
+lora_step3000,268,a farmhouse style living room,25.1240
+lora_step3000,269,a farmhouse style living room,24.0463
+lora_step3000,270,a farmhouse style living room,26.1932
+lora_step3000,271,a farmhouse style living room,26.1380
+lora_step3000,272,a mediterranean style bathroom,26.2054
+lora_step3000,273,a mediterranean style bathroom,28.9985
+lora_step3000,274,a mediterranean style bathroom,30.2830
+lora_step3000,275,a mediterranean style bathroom,27.0177
+lora_step3000,276,a mediterranean style bathroom,28.0665
+lora_step3000,277,a mediterranean style bathroom,26.0103
+lora_step3000,278,a mediterranean style bathroom,26.0933
+lora_step3000,279,a mediterranean style bathroom,27.8057
+lora_step3000,280,a mediterranean style bathroom,21.8311
+lora_step3000,281,a mediterranean style bedroom,23.4448
+lora_step3000,282,a mediterranean style bedroom,25.2281
+lora_step3000,283,a mediterranean style bedroom,25.9418
+lora_step3000,284,a mediterranean style bedroom,24.7565
+lora_step3000,285,a mediterranean style bedroom,27.4279
+lora_step3000,286,a mediterranean style bedroom,22.4291
+lora_step3000,287,a mediterranean style bedroom,28.0239
+lora_step3000,288,a mediterranean style bedroom,27.5774
+lora_step3000,289,a mediterranean style bedroom,25.8622
+lora_step3000,290,a mediterranean style dining room,27.2452
+lora_step3000,291,a mediterranean style dining room,26.9963
+lora_step3000,292,a mediterranean style dining room,26.7790
+lora_step3000,293,a mediterranean style dining room,27.5561
+lora_step3000,294,a mediterranean style dining room,26.6916
+lora_step3000,295,a mediterranean style dining room,26.3382
+lora_step3000,296,a mediterranean style dining room,29.5407
+lora_step3000,297,a mediterranean style dining room,28.6723
+lora_step3000,298,a mediterranean style dining room,28.9575
+lora_step3000,299,a mediterranean style kitchen,26.9616
+lora_step3000,300,a mediterranean style kitchen,28.6953
+lora_step3000,301,a mediterranean style kitchen,28.0859
+lora_step3000,302,a mediterranean style kitchen,24.2420
+lora_step3000,303,a mediterranean style kitchen,26.2199
+lora_step3000,304,a mediterranean style kitchen,24.5477
+lora_step3000,305,a mediterranean style kitchen,28.5910
+lora_step3000,306,a mediterranean style kitchen,28.3628
+lora_step3000,307,a mediterranean style kitchen,24.8689
+lora_step3000,308,a mediterranean style living room,24.9971
+lora_step3000,309,a mediterranean style living room,25.5941
+lora_step3000,310,a mediterranean style living room,25.6884
+lora_step3000,311,a mediterranean style living room,26.3057
+lora_step3000,312,a mediterranean style living room,24.7001
+lora_step3000,313,a mediterranean style living room,27.1608
+lora_step3000,314,a mediterranean style living room,28.9211
+lora_step3000,315,a mediterranean style living room,29.7094
+lora_step3000,316,a mediterranean style living room,27.4882
+lora_step3000,317,a mediterranean style living room,25.6565
+lora_step3000,318,a mid-century modern style bathroom,25.0908
+lora_step3000,319,a mid-century modern style bathroom,25.0264
+lora_step3000,320,a mid-century modern style bathroom,24.1814
+lora_step3000,321,a mid-century modern style bathroom,24.7912
+lora_step3000,322,a mid-century modern style bathroom,23.5250
+lora_step3000,323,a mid-century modern style bathroom,21.4876
+lora_step3000,324,a mid-century modern style bathroom,25.9614
+lora_step3000,325,a mid-century modern style bathroom,24.2861
+lora_step3000,326,a mid-century modern style bathroom,23.4626
+lora_step3000,327,a mid-century modern style bedroom,27.2607
+lora_step3000,328,a mid-century modern style bedroom,26.2877
+lora_step3000,329,a mid-century modern style bedroom,24.4581
+lora_step3000,330,a mid-century modern style bedroom,27.2509
+lora_step3000,331,a mid-century modern style bedroom,26.6413
+lora_step3000,332,a mid-century modern style bedroom,25.6485
+lora_step3000,333,a mid-century modern style bedroom,29.0935
+lora_step3000,334,a mid-century modern style bedroom,25.7481
+lora_step3000,335,a mid-century modern style bedroom,28.0353
+lora_step3000,336,a mid-century modern style dining room,27.4103
+lora_step3000,337,a mid-century modern style dining room,28.2025
+lora_step3000,338,a mid-century modern style dining room,28.3472
+lora_step3000,339,a mid-century modern style dining room,29.4058
+lora_step3000,340,a mid-century modern style dining room,27.8825
+lora_step3000,341,a mid-century modern style dining room,25.7163
+lora_step3000,342,a mid-century modern style dining room,29.6531
+lora_step3000,343,a mid-century modern style dining room,27.7177
+lora_step3000,344,a mid-century modern style dining room,29.5081
+lora_step3000,345,a mid-century modern style kitchen,25.7990
+lora_step3000,346,a mid-century modern style kitchen,23.4559
+lora_step3000,347,a mid-century modern style kitchen,25.7595
+lora_step3000,348,a mid-century modern style kitchen,27.6917
+lora_step3000,349,a mid-century modern style kitchen,27.9446
+lora_step3000,350,a mid-century modern style kitchen,24.8284
+lora_step3000,351,a mid-century modern style kitchen,24.6569
+lora_step3000,352,a mid-century modern style kitchen,25.6591
+lora_step3000,353,a mid-century modern style kitchen,27.6498
+lora_step3000,354,a mid-century modern style living room,27.4401
+lora_step3000,355,a mid-century modern style living room,27.1035
+lora_step3000,356,a mid-century modern style living room,26.0543
+lora_step3000,357,a mid-century modern style living room,27.1151
+lora_step3000,358,a mid-century modern style living room,24.6114
+lora_step3000,359,a mid-century modern style living room,27.0776
+lora_step3000,360,a mid-century modern style living room,26.1931
+lora_step3000,361,a mid-century modern style living room,26.7457
+lora_step3000,362,a mid-century modern style living room,27.3134
+lora_step3000,363,a rustic style bathroom,31.0416
+lora_step3000,364,a rustic style bathroom,31.7800
+lora_step3000,365,a rustic style bathroom,32.1149
+lora_step3000,366,a rustic style bathroom,32.8411
+lora_step3000,367,a rustic style bathroom,31.7769
+lora_step3000,368,a rustic style bathroom,30.7045
+lora_step3000,369,a rustic style bathroom,31.2036
+lora_step3000,370,a rustic style bathroom,30.4651
+lora_step3000,371,a rustic style bathroom,30.0352
+lora_step3000,372,a rustic style bathroom,27.3317
+lora_step3000,373,a rustic style bedroom,26.5631
+lora_step3000,374,a rustic style bedroom,27.2054
+lora_step3000,375,a rustic style bedroom,28.3752
+lora_step3000,376,a rustic style bedroom,29.9813
+lora_step3000,377,a rustic style bedroom,27.7993
+lora_step3000,378,a rustic style bedroom,26.5687
+lora_step3000,379,a rustic style bedroom,29.0668
+lora_step3000,380,a rustic style bedroom,28.9254
+lora_step3000,381,a rustic style bedroom,29.0504
+lora_step3000,382,a rustic style dining room,28.8514
+lora_step3000,383,a rustic style dining room,28.1113
+lora_step3000,384,a rustic style dining room,26.7780
+lora_step3000,385,a rustic style dining room,29.3725
+lora_step3000,386,a rustic style dining room,29.5546
+lora_step3000,387,a rustic style dining room,30.2033
+lora_step3000,388,a rustic style dining room,26.3714
+lora_step3000,389,a rustic style dining room,28.4787
+lora_step3000,390,a rustic style dining room,27.8932
+lora_step3000,391,a rustic style kitchen,28.6682
+lora_step3000,392,a rustic style kitchen,28.5938
+lora_step3000,393,a rustic style kitchen,30.0981
+lora_step3000,394,a rustic style kitchen,31.1929
+lora_step3000,395,a rustic style kitchen,31.2647
+lora_step3000,396,a rustic style kitchen,29.1285
+lora_step3000,397,a rustic style kitchen,29.1411
+lora_step3000,398,a rustic style kitchen,26.3478
+lora_step3000,399,a rustic style kitchen,30.1225
+lora_step3000,400,a rustic style living room,26.5403
+lora_step3000,401,a rustic style living room,26.5985
+lora_step3000,402,a rustic style living room,27.0591
+lora_step3000,403,a rustic style living room,28.3789
+lora_step3000,404,a rustic style living room,28.2710
+lora_step3000,405,a rustic style living room,26.0340
+lora_step3000,406,a rustic style living room,26.8014
+lora_step3000,407,a rustic style living room,25.1615
+lora_step3000,408,a rustic style living room,25.2110
+lora_step3000,409,a traditional style bathroom,27.8323
+lora_step3000,410,a traditional style bathroom,26.1040
+lora_step3000,411,a traditional style bathroom,26.7223
+lora_step3000,412,a traditional style bathroom,25.1331
+lora_step3000,413,a traditional style bathroom,22.7212
+lora_step3000,414,a traditional style bathroom,24.9881
+lora_step3000,415,a traditional style bathroom,25.8498
+lora_step3000,416,a traditional style bathroom,27.2113
+lora_step3000,417,a traditional style bathroom,25.0454
+lora_step3000,418,a traditional style bedroom,24.1847
+lora_step3000,419,a traditional style bedroom,25.9614
+lora_step3000,420,a traditional style bedroom,28.3028
+lora_step3000,421,a traditional style bedroom,23.8581
+lora_step3000,422,a traditional style bedroom,24.2436
+lora_step3000,423,a traditional style bedroom,27.6899
+lora_step3000,424,a traditional style bedroom,26.8991
+lora_step3000,425,a traditional style bedroom,26.5781
+lora_step3000,426,a traditional style bedroom,23.7412
+lora_step3000,427,a traditional style dining room,26.7707
+lora_step3000,428,a traditional style dining room,27.5024
+lora_step3000,429,a traditional style dining room,25.9625
+lora_step3000,430,a traditional style dining room,26.5789
+lora_step3000,431,a traditional style dining room,25.1774
+lora_step3000,432,a traditional style dining room,28.3375
+lora_step3000,433,a traditional style dining room,27.1977
+lora_step3000,434,a traditional style dining room,25.9385
+lora_step3000,435,a traditional style dining room,28.0002
+lora_step3000,436,a traditional style kitchen,26.0407
+lora_step3000,437,a traditional style kitchen,26.6832
+lora_step3000,438,a traditional style kitchen,24.9278
+lora_step3000,439,a traditional style kitchen,24.7143
+lora_step3000,440,a traditional style kitchen,29.9891
+lora_step3000,441,a traditional style kitchen,26.4899
+lora_step3000,442,a traditional style kitchen,25.6261
+lora_step3000,443,a traditional style kitchen,27.2012
+lora_step3000,444,a traditional style kitchen,24.8033
+lora_step3000,445,a traditional style living room,22.3277
+lora_step3000,446,a traditional style living room,24.1754
+lora_step3000,447,a traditional style living room,23.5979
+lora_step3000,448,a traditional style living room,25.7882
+lora_step3000,449,a traditional style living room,24.5702
+lora_step3000,450,a traditional style living room,23.8516
+lora_step3000,451,a traditional style living room,22.0051
+lora_step3000,452,a traditional style living room,25.3176
+lora_step3000,453,a traditional style living room,24.0522
+lora_step3000,454,a transitional style bathroom,24.8806
+lora_step3000,455,a transitional style bathroom,24.7105
+lora_step3000,456,a transitional style bathroom,24.2864
+lora_step3000,457,a transitional style bathroom,24.5982
+lora_step3000,458,a transitional style bathroom,24.7401
+lora_step3000,459,a transitional style bathroom,25.3762
+lora_step3000,460,a transitional style bathroom,23.7790
+lora_step3000,461,a transitional style bathroom,24.9089
+lora_step3000,462,a transitional style bathroom,23.8011
+lora_step3000,463,a transitional style bedroom,22.3358
+lora_step3000,464,a transitional style bedroom,26.0454
+lora_step3000,465,a transitional style bedroom,25.4676
+lora_step3000,466,a transitional style bedroom,26.2423
+lora_step3000,467,a transitional style bedroom,26.1701
+lora_step3000,468,a transitional style bedroom,23.4763
+lora_step3000,469,a transitional style bedroom,26.5631
+lora_step3000,470,a transitional style bedroom,25.8345
+lora_step3000,471,a transitional style bedroom,26.2797
+lora_step3000,472,a transitional style dining room,26.8421
+lora_step3000,473,a transitional style dining room,27.1638
+lora_step3000,474,a transitional style dining room,26.6241
+lora_step3000,475,a transitional style dining room,28.1603
+lora_step3000,476,a transitional style dining room,27.7094
+lora_step3000,477,a transitional style dining room,27.8111
+lora_step3000,478,a transitional style dining room,28.1563
+lora_step3000,479,a transitional style dining room,28.7545
+lora_step3000,480,a transitional style dining room,27.4334
+lora_step3000,481,a transitional style kitchen,25.4504
+lora_step3000,482,a transitional style kitchen,24.9274
+lora_step3000,483,a transitional style kitchen,25.5336
+lora_step3000,484,a transitional style kitchen,24.0950
+lora_step3000,485,a transitional style kitchen,25.6369
+lora_step3000,486,a transitional style kitchen,25.5037
+lora_step3000,487,a transitional style kitchen,24.2737
+lora_step3000,488,a transitional style kitchen,25.0305
+lora_step3000,489,a transitional style kitchen,26.4999
+lora_step3000,490,a transitional style living room,24.7750
+lora_step3000,491,a transitional style living room,24.2006
+lora_step3000,492,a transitional style living room,26.2828
+lora_step3000,493,a transitional style living room,24.1366
+lora_step3000,494,a transitional style living room,26.0410
+lora_step3000,495,a transitional style living room,24.8927
+lora_step3000,496,a transitional style living room,25.5221
+lora_step3000,497,a transitional style living room,25.0173
+lora_step3000,498,a transitional style living room,26.6840
+lora_step3000,499,a transitional style living room,25.5412
+real_holdout,0,an art deco style bathroom,16.0490
+real_holdout,1,an art deco style bathroom,27.2865
+real_holdout,2,an art deco style bathroom,25.9509
+real_holdout,3,an art deco style bathroom,23.9909
+real_holdout,4,an art deco style bathroom,25.5516
+real_holdout,5,an art deco style bathroom,26.1698
+real_holdout,6,an art deco style bathroom,17.9277
+real_holdout,7,an art deco style bathroom,23.2520
+real_holdout,8,an art deco style bathroom,26.1481
+real_holdout,9,an art deco style bedroom,20.0707
+real_holdout,10,an art deco style bedroom,17.7547
+real_holdout,11,an art deco style bedroom,22.4364
+real_holdout,12,an art deco style bedroom,19.1114
+real_holdout,13,an art deco style bedroom,25.7706
+real_holdout,14,an art deco style bedroom,18.4551
+real_holdout,15,an art deco style bedroom,23.7870
+real_holdout,16,an art deco style bedroom,20.8740
+real_holdout,17,an art deco style bedroom,23.6724
+real_holdout,18,an art deco style dining room,23.0311
+real_holdout,19,an art deco style dining room,30.6051
+real_holdout,20,an art deco style dining room,25.1144
+real_holdout,21,an art deco style dining room,24.3360
+real_holdout,22,an art deco style dining room,22.7825
+real_holdout,23,an art deco style dining room,23.6285
+real_holdout,24,an art deco style dining room,32.4144
+real_holdout,25,an art deco style dining room,20.3448
+real_holdout,26,an art deco style dining room,20.3492
+real_holdout,27,an art deco style kitchen,24.0623
+real_holdout,28,an art deco style kitchen,26.4599
+real_holdout,29,an art deco style kitchen,11.4051
+real_holdout,30,an art deco style kitchen,23.0264
+real_holdout,31,an art deco style kitchen,21.0179
+real_holdout,32,an art deco style kitchen,15.3837
+real_holdout,33,an art deco style kitchen,25.6028
+real_holdout,34,an art deco style kitchen,23.8201
+real_holdout,35,an art deco style kitchen,17.9845
+real_holdout,36,an art deco style living room,22.3623
+real_holdout,37,an art deco style living room,22.7852
+real_holdout,38,an art deco style living room,24.2749
+real_holdout,39,an art deco style living room,23.8742
+real_holdout,40,an art deco style living room,19.4466
+real_holdout,41,an art deco style living room,22.3186
+real_holdout,42,an art deco style living room,21.5366
+real_holdout,43,an art deco style living room,21.8973
+real_holdout,44,an art deco style living room,24.5382
+real_holdout,45,an art deco style living room,23.4708
+real_holdout,46,a bohemian style bathroom,28.8636
+real_holdout,47,a bohemian style bathroom,23.8939
+real_holdout,48,a bohemian style bathroom,26.2522
+real_holdout,49,a bohemian style bathroom,19.7373
+real_holdout,50,a bohemian style bathroom,30.2019
+real_holdout,51,a bohemian style bathroom,30.4421
+real_holdout,52,a bohemian style bathroom,24.2620
+real_holdout,53,a bohemian style bathroom,23.4035
+real_holdout,54,a bohemian style bathroom,20.0630
+real_holdout,55,a bohemian style bedroom,23.1703
+real_holdout,56,a bohemian style bedroom,24.7923
+real_holdout,57,a bohemian style bedroom,21.7695
+real_holdout,58,a bohemian style bedroom,28.4173
+real_holdout,59,a bohemian style bedroom,25.5599
+real_holdout,60,a bohemian style bedroom,25.0676
+real_holdout,61,a bohemian style bedroom,22.9837
+real_holdout,62,a bohemian style bedroom,20.4786
+real_holdout,63,a bohemian style bedroom,23.7106
+real_holdout,64,a bohemian style dining room,23.1621
+real_holdout,65,a bohemian style dining room,19.6406
+real_holdout,66,a bohemian style dining room,21.2505
+real_holdout,67,a bohemian style dining room,16.9177
+real_holdout,68,a bohemian style dining room,21.9360
+real_holdout,69,a bohemian style dining room,19.8636
+real_holdout,70,a bohemian style dining room,20.2568
+real_holdout,71,a bohemian style dining room,20.8182
+real_holdout,72,a bohemian style dining room,22.2664
+real_holdout,73,a bohemian style kitchen,22.5674
+real_holdout,74,a bohemian style kitchen,28.8079
+real_holdout,75,a bohemian style kitchen,23.9733
+real_holdout,76,a bohemian style kitchen,19.1819
+real_holdout,77,a bohemian style kitchen,25.9147
+real_holdout,78,a bohemian style kitchen,24.6732
+real_holdout,79,a bohemian style kitchen,27.3263
+real_holdout,80,a bohemian style kitchen,24.2151
+real_holdout,81,a bohemian style kitchen,25.4784
+real_holdout,82,a bohemian style living room,26.1147
+real_holdout,83,a bohemian style living room,21.5855
+real_holdout,84,a bohemian style living room,25.6587
+real_holdout,85,a bohemian style living room,26.5135
+real_holdout,86,a bohemian style living room,21.7640
+real_holdout,87,a bohemian style living room,25.8081
+real_holdout,88,a bohemian style living room,24.9037
+real_holdout,89,a bohemian style living room,21.4108
+real_holdout,90,a bohemian style living room,24.8408
+real_holdout,91,a coastal style bathroom,26.0418
+real_holdout,92,a coastal style bathroom,17.7178
+real_holdout,93,a coastal style bathroom,16.1518
+real_holdout,94,a coastal style bathroom,29.0971
+real_holdout,95,a coastal style bathroom,21.3010
+real_holdout,96,a coastal style bathroom,23.8906
+real_holdout,97,a coastal style bathroom,27.0250
+real_holdout,98,a coastal style bathroom,28.8792
+real_holdout,99,a coastal style bathroom,27.5396
+real_holdout,100,a coastal style bedroom,26.8246
+real_holdout,101,a coastal style bedroom,25.6774
+real_holdout,102,a coastal style bedroom,23.7200
+real_holdout,103,a coastal style bedroom,21.7386
+real_holdout,104,a coastal style bedroom,27.6347
+real_holdout,105,a coastal style bedroom,23.3453
+real_holdout,106,a coastal style bedroom,25.9805
+real_holdout,107,a coastal style bedroom,25.6485
+real_holdout,108,a coastal style bedroom,27.3237
+real_holdout,109,a coastal style dining room,25.6938
+real_holdout,110,a coastal style dining room,27.3495
+real_holdout,111,a coastal style dining room,22.3780
+real_holdout,112,a coastal style dining room,23.2495
+real_holdout,113,a coastal style dining room,21.8967
+real_holdout,114,a coastal style dining room,27.1348
+real_holdout,115,a coastal style dining room,20.6791
+real_holdout,116,a coastal style dining room,22.7684
+real_holdout,117,a coastal style dining room,22.1996
+real_holdout,118,a coastal style kitchen,22.3715
+real_holdout,119,a coastal style kitchen,21.4081
+real_holdout,120,a coastal style kitchen,23.0206
+real_holdout,121,a coastal style kitchen,25.9923
+real_holdout,122,a coastal style kitchen,25.2530
+real_holdout,123,a coastal style kitchen,22.6975
+real_holdout,124,a coastal style kitchen,23.4720
+real_holdout,125,a coastal style kitchen,22.7599
+real_holdout,126,a coastal style kitchen,24.2510
+real_holdout,127,a coastal style living room,23.9156
+real_holdout,128,a coastal style living room,15.6175
+real_holdout,129,a coastal style living room,17.0491
+real_holdout,130,a coastal style living room,24.6793
+real_holdout,131,a coastal style living room,22.9804
+real_holdout,132,a coastal style living room,19.4873
+real_holdout,133,a coastal style living room,26.9109
+real_holdout,134,a coastal style living room,25.0610
+real_holdout,135,a coastal style living room,24.2256
+real_holdout,136,a contemporary style bathroom,25.3505
+real_holdout,137,a contemporary style bathroom,20.3765
+real_holdout,138,a contemporary style bathroom,22.3556
+real_holdout,139,a contemporary style bathroom,21.9885
+real_holdout,140,a contemporary style bathroom,24.4049
+real_holdout,141,a contemporary style bathroom,23.4806
+real_holdout,142,a contemporary style bathroom,26.0339
+real_holdout,143,a contemporary style bathroom,25.6911
+real_holdout,144,a contemporary style bathroom,26.8116
+real_holdout,145,a contemporary style bedroom,25.4481
+real_holdout,146,a contemporary style bedroom,22.7663
+real_holdout,147,a contemporary style bedroom,25.2948
+real_holdout,148,a contemporary style bedroom,25.7210
+real_holdout,149,a contemporary style bedroom,24.1353
+real_holdout,150,a contemporary style bedroom,19.7442
+real_holdout,151,a contemporary style bedroom,27.7437
+real_holdout,152,a contemporary style bedroom,24.7948
+real_holdout,153,a contemporary style bedroom,21.6406
+real_holdout,154,a contemporary style dining room,22.5653
+real_holdout,155,a contemporary style dining room,20.8845
+real_holdout,156,a contemporary style dining room,26.3393
+real_holdout,157,a contemporary style dining room,22.7952
+real_holdout,158,a contemporary style dining room,22.1917
+real_holdout,159,a contemporary style dining room,21.8169
+real_holdout,160,a contemporary style dining room,23.5504
+real_holdout,161,a contemporary style dining room,20.2225
+real_holdout,162,a contemporary style dining room,22.7316
+real_holdout,163,a contemporary style kitchen,24.3044
+real_holdout,164,a contemporary style kitchen,22.8186
+real_holdout,165,a contemporary style kitchen,24.6515
+real_holdout,166,a contemporary style kitchen,22.3286
+real_holdout,167,a contemporary style kitchen,25.0144
+real_holdout,168,a contemporary style kitchen,23.6921
+real_holdout,169,a contemporary style kitchen,26.1358
+real_holdout,170,a contemporary style kitchen,21.0687
+real_holdout,171,a contemporary style kitchen,22.8060
+real_holdout,172,a contemporary style living room,23.0859
+real_holdout,173,a contemporary style living room,22.6191
+real_holdout,174,a contemporary style living room,24.1513
+real_holdout,175,a contemporary style living room,23.0766
+real_holdout,176,a contemporary style living room,22.2441
+real_holdout,177,a contemporary style living room,25.3795
+real_holdout,178,a contemporary style living room,21.8642
+real_holdout,179,a contemporary style living room,23.1118
+real_holdout,180,a contemporary style living room,23.1403
+real_holdout,181,an eclectic style bathroom,25.2490
+real_holdout,182,an eclectic style bathroom,14.5617
+real_holdout,183,an eclectic style bathroom,24.1355
+real_holdout,184,an eclectic style bathroom,25.3603
+real_holdout,185,an eclectic style bathroom,22.0762
+real_holdout,186,an eclectic style bathroom,21.6807
+real_holdout,187,an eclectic style bathroom,23.0310
+real_holdout,188,an eclectic style bathroom,25.6469
+real_holdout,189,an eclectic style bathroom,27.3113
+real_holdout,190,an eclectic style bedroom,23.4784
+real_holdout,191,an eclectic style bedroom,22.5468
+real_holdout,192,an eclectic style bedroom,21.2452
+real_holdout,193,an eclectic style bedroom,23.8861
+real_holdout,194,an eclectic style bedroom,26.7155
+real_holdout,195,an eclectic style bedroom,18.3112
+real_holdout,196,an eclectic style bedroom,18.3599
+real_holdout,197,an eclectic style bedroom,21.2742
+real_holdout,198,an eclectic style bedroom,22.3435
+real_holdout,199,an eclectic style dining room,23.6024
+real_holdout,200,an eclectic style dining room,21.6123
+real_holdout,201,an eclectic style dining room,22.5377
+real_holdout,202,an eclectic style dining room,23.0102
+real_holdout,203,an eclectic style dining room,22.7841
+real_holdout,204,an eclectic style dining room,23.1386
+real_holdout,205,an eclectic style dining room,23.2525
+real_holdout,206,an eclectic style dining room,24.3099
+real_holdout,207,an eclectic style dining room,17.2042
+real_holdout,208,an eclectic style kitchen,22.0528
+real_holdout,209,an eclectic style kitchen,22.3387
+real_holdout,210,an eclectic style kitchen,23.0150
+real_holdout,211,an eclectic style kitchen,20.6124
+real_holdout,212,an eclectic style kitchen,25.0992
+real_holdout,213,an eclectic style kitchen,24.1779
+real_holdout,214,an eclectic style kitchen,20.5960
+real_holdout,215,an eclectic style kitchen,22.5458
+real_holdout,216,an eclectic style kitchen,21.9979
+real_holdout,217,an eclectic style kitchen,21.3977
+real_holdout,218,an eclectic style living room,21.8427
+real_holdout,219,an eclectic style living room,21.3862
+real_holdout,220,an eclectic style living room,19.7300
+real_holdout,221,an eclectic style living room,21.3671
+real_holdout,222,an eclectic style living room,22.6343
+real_holdout,223,an eclectic style living room,21.1341
+real_holdout,224,an eclectic style living room,23.2847
+real_holdout,225,an eclectic style living room,20.8258
+real_holdout,226,an eclectic style living room,24.3381
+real_holdout,227,a farmhouse style bathroom,20.5058
+real_holdout,228,a farmhouse style bathroom,24.9422
+real_holdout,229,a farmhouse style bathroom,19.0688
+real_holdout,230,a farmhouse style bathroom,25.4614
+real_holdout,231,a farmhouse style bathroom,24.3342
+real_holdout,232,a farmhouse style bathroom,27.8590
+real_holdout,233,a farmhouse style bathroom,23.5335
+real_holdout,234,a farmhouse style bathroom,26.5954
+real_holdout,235,a farmhouse style bathroom,26.5823
+real_holdout,236,a farmhouse style bedroom,27.5963
+real_holdout,237,a farmhouse style bedroom,16.4594
+real_holdout,238,a farmhouse style bedroom,26.1316
+real_holdout,239,a farmhouse style bedroom,26.2529
+real_holdout,240,a farmhouse style bedroom,15.9590
+real_holdout,241,a farmhouse style bedroom,22.4162
+real_holdout,242,a farmhouse style bedroom,24.4963
+real_holdout,243,a farmhouse style bedroom,22.4846
+real_holdout,244,a farmhouse style bedroom,24.2243
+real_holdout,245,a farmhouse style dining room,18.5529
+real_holdout,246,a farmhouse style dining room,20.8862
+real_holdout,247,a farmhouse style dining room,21.6888
+real_holdout,248,a farmhouse style dining room,16.5686
+real_holdout,249,a farmhouse style dining room,25.8580
+real_holdout,250,a farmhouse style dining room,20.7796
+real_holdout,251,a farmhouse style dining room,21.8023
+real_holdout,252,a farmhouse style dining room,20.0445
+real_holdout,253,a farmhouse style dining room,21.1133
+real_holdout,254,a farmhouse style kitchen,20.4023
+real_holdout,255,a farmhouse style kitchen,24.0977
+real_holdout,256,a farmhouse style kitchen,26.2597
+real_holdout,257,a farmhouse style kitchen,27.1257
+real_holdout,258,a farmhouse style kitchen,20.8592
+real_holdout,259,a farmhouse style kitchen,23.4849
+real_holdout,260,a farmhouse style kitchen,14.2376
+real_holdout,261,a farmhouse style kitchen,20.8064
+real_holdout,262,a farmhouse style kitchen,24.0362
+real_holdout,263,a farmhouse style living room,10.7168
+real_holdout,264,a farmhouse style living room,26.5159
+real_holdout,265,a farmhouse style living room,24.6001
+real_holdout,266,a farmhouse style living room,15.7030
+real_holdout,267,a farmhouse style living room,16.3507
+real_holdout,268,a farmhouse style living room,19.9948
+real_holdout,269,a farmhouse style living room,19.3471
+real_holdout,270,a farmhouse style living room,24.7881
+real_holdout,271,a farmhouse style living room,23.1289
+real_holdout,272,a mediterranean style bathroom,25.9393
+real_holdout,273,a mediterranean style bathroom,25.7756
+real_holdout,274,a mediterranean style bathroom,26.2814
+real_holdout,275,a mediterranean style bathroom,20.5498
+real_holdout,276,a mediterranean style bathroom,23.7012
+real_holdout,277,a mediterranean style bathroom,24.7649
+real_holdout,278,a mediterranean style bathroom,28.0618
+real_holdout,279,a mediterranean style bathroom,25.8008
+real_holdout,280,a mediterranean style bathroom,16.4943
+real_holdout,281,a mediterranean style bedroom,22.4654
+real_holdout,282,a mediterranean style bedroom,23.8152
+real_holdout,283,a mediterranean style bedroom,23.4199
+real_holdout,284,a mediterranean style bedroom,24.3759
+real_holdout,285,a mediterranean style bedroom,22.3547
+real_holdout,286,a mediterranean style bedroom,23.9732
+real_holdout,287,a mediterranean style bedroom,23.5817
+real_holdout,288,a mediterranean style bedroom,13.6805
+real_holdout,289,a mediterranean style bedroom,23.9662
+real_holdout,290,a mediterranean style dining room,19.8815
+real_holdout,291,a mediterranean style dining room,20.1037
+real_holdout,292,a mediterranean style dining room,24.9668
+real_holdout,293,a mediterranean style dining room,18.0717
+real_holdout,294,a mediterranean style dining room,24.8673
+real_holdout,295,a mediterranean style dining room,21.6095
+real_holdout,296,a mediterranean style dining room,28.2137
+real_holdout,297,a mediterranean style dining room,25.0984
+real_holdout,298,a mediterranean style dining room,17.7341
+real_holdout,299,a mediterranean style kitchen,24.3813
+real_holdout,300,a mediterranean style kitchen,14.6095
+real_holdout,301,a mediterranean style kitchen,25.1309
+real_holdout,302,a mediterranean style kitchen,18.7289
+real_holdout,303,a mediterranean style kitchen,20.8062
+real_holdout,304,a mediterranean style kitchen,25.7680
+real_holdout,305,a mediterranean style kitchen,23.3119
+real_holdout,306,a mediterranean style kitchen,26.7553
+real_holdout,307,a mediterranean style kitchen,20.8875
+real_holdout,308,a mediterranean style living room,21.2500
+real_holdout,309,a mediterranean style living room,21.8301
+real_holdout,310,a mediterranean style living room,26.6834
+real_holdout,311,a mediterranean style living room,18.3461
+real_holdout,312,a mediterranean style living room,19.1620
+real_holdout,313,a mediterranean style living room,19.0474
+real_holdout,314,a mediterranean style living room,16.5978
+real_holdout,315,a mediterranean style living room,22.5638
+real_holdout,316,a mediterranean style living room,21.1671
+real_holdout,317,a mediterranean style living room,20.9064
+real_holdout,318,a mid-century modern style bathroom,25.0397
+real_holdout,319,a mid-century modern style bathroom,23.3981
+real_holdout,320,a mid-century modern style bathroom,25.2340
+real_holdout,321,a mid-century modern style bathroom,24.9259
+real_holdout,322,a mid-century modern style bathroom,17.2410
+real_holdout,323,a mid-century modern style bathroom,15.3726
+real_holdout,324,a mid-century modern style bathroom,21.8775
+real_holdout,325,a mid-century modern style bathroom,20.1500
+real_holdout,326,a mid-century modern style bathroom,24.5243
+real_holdout,327,a mid-century modern style bedroom,24.3404
+real_holdout,328,a mid-century modern style bedroom,23.3218
+real_holdout,329,a mid-century modern style bedroom,22.9241
+real_holdout,330,a mid-century modern style bedroom,21.3279
+real_holdout,331,a mid-century modern style bedroom,26.0770
+real_holdout,332,a mid-century modern style bedroom,21.4072
+real_holdout,333,a mid-century modern style bedroom,25.8495
+real_holdout,334,a mid-century modern style bedroom,27.8795
+real_holdout,335,a mid-century modern style bedroom,25.8543
+real_holdout,336,a mid-century modern style dining room,21.4777
+real_holdout,337,a mid-century modern style dining room,21.2008
+real_holdout,338,a mid-century modern style dining room,22.8056
+real_holdout,339,a mid-century modern style dining room,24.2560
+real_holdout,340,a mid-century modern style dining room,23.8746
+real_holdout,341,a mid-century modern style dining room,21.7954
+real_holdout,342,a mid-century modern style dining room,26.5831
+real_holdout,343,a mid-century modern style dining room,19.8941
+real_holdout,344,a mid-century modern style dining room,22.5838
+real_holdout,345,a mid-century modern style kitchen,18.9881
+real_holdout,346,a mid-century modern style kitchen,18.7979
+real_holdout,347,a mid-century modern style kitchen,24.2134
+real_holdout,348,a mid-century modern style kitchen,21.5602
+real_holdout,349,a mid-century modern style kitchen,21.1682
+real_holdout,350,a mid-century modern style kitchen,24.5082
+real_holdout,351,a mid-century modern style kitchen,22.5150
+real_holdout,352,a mid-century modern style kitchen,22.5347
+real_holdout,353,a mid-century modern style kitchen,23.0600
+real_holdout,354,a mid-century modern style living room,20.5621
+real_holdout,355,a mid-century modern style living room,22.1679
+real_holdout,356,a mid-century modern style living room,21.5144
+real_holdout,357,a mid-century modern style living room,21.2627
+real_holdout,358,a mid-century modern style living room,22.4070
+real_holdout,359,a mid-century modern style living room,21.6778
+real_holdout,360,a mid-century modern style living room,23.4729
+real_holdout,361,a mid-century modern style living room,19.8385
+real_holdout,362,a mid-century modern style living room,20.2572
+real_holdout,363,a rustic style bathroom,18.2001
+real_holdout,364,a rustic style bathroom,28.9992
+real_holdout,365,a rustic style bathroom,24.9775
+real_holdout,366,a rustic style bathroom,26.5961
+real_holdout,367,a rustic style bathroom,20.5784
+real_holdout,368,a rustic style bathroom,26.0879
+real_holdout,369,a rustic style bathroom,23.4433
+real_holdout,370,a rustic style bathroom,24.7355
+real_holdout,371,a rustic style bathroom,19.9966
+real_holdout,372,a rustic style bathroom,19.3618
+real_holdout,373,a rustic style bedroom,25.5134
+real_holdout,374,a rustic style bedroom,24.9232
+real_holdout,375,a rustic style bedroom,20.5864
+real_holdout,376,a rustic style bedroom,16.4172
+real_holdout,377,a rustic style bedroom,22.7434
+real_holdout,378,a rustic style bedroom,25.3441
+real_holdout,379,a rustic style bedroom,17.4754
+real_holdout,380,a rustic style bedroom,20.2688
+real_holdout,381,a rustic style bedroom,21.9995
+real_holdout,382,a rustic style dining room,18.9404
+real_holdout,383,a rustic style dining room,23.1792
+real_holdout,384,a rustic style dining room,23.7273
+real_holdout,385,a rustic style dining room,23.0958
+real_holdout,386,a rustic style dining room,24.4465
+real_holdout,387,a rustic style dining room,23.0334
+real_holdout,388,a rustic style dining room,25.1707
+real_holdout,389,a rustic style dining room,20.6237
+real_holdout,390,a rustic style dining room,19.4025
+real_holdout,391,a rustic style kitchen,27.8356
+real_holdout,392,a rustic style kitchen,25.2598
+real_holdout,393,a rustic style kitchen,24.8097
+real_holdout,394,a rustic style kitchen,18.9488
+real_holdout,395,a rustic style kitchen,26.3875
+real_holdout,396,a rustic style kitchen,27.0805
+real_holdout,397,a rustic style kitchen,28.7006
+real_holdout,398,a rustic style kitchen,27.3214
+real_holdout,399,a rustic style kitchen,22.4517
+real_holdout,400,a rustic style living room,25.9007
+real_holdout,401,a rustic style living room,19.3383
+real_holdout,402,a rustic style living room,23.1367
+real_holdout,403,a rustic style living room,23.6103
+real_holdout,404,a rustic style living room,23.9128
+real_holdout,405,a rustic style living room,24.2990
+real_holdout,406,a rustic style living room,21.0191
+real_holdout,407,a rustic style living room,21.5998
+real_holdout,408,a rustic style living room,24.2904
+real_holdout,409,a traditional style bathroom,24.4392
+real_holdout,410,a traditional style bathroom,22.8182
+real_holdout,411,a traditional style bathroom,24.2708
+real_holdout,412,a traditional style bathroom,26.8905
+real_holdout,413,a traditional style bathroom,21.4025
+real_holdout,414,a traditional style bathroom,15.1554
+real_holdout,415,a traditional style bathroom,25.3648
+real_holdout,416,a traditional style bathroom,24.2361
+real_holdout,417,a traditional style bathroom,24.9518
+real_holdout,418,a traditional style bedroom,19.9086
+real_holdout,419,a traditional style bedroom,23.3903
+real_holdout,420,a traditional style bedroom,23.8671
+real_holdout,421,a traditional style bedroom,23.2631
+real_holdout,422,a traditional style bedroom,21.4503
+real_holdout,423,a traditional style bedroom,17.9209
+real_holdout,424,a traditional style bedroom,22.4769
+real_holdout,425,a traditional style bedroom,21.7055
+real_holdout,426,a traditional style bedroom,22.7251
+real_holdout,427,a traditional style dining room,15.7394
+real_holdout,428,a traditional style dining room,23.3913
+real_holdout,429,a traditional style dining room,21.9476
+real_holdout,430,a traditional style dining room,20.6960
+real_holdout,431,a traditional style dining room,25.3072
+real_holdout,432,a traditional style dining room,16.2945
+real_holdout,433,a traditional style dining room,19.0999
+real_holdout,434,a traditional style dining room,20.3916
+real_holdout,435,a traditional style dining room,22.4472
+real_holdout,436,a traditional style kitchen,27.6001
+real_holdout,437,a traditional style kitchen,22.0767
+real_holdout,438,a traditional style kitchen,21.0732
+real_holdout,439,a traditional style kitchen,25.1830
+real_holdout,440,a traditional style kitchen,24.7404
+real_holdout,441,a traditional style kitchen,17.2812
+real_holdout,442,a traditional style kitchen,23.5536
+real_holdout,443,a traditional style kitchen,24.1955
+real_holdout,444,a traditional style kitchen,23.8540
+real_holdout,445,a traditional style living room,24.7484
+real_holdout,446,a traditional style living room,21.7088
+real_holdout,447,a traditional style living room,22.1424
+real_holdout,448,a traditional style living room,21.4372
+real_holdout,449,a traditional style living room,14.8432
+real_holdout,450,a traditional style living room,18.5098
+real_holdout,451,a traditional style living room,21.9505
+real_holdout,452,a traditional style living room,22.0141
+real_holdout,453,a traditional style living room,21.8902
+real_holdout,454,a transitional style bathroom,19.2720
+real_holdout,455,a transitional style bathroom,26.1571
+real_holdout,456,a transitional style bathroom,23.5778
+real_holdout,457,a transitional style bathroom,22.4183
+real_holdout,458,a transitional style bathroom,26.8836
+real_holdout,459,a transitional style bathroom,23.8227
+real_holdout,460,a transitional style bathroom,24.5705
+real_holdout,461,a transitional style bathroom,13.0673
+real_holdout,462,a transitional style bathroom,16.8124
+real_holdout,463,a transitional style bedroom,19.9702
+real_holdout,464,a transitional style bedroom,20.5962
+real_holdout,465,a transitional style bedroom,22.9893
+real_holdout,466,a transitional style bedroom,26.6307
+real_holdout,467,a transitional style bedroom,20.5288
+real_holdout,468,a transitional style bedroom,23.5943
+real_holdout,469,a transitional style bedroom,17.1835
+real_holdout,470,a transitional style bedroom,24.9823
+real_holdout,471,a transitional style bedroom,19.4629
+real_holdout,472,a transitional style dining room,27.4721
+real_holdout,473,a transitional style dining room,23.6938
+real_holdout,474,a transitional style dining room,13.4407
+real_holdout,475,a transitional style dining room,26.9633
+real_holdout,476,a transitional style dining room,25.3784
+real_holdout,477,a transitional style dining room,26.3351
+real_holdout,478,a transitional style dining room,23.9937
+real_holdout,479,a transitional style dining room,24.2770
+real_holdout,480,a transitional style dining room,22.2882
+real_holdout,481,a transitional style kitchen,25.3170
+real_holdout,482,a transitional style kitchen,22.4043
+real_holdout,483,a transitional style kitchen,24.1073
+real_holdout,484,a transitional style kitchen,24.4222
+real_holdout,485,a transitional style kitchen,23.3767
+real_holdout,486,a transitional style kitchen,23.2643
+real_holdout,487,a transitional style kitchen,23.7001
+real_holdout,488,a transitional style kitchen,22.3992
+real_holdout,489,a transitional style kitchen,23.3048
+real_holdout,490,a transitional style living room,17.8402
+real_holdout,491,a transitional style living room,18.3301
+real_holdout,492,a transitional style living room,24.8273
+real_holdout,493,a transitional style living room,20.7843
+real_holdout,494,a transitional style living room,25.7326
+real_holdout,495,a transitional style living room,25.1064
+real_holdout,496,a transitional style living room,20.8092
+real_holdout,497,a transitional style living room,20.1556
+real_holdout,498,a transitional style living room,20.7748
+real_holdout,499,a transitional style living room,22.3480

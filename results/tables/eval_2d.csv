@@ -1,0 +1,6 @@
+model,label,n_images,fid,kid_mean,kid_std,kid_subset_size,clip_mean,clip_std
+sd15_base,SD v1.5 (base),500,64.5438,0.0191192,0.00242266,100,27.9103,1.89519
+lora_step1000,LoRA step 1000,500,54.9996,0.0113829,0.00215007,100,26.824,2.08447
+lora_step2000,LoRA step 2000,500,54.8748,0.0105002,0.00217104,100,26.9843,2.1498
+lora_step3000,LoRA step 3000,500,54.629,0.0102313,0.00206189,100,26.9676,2.16201
+real_holdout,Real MMIS (held-out),500,,,,,22.7897,3.13221
