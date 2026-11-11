@@ -1,4 +1,7 @@
-"""2D evaluation: generate the held-out captions with each model, then FID, KID and CLIP Score.
+"""Evaluation. Part 1 (below): 2D generation - FID, KID, CLIP Score. Part 2 (end of file): depth on NYU -
+AbsRel, RMSE, delta < 1.25 with scale-and-shift alignment, the preprocessing ablation and robustness tests.
+
+2D evaluation: generate the held-out captions with each model, then FID, KID and CLIP Score.
 
 Protocol (README section 8, 2D Generation):
   * Captions: the 500 held-out MMIS images (data/mmis/fid_holdout.csv), never seen in LoRA training.
@@ -370,4 +373,413 @@ def plot_qualitative(rows: pd.DataFrame, out_root, out_path, models=tuple(MODELS
     fig.suptitle("Held-out captions: real MMIS image vs. generated (same seed per row across models)", fontsize=11)
     fig.tight_layout()
     fig.savefig(out_path, dpi=110)
+    plt.close(fig)
+
+
+# =========================================================================== #
+# Depth evaluation on NYU Depth V2 (README section 8, Depth / 3D + ablation)
+# =========================================================================== #
+# Both depth models predict RELATIVE inverse depth (disparity up to an unknown scale and
+# shift), so each prediction is first aligned to the ground truth:
+#     find s, t minimising  sum_valid (s * pred + t - 1/gt)^2      (closed-form least squares)
+#     depth = 1 / (s * pred + t)
+# This is the standard protocol for affine-invariant depth (MiDaS, Depth Anything).
+# Valid pixels: inside the Eigen crop, with 0 < gt <= 10 m. Predictions are capped at 10 m.
+NYU_MIN_DEPTH, NYU_MAX_DEPTH = 1e-3, 10.0
+EIGEN_CROP = (45, 471, 41, 601)      # rows 45:471, cols 41:601 of the 480x640 frame (Eigen et al., 2014)
+NYU_FOCAL, NYU_CENTER = 518.86, (325.58, 253.74)   # Kinect RGB camera intrinsics (NYU toolbox), in px
+
+# Synthetic degradations: a moderate and a severe level of each kind.
+#   noise = std of additive Gaussian noise (grey levels), blur = length of a linear motion-blur
+#   kernel (px, at 30 degrees), gamma = darkening exponent (applied before the noise).
+DEGRADATION_PARAMS = {
+    "noise15": {"noise": 15},
+    "noise25": {"noise": 25},
+    "noise50": {"noise": 50},
+    "motion_blur": {"blur": 15},
+    "motion_blur25": {"blur": 25},
+    "low_light": {"gamma": 2.2, "noise": 10},
+    "low_light_severe": {"gamma": 3.0, "noise": 20},
+}
+DEGRADATIONS = ["clean", *DEGRADATION_PARAMS]
+DEGRADATION_LABELS = {"clean": "Clean", "noise15": "Gaussian noise σ=15", "noise25": "Gaussian noise σ=25",
+                      "noise50": "Gaussian noise σ=50 (severe)", "motion_blur": "Motion blur (15 px)",
+                      "motion_blur25": "Motion blur (25 px, severe)", "low_light": "Low light (γ=2.2 + noise 10)",
+                      "low_light_severe": "Low light (γ=3.0 + noise 20, severe)"}
+NOISE_LEVELS = [15, 25, 50]          # levels of the denoising PSNR / SSIM table
+
+# Input preprocessing variants (one forward pass each, see depth.prepare_input).
+INPUT_VARIANTS = ["raw", "denoise", "clahe", "full", "full_plain"]
+REFINE_VARIANTS = ["raw", "full", "full_plain"]     # also scored after depth refinement
+# Ablation: name -> (input preprocessing, refine the predicted depth?)
+ABLATION = {
+    "raw": ("raw", False),
+    "denoise": ("denoise", False),
+    "clahe": ("clahe", False),
+    "full": ("full", False),                    # noise-aware pipeline (noise_aware=True)
+    "full_plain": ("full_plain", False),        # plain denoise -> CLAHE -> unsharp (noise_aware=False)
+    "full_refine": ("full", True),
+    "full_plain_refine": ("full_plain", True),
+    "raw_refine": ("raw", True),                # extra row: isolates the effect of refinement alone
+}
+ABLATION_LABELS = {"raw": "Raw image", "denoise": "+ Denoising", "clahe": "+ CLAHE",
+                   "full": "+ Full preprocessing (noise-aware)",
+                   "full_plain": "+ Full preprocessing (plain 3 steps)",
+                   "full_refine": "+ Full preprocessing (noise-aware) + depth refinement",
+                   "full_plain_refine": "+ Full preprocessing (plain 3 steps) + depth refinement",
+                   "raw_refine": "Raw image + depth refinement"}
+DEPTH_METRICS = ["abs_rel", "rmse", "delta1"]
+# Boundary metrics: what matters for the 3D model is the depth at object boundaries.
+BOUNDARY_METRICS = ["edge_abs_rel", "edge_rmse", "flying_pct"]
+ALL_DEPTH_METRICS = DEPTH_METRICS + BOUNDARY_METRICS
+# All four constants below were fixed before looking at any result (nothing is tuned on NYU).
+EDGE_REL_STEP = 0.05      # neighbouring GT pixels differing by > 5% in depth = depth discontinuity
+EDGE_DILATE = 7           # px: the edge mask is that discontinuity dilated by a 7-px ellipse (+-3 px)
+EDGE_MIN_PIXELS = 200     # images with fewer edge pixels get NaN for the edge metrics
+FLYING_REL_GAP = 0.05     # a 3D point is "flying" if both neighbours are > 5% of its depth away
+
+
+def degrade(img: np.ndarray, kind: str, seed: int = 0) -> np.ndarray:
+    """Synthetic degradation of an RGB uint8 image; `seed` (the image index) makes it reproducible.
+
+    See DEGRADATION_PARAMS. Order inside one degradation: motion blur, then gamma darkening
+    out = 255 (in/255)^gamma, then additive Gaussian noise (dark photos are noisy because the
+    sensor gain is turned up). Motion blur is a linear kernel at 30 degrees (camera shake).
+    """
+    import cv2
+    if kind == "clean":
+        return img
+    p = DEGRADATION_PARAMS[kind]
+    rng = np.random.default_rng(1234 + seed)
+    f = img.astype(np.float32)
+    if "blur" in p:
+        n = p["blur"]
+        k = np.zeros((n, n), np.float32)
+        k[n // 2, :] = 1
+        k = cv2.warpAffine(k, cv2.getRotationMatrix2D((n / 2 - 0.5, n / 2 - 0.5), 30, 1.0), (n, n))
+        f = cv2.filter2D(f, -1, k / k.sum(), borderType=cv2.BORDER_REFLECT)
+    if "gamma" in p:
+        f = 255.0 * (f / 255.0) ** p["gamma"]
+    if "noise" in p:
+        f = f + rng.normal(0, p["noise"], f.shape)
+    return np.clip(f, 0, 255).astype(np.uint8)
+
+
+def nyu_valid_mask(gt: np.ndarray) -> np.ndarray:
+    """Pixels used for the metrics: inside the Eigen crop and with a valid depth <= 10 m."""
+    r0, r1, c0, c1 = EIGEN_CROP
+    mask = np.zeros(gt.shape, bool)
+    mask[r0:r1, c0:c1] = True
+    return mask & (gt > NYU_MIN_DEPTH) & (gt <= NYU_MAX_DEPTH)
+
+
+def align_scale_shift(pred_disp: np.ndarray, gt_depth: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """Least-squares scale + shift alignment in disparity space; returns metric depth (capped at 10 m)."""
+    x = pred_disp[mask].astype(np.float64)
+    y = 1.0 / gt_depth[mask].astype(np.float64)
+    # normal equations of  min || s x + t - y ||^2
+    a = np.array([[np.sum(x * x), np.sum(x)], [np.sum(x), x.size]])
+    b = np.array([np.sum(x * y), np.sum(y)])
+    s, t = np.linalg.lstsq(a, b, rcond=None)[0]
+    disp = s * pred_disp.astype(np.float64) + t
+    return (1.0 / np.maximum(disp, 1.0 / NYU_MAX_DEPTH)).astype(np.float32)
+
+
+def depth_metrics(pred: np.ndarray, gt: np.ndarray, mask: np.ndarray) -> dict:
+    """AbsRel = mean |p-g|/g,  RMSE = sqrt(mean (p-g)^2) in metres,  delta1 = share with max(p/g, g/p) < 1.25."""
+    p, g = pred[mask].astype(np.float64), gt[mask].astype(np.float64)
+    ratio = np.maximum(p / g, g / p)
+    return {"abs_rel": float(np.mean(np.abs(p - g) / g)),
+            "rmse": float(np.sqrt(np.mean((p - g) ** 2))),
+            "delta1": float(np.mean(ratio < 1.25))}
+
+
+def depth_edge_mask(gt: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """Pixels near a depth discontinuity of the ground truth (object boundaries).
+
+    The GT depth gradient is taken as the relative step between 4-neighbours,
+    max(d1/d2, d2/d1) - 1. A step above EDGE_REL_STEP (5%) cannot be a smooth surface (at the
+    NYU focal length that would be a surface tilted more than 87 degrees), so it is an
+    occlusion boundary. Those pixels are dilated by EDGE_DILATE px and intersected with `mask`.
+    """
+    import cv2
+    valid = gt > NYU_MIN_DEPTH
+    d = np.where(valid, gt, 1.0).astype(np.float64)
+    edge = np.zeros(gt.shape, bool)
+    for ax in (0, 1):
+        a, v, e = np.moveaxis(d, ax, 0), np.moveaxis(valid, ax, 0), np.moveaxis(edge, ax, 0)
+        step = (np.maximum(a[1:] / a[:-1], a[:-1] / a[1:]) > 1 + EDGE_REL_STEP) & v[1:] & v[:-1]
+        e[1:] |= step           # e is a view: writes go into `edge`
+        e[:-1] |= step
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EDGE_DILATE, EDGE_DILATE))
+    return (cv2.dilate(edge.astype(np.uint8), k) > 0) & mask
+
+
+def backproject(depth: np.ndarray) -> np.ndarray:
+    """Depth map (m) -> HxWx3 point cloud in camera coordinates (pinhole model, NYU intrinsics)."""
+    h, w = depth.shape
+    z = depth.astype(np.float64)
+    u, v = np.meshgrid(np.arange(w), np.arange(h))
+    return np.stack([(u - NYU_CENTER[0]) / NYU_FOCAL * z, (v - NYU_CENTER[1]) / NYU_FOCAL * z, z], axis=-1)
+
+
+def flying_pixel_mask(depth: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    """Flying pixels: 3D points hanging in empty space between a foreground and a background surface.
+
+    A depth map that blurs an object boundary puts intermediate depths there; back-projected,
+    these become a "curtain" of points joining the object to the wall behind it. A point counts
+    as flying if, along its image row or its column, the 3D points on BOTH sides are farther
+    away than FLYING_REL_GAP x its depth (15 cm at 3 m) and one is nearer, the other farther.
+    A perfectly sharp step has none (each side has a close neighbour on its own surface).
+    """
+    pts, z = backproject(depth), depth.astype(np.float64)
+    fly = np.zeros(depth.shape, bool)
+    for ax in (0, 1):
+        p, zz, m = np.moveaxis(pts, ax, 0), np.moveaxis(z, ax, 0), np.moveaxis(mask, ax, 0)
+        gap = np.linalg.norm(p[1:] - p[:-1], axis=-1)           # 3D distance between neighbours
+        lim = FLYING_REL_GAP * zz[1:-1]
+        between = (zz[2:] - zz[1:-1]) * (zz[1:-1] - zz[:-2]) > 0
+        np.moveaxis(fly, ax, 0)[1:-1] |= (gap[:-1] > lim) & (gap[1:] > lim) & between & m[2:] & m[:-2]
+    return fly & mask
+
+
+def boundary_metrics(pred: np.ndarray, gt: np.ndarray, mask: np.ndarray, edge: np.ndarray) -> dict:
+    """AbsRel / RMSE restricted to the GT depth-edge band, and the flying-pixel share (% of valid pixels)."""
+    out = {"edge_abs_rel": np.nan, "edge_rmse": np.nan}
+    if int(edge.sum()) >= EDGE_MIN_PIXELS:
+        m = depth_metrics(pred, gt, edge)
+        out = {"edge_abs_rel": m["abs_rel"], "edge_rmse": m["rmse"]}
+    out["flying_pct"] = float(100.0 * flying_pixel_mask(pred, mask)[mask].mean())
+    return out
+
+
+def load_nyu_index(nyu_dir, limit: int | None = None) -> pd.DataFrame:
+    """NYU test index with rgb / depth paths; `limit` keeps evenly spaced images (smoke test)."""
+    nyu_dir = Path(nyu_dir)
+    df = pd.read_csv(nyu_dir / "index.csv", dtype={"name": str})
+    df["rgb_path"] = [str(nyu_dir / "rgb" / f"{n}.png") for n in df["name"]]
+    df["depth_path"] = [str(nyu_dir / "depth" / f"{n}.npy") for n in df["name"]]
+    if limit is not None and limit < len(df):
+        df = df.iloc[np.unique(np.linspace(0, len(df) - 1, limit).round().astype(int))]
+    return df.reset_index(drop=True)
+
+
+def eval_depth_run(model, processor, df: pd.DataFrame, degradation: str, inputs: list[str],
+                   refine_for: list[str], device, desc: str = "") -> pd.DataFrame:
+    """Run one depth model over the NYU images for one degradation.
+
+    For every image: degrade -> for each input variant in `inputs` preprocess, predict, align,
+    score (global + boundary metrics). Variants listed in `refine_for` are scored a second time
+    after depth refinement (same forward pass). If two variants give the identical image (the
+    noise-aware and the plain pipeline agree on clean inputs) the prediction is reused.
+    One image is in memory at a time. Returns one row per (image, input variant, refined?).
+    """
+    from . import depth as dp
+    from .preprocessing import load_rgb
+
+    rows = []
+    for _, r in tqdm(df.iterrows(), total=len(df), desc=desc, unit="img"):
+        gt = np.load(r["depth_path"])
+        mask = nyu_valid_mask(gt)
+        edge = depth_edge_mask(gt, mask)
+        img = degrade(load_rgb(r["rgb_path"]), degradation, seed=int(r["mat_index"]))
+        done = {}                                   # variant -> (input image, disparity)
+        for variant in inputs:
+            x = dp.prepare_input(img, variant)
+            twin = next((v for v, (xv, _) in done.items() if np.array_equal(xv, x)), None)
+            disp = done[twin][1] if twin else dp.predict_disparity(model, processor, x, device)
+            done[variant] = (x, disp)
+            preds = {False: disp}
+            if variant in refine_for:
+                preds[True] = dp.refine_depth(disp, x)
+            for refined, d in preds.items():
+                depth = align_scale_shift(d, gt, mask)
+                rows.append({"name": r["name"], "degradation": degradation, "input": variant,
+                             "refined": refined, **depth_metrics(depth, gt, mask),
+                             **boundary_metrics(depth, gt, mask, edge)})
+    return pd.DataFrame(rows)
+
+
+def summarize_depth(per_image: pd.DataFrame, by: list[str]) -> pd.DataFrame:
+    """Mean of each metric over images (the usual NYU protocol: per-image metric, then average)."""
+    g = per_image.groupby(by, sort=False)
+    out = g[ALL_DEPTH_METRICS].mean().reset_index()      # NaN edge metrics (no edges) are skipped
+    out.insert(len(by), "n_images", g["name"].nunique().values)
+    return out
+
+
+def recovery_table(robust: pd.DataFrame) -> pd.DataFrame:
+    """How much of the damage done by a degradation each ablation step wins back (one model).
+
+    recovery % = (m[degraded, raw] - m[degraded, step]) / (m[degraded, raw] - m[clean, raw]) x 100
+    100% = back to clean-image accuracy, 0% = no help, negative = made it worse.
+    The same formula works for delta1 (higher is better) because both differences flip sign.
+    """
+    clean = robust[(robust["degradation"] == "clean") & (robust["condition"] == "raw")].iloc[0]
+    rows = []
+    for deg in [d for d in robust["degradation"].unique() if d != "clean"]:
+        sub = robust[robust["degradation"] == deg]
+        raw = sub[sub["condition"] == "raw"].iloc[0]
+        for _, r in sub.iterrows():
+            row = {"degradation": deg, "condition": r["condition"]}
+            for m in DEPTH_METRICS:
+                damage = raw[m] - clean[m]
+                row[f"{m}_recovery_pct"] = 100 * (raw[m] - r[m]) / damage if abs(damage) > 1e-9 else np.nan
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def refinement_table(summary: pd.DataFrame) -> pd.DataFrame:
+    """Before / after depth refinement, per model x degradation x input variant, with the change."""
+    idx = ["model", "degradation"]
+    rows = []
+    for inp in REFINE_VARIANTS:
+        before = summary[summary["condition"] == inp].set_index(idx)
+        after = summary[summary["condition"] == f"{inp}_refine"].set_index(idx)
+        for key in before.index.intersection(after.index):
+            row = {"model": key[0], "degradation": key[1], "input": inp}
+            for m in BOUNDARY_METRICS + ["abs_rel", "rmse"]:
+                b, a = float(before.loc[key, m]), float(after.loc[key, m])
+                row[m], row[f"{m}_refined"], row[f"{m}_change"] = b, a, a - b
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
+# --------------------------------------------------------------------------- #
+# Denoising quality (PSNR / SSIM against the clean image)
+# --------------------------------------------------------------------------- #
+def denoise_quality_run(df: pd.DataFrame, levels=NOISE_LEVELS) -> pd.DataFrame:
+    """PSNR and SSIM of each denoiser against the clean image, per image and noise level (CPU only).
+
+    Methods: "noisy" (no filtering), "gaussian" (sigma 1), "bilateral_fixed" (sigma_color 40),
+    "bilateral_auto" (sigma_color from the estimated noise = what the pipeline uses).
+    """
+    from . import preprocessing as pp
+    methods = {"noisy": lambda x: x, "gaussian": pp.denoise_gaussian, "bilateral_fixed": pp.denoise_bilateral,
+               "bilateral_auto": pp.denoise}
+    rows = []
+    for _, r in tqdm(df.iterrows(), total=len(df), desc="denoising PSNR / SSIM", unit="img"):
+        clean = pp.load_rgb(r["rgb_path"])
+        for sigma in levels:
+            noisy = degrade(clean, f"noise{sigma}", seed=int(r["mat_index"]))
+            for name, fn in methods.items():
+                y = fn(noisy)
+                rows.append({"name": r["name"], "noise_sigma": sigma, "method": name,
+                             "psnr": pp.psnr(clean, y), "ssim": pp.ssim(clean, y),
+                             "noise_est": pp.estimate_noise_sigma(y)})
+    return pd.DataFrame(rows)
+
+
+def summarize_denoise_quality(per_image: pd.DataFrame) -> pd.DataFrame:
+    """Mean and std over images per (noise level, method), plus the gain over the unfiltered image."""
+    g = per_image.groupby(["noise_sigma", "method"], sort=False)
+    out = g.agg(psnr_mean=("psnr", "mean"), psnr_std=("psnr", "std"), ssim_mean=("ssim", "mean"),
+                ssim_std=("ssim", "std"), noise_est_mean=("noise_est", "mean"),
+                n_images=("name", "nunique")).reset_index()
+    base = out[out["method"] == "noisy"].set_index("noise_sigma")
+    out["psnr_gain_db"] = out["psnr_mean"] - out["noise_sigma"].map(base["psnr_mean"])
+    out["ssim_gain"] = out["ssim_mean"] - out["noise_sigma"].map(base["ssim_mean"])
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# Depth figures
+# --------------------------------------------------------------------------- #
+# One fixed colour per input variant (raw = neutral grey); "+ refinement" = same colour, hatched.
+CONDITION_COLORS = {"raw": "#8a8a85", "denoise": "#2a78d6", "clahe": "#eb6834", "full": "#1baf7a",
+                    "full_plain": "#8b5fd6", "full_refine": "#1baf7a", "full_plain_refine": "#8b5fd6"}
+CONDITION_HATCH = {"full_refine": "///", "full_plain_refine": "///"}
+CONDITION_SHORT = {"raw": "Raw", "denoise": "+Denoise", "clahe": "+CLAHE", "full": "+Full\n(aware)",
+                   "full_plain": "+Full\n(plain)", "full_refine": "+Full aware\n+Refine",
+                   "full_plain_refine": "+Full plain\n+Refine"}
+METRIC_TITLES = {"abs_rel": "AbsRel  (lower is better)", "rmse": "RMSE in m  (lower is better)",
+                 "delta1": "δ < 1.25  (higher is better)", "edge_abs_rel": "AbsRel at depth edges  (lower is better)",
+                 "edge_rmse": "RMSE at depth edges, m  (lower is better)",
+                 "flying_pct": "Flying pixels, %  (lower is better)"}
+
+
+def _bar_panel(ax, labels, values, colors, fmt="{:.3f}", ref=None, ref_label=None, hatches=None):
+    """Bars with value labels; optional dashed reference line."""
+    x = np.arange(len(values))
+    values = np.asarray(values, float)
+    bars = ax.bar(x, values, width=0.64, color=colors, edgecolor="white", linewidth=1.5)
+    for b, h in zip(bars, hatches or []):
+        b.set_hatch(h)
+    top = max(values.max(), ref or 0)
+    ax.set_ylim(0, top * 1.16)
+    for xi, v in zip(x, values):
+        ax.text(xi, v + top * 0.015, fmt.format(v), ha="center", va="bottom", fontsize=8, color="#222")
+    if ref is not None:
+        ax.axhline(ref, color="#555", ls="--", lw=1.1, label=ref_label)
+    ax.set_xticks(x, labels, fontsize=7.5)
+    ax.set_xlim(-0.6, len(values) - 0.4)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.grid(axis="y", color="#e6e6e3", lw=0.8)
+    ax.set_axisbelow(True)
+
+
+def _cond_style(conds):
+    return ([CONDITION_SHORT[c] for c in conds], [CONDITION_COLORS[c] for c in conds],
+            [CONDITION_HATCH.get(c, "") for c in conds])
+
+
+def plot_depth_ablation(ablation: pd.DataFrame, out_path, model_labels: dict,
+                        metrics=("abs_rel", "rmse", "delta1")) -> None:
+    """Clean NYU images: one row per depth model, one panel per metric, one bar per ablation step.
+
+    Panels of the same metric share the y-axis, so the two models can be compared directly.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    model_names = list(dict.fromkeys(ablation["model"]))
+    conds = [c for c in CONDITION_COLORS if c in set(ablation["condition"])]
+    labels, cols, hatches = _cond_style(conds)
+    fig, axes = plt.subplots(len(model_names), len(metrics), figsize=(5.6 * len(metrics), 3.9 * len(model_names)),
+                             squeeze=False, sharey="col")
+    for r, name in enumerate(model_names):
+        ab = ablation[ablation["model"] == name].set_index("condition").loc[conds]
+        for c, m in enumerate(metrics):
+            _bar_panel(axes[r, c], labels, list(ab[m]), cols, hatches=hatches)
+            axes[r, c].set_ylim(0, float(ablation[ablation["condition"].isin(conds)][m].max()) * 1.16)
+            axes[r, c].set_title(f"{model_labels.get(name, name)}: {METRIC_TITLES[m]}", fontsize=10)
+    n = int(ablation["n_images"].iloc[0])
+    fig.suptitle(f"Depth on NYU Depth V2 ({n} test images, clean): effect of each preprocessing step "
+                 "(hatched = with depth refinement)", fontsize=11.5)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+
+
+def plot_depth_robustness(robust: pd.DataFrame, out_path, model_label: str, metric: str = "abs_rel") -> None:
+    """One panel per degradation (one model): the metric per ablation step; dashed line = clean raw image."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    degs = [d for d in DEGRADATIONS if d in set(robust["degradation"])]
+    conds = [c for c in CONDITION_COLORS if c in set(robust["condition"])]
+    labels, cols, hatches = _cond_style(conds)
+    clean_raw = float(robust[(robust["degradation"] == "clean") & (robust["condition"] == "raw")][metric].iloc[0])
+    top = float(robust[robust["condition"].isin(conds)][metric].max())
+    ncol = 4
+    nrow = int(np.ceil(len(degs) / ncol))
+    fig, axes = plt.subplots(nrow, ncol, figsize=(5.2 * ncol, 3.9 * nrow), squeeze=False, sharey=True)
+    for ax in axes.ravel()[len(degs):]:
+        ax.set_visible(False)
+    for ax, deg in zip(axes.ravel(), degs):
+        sub = robust[robust["degradation"] == deg].set_index("condition").loc[conds]
+        _bar_panel(ax, labels, list(sub[metric]), cols, ref=clean_raw,
+                   ref_label=f"clean raw image ({clean_raw:.3f})", hatches=hatches)
+        ax.set_ylim(0, top * 1.16)
+        ax.set_title(DEGRADATION_LABELS[deg], fontsize=10.5)
+    for ax in axes[:, 0]:
+        ax.set_ylabel(METRIC_TITLES[metric])
+    axes[0, 0].legend(loc="upper left", fontsize=8, frameon=False)
+    n = int(robust["n_images"].iloc[0])
+    fig.suptitle(f"Robustness of {model_label} on degraded NYU images ({n} test images): effect of each "
+                 "preprocessing step (hatched = with depth refinement)", fontsize=11.5)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150)
     plt.close(fig)

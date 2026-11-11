@@ -145,21 +145,103 @@ Protocol: 500 held-out MMIS captions (never used in training, 9–10 per style×
 | AbsRel | Mean relative depth error |
 | RMSE | Absolute depth error |
 | δ < 1.25 | % of pixels with accurate depth |
+| Edge AbsRel / Edge RMSE | The same errors, only on pixels near a ground-truth depth edge (object boundaries) |
+| Flying pixels | % of back-projected 3D points hanging between a foreground and a background surface |
 
 Comparison: **MiDaS vs. Depth Anything** on NYU Depth V2.
 
+#### Results (Depth)
+Protocol: all 654 NYU Depth V2 test images at 480×640. Both models predict relative inverse depth, so each prediction is aligned to the ground truth with a least-squares scale and shift in disparity space, then scored inside the Eigen crop on pixels with valid depth up to 10 m. Metrics are computed per image and averaged. Nothing was tuned on the test set: every filter parameter and metric threshold was fixed before the full run. Code: `src/depth.py`, `src/evaluate.py`, `scripts/eval_depth.py`.
+
+**Models (clean images, raw input)**
+
+| Model | AbsRel ↓ | RMSE (m) ↓ | δ<1.25 ↑ | Edge AbsRel ↓ | Edge RMSE ↓ | Flying px % ↓ |
+|---|---|---|---|---|---|---|
+| MiDaS (DPT-Hybrid) | 0.0975 | 0.418 | 0.904 | 0.142 | 0.570 | 0.58 |
+| Depth Anything (ViT-B) | **0.0546** | **0.273** | **0.965** | **0.102** | **0.436** | 0.67 |
+
+Depth Anything has 44% lower AbsRel than MiDaS and is the model used in the pipeline.
+
 ### Key Experiment: Effect of Image Processing (Ablation)
-Run depth estimation on NYU Depth V2 under each condition and compare metrics:
+Depth estimation on the clean NYU Depth V2 test images under each condition. Denoising and CLAHE are each applied on their own; "full" is denoise → CLAHE → unsharp mask.
 
-| Condition | AbsRel | RMSE | δ<1.25 |
+| Condition | Depth Anything AbsRel | RMSE | δ<1.25 | MiDaS AbsRel | RMSE | δ<1.25 |
+|---|---|---|---|---|---|---|
+| Raw images | **0.0546** | 0.273 | 0.965 | **0.0975** | **0.418** | **0.904** |
+| + Denoising | 0.0547 | **0.271** | 0.965 | 0.1027 | 0.437 | 0.896 |
+| + CLAHE | 0.0553 | 0.274 | 0.964 | 0.0975 | 0.423 | 0.903 |
+| + Full preprocessing | 0.0563 | 0.280 | 0.962 | 0.1000 | 0.428 | 0.898 |
+| + Full preprocessing + depth refinement | 0.0566 | 0.280 | 0.962 | 0.1001 | 0.428 | 0.898 |
+
+**On clean images preprocessing does not reduce depth error.** Every step is neutral or slightly worse than the raw image for both models (full preprocessing: +3% AbsRel for both).
+
+#### Robustness
+Each image is degraded synthetically at a moderate and a severe level, then the same ablation is run. AbsRel (lower is better); bold = best in the row.
+
+| Model | Degradation | Raw | + Denoise | + CLAHE | + Full (plain) | + Full (noise-aware) | + Full (plain) + refine |
+|---|---|---|---|---|---|---|---|
+| Depth Anything | Clean | **0.0546** | 0.0547 | 0.0553 | 0.0563 | 0.0563 | 0.0566 |
+| | Gaussian noise σ=15 | **0.0580** | 0.0580 | 0.0602 | 0.0602 | 0.0607 | 0.0605 |
+| | Gaussian noise σ=25 | 0.0616 | **0.0600** | 0.0670 | 0.0637 | 0.0647 | 0.0640 |
+| | Gaussian noise σ=50 | 0.0786 | **0.0675** | 0.0977 | 0.0835 | 0.0832 | 0.0837 |
+| | Motion blur 15 px | **0.0636** | 0.0637 | 0.0665 | 0.0678 | 0.0678 | 0.0682 |
+| | Motion blur 25 px | **0.0754** | 0.0763 | 0.0810 | 0.0829 | 0.0829 | 0.0832 |
+| | Low light (γ 2.2 + noise 10) | **0.0618** | 0.0621 | 0.0639 | 0.0653 | 0.0661 | 0.0656 |
+| | Low light (γ 3.0 + noise 20) | 0.0789 | **0.0775** | 0.0855 | 0.0843 | 0.0894 | 0.0845 |
+| MiDaS | Clean | **0.0975** | 0.1027 | 0.0975 | 0.1000 | 0.1000 | 0.1001 |
+| | Gaussian noise σ=15 | **0.1008** | 0.1074 | 0.1056 | 0.1045 | 0.1125 | 0.1045 |
+| | Gaussian noise σ=25 | **0.1066** | 0.1095 | 0.1139 | 0.1116 | 0.1185 | 0.1115 |
+| | Gaussian noise σ=50 | 0.1205 | **0.1169** | 0.1323 | 0.1289 | 0.1332 | 0.1288 |
+| | Motion blur 15 px | 0.1252 | 0.1285 | **0.1207** | 0.1218 | 0.1218 | 0.1220 |
+| | Motion blur 25 px | 0.1433 | 0.1473 | **0.1428** | 0.1433 | 0.1433 | 0.1434 |
+| | Low light (γ 2.2 + noise 10) | **0.1096** | 0.1171 | 0.1118 | 0.1116 | 0.1183 | 0.1116 |
+| | Low light (γ 3.0 + noise 20) | **0.1314** | 0.1381 | 0.1358 | 0.1411 | 0.1498 | 0.1410 |
+
+- **The full pipeline does not improve robustness.** It is worse than the raw degraded image in 12 of the 14 degraded cases and equal in one (MiDaS, 25 px blur). The only gain is MiDaS under 15 px motion blur (0.1252 → 0.1218, 12% of the damage recovered).
+- **Denoising alone helps when the noise is strong.** For Depth Anything it recovers 24% of the damage at σ=25 and 46% at σ=50 (0.0786 → 0.0675), and 6% in severe low light. For MiDaS it helps only at σ=50 (16%).
+- **CLAHE alone hurts on noisy input** (Depth Anything σ=50: 0.0786 → 0.0977) because it amplifies the noise. It gives MiDaS a small gain under motion blur (16% at 15 px).
+- **Both models are already robust.** Moderate degradations cost Depth Anything only 6–17% AbsRel, so there is little damage for classical filters to win back; these networks were trained on large, varied data.
+- Recovery % = (error on degraded raw − error after the step) / (error on degraded raw − error on clean raw). All values are in `results/tables/depth_robustness.csv`.
+
+**Default full pipeline: plain three steps (`noise_aware=False`).** A noise-aware variant (denoise again after CLAHE and skip sharpening when the input is noisy) was also evaluated. The two are identical on clean and blurred images. On noisy and dark images the plain version is better for MiDaS in all five cases (AbsRel lower by 0.004–0.009, five to ten standard errors in a per-image paired comparison) and for Depth Anything in severe low light (0.0843 vs. 0.0894). For Depth Anything under Gaussian noise the two are within 0.001 of each other. The noise-aware variant is never clearly better, so the simpler pipeline is the default. Neither variant beats the raw image.
+
+#### Denoising quality
+PSNR and SSIM against the clean image, mean over the 654 images. "Adaptive bilateral" sets the colour sigma to three times the estimated noise level and is what the pipeline uses.
+
+| Noise σ | Method | PSNR (dB) ↑ | SSIM ↑ |
 |---|---|---|---|
-| Raw images | – | – | – |
-| + Denoising | – | – | – |
-| + CLAHE | – | – | – |
-| + Full preprocessing | – | – | – |
-| + Full preprocessing + depth refinement | – | – | – |
+| 15 | Noisy input | 25.1 | 0.596 |
+| | Gaussian (σ=1) | 28.9 | **0.897** |
+| | Bilateral, fixed | 32.2 | 0.881 |
+| | Bilateral, adaptive | **32.4** | 0.887 |
+| 25 | Noisy input | 20.9 | 0.405 |
+| | Gaussian (σ=1) | 27.2 | **0.821** |
+| | Bilateral, fixed | 25.4 | 0.622 |
+| | Bilateral, adaptive | **28.9** | 0.791 |
+| 50 | Noisy input | 15.3 | 0.211 |
+| | Gaussian (σ=1) | **23.2** | **0.634** |
+| | Bilateral, fixed | 16.5 | 0.247 |
+| | Bilateral, adaptive | 21.3 | 0.443 |
 
-Also test robustness by adding **synthetic noise, blur, and low light** to images, then measuring how much preprocessing recovers.
+The adaptive bilateral filter gives the best PSNR at σ=15 and σ=25 (+7.3 and +8.0 dB). The plain Gaussian filter has the best SSIM at every level and also the best PSNR at σ=50, where the bilateral filter leaves visible residual noise. A fixed bilateral filter stops working once the noise exceeds its colour sigma. Table: `results/tables/depth_denoise_quality.csv`.
+
+#### Depth refinement and boundary metrics
+Refinement = median + bilateral filtering of the depth map, edge-aware smoothing guided by the Canny map, and morphological hole filling. Depth Anything, before → after refinement:
+
+| Input | Degradation | Flying px % | Edge AbsRel | AbsRel |
+|---|---|---|---|---|
+| Raw | Clean | 0.67 → 0.43 | 0.1020 → 0.1038 | 0.0546 → 0.0550 |
+| Full (plain) | Clean | 0.68 → 0.44 | 0.1026 → 0.1037 | 0.0563 → 0.0566 |
+| Full (plain) | Gaussian noise σ=25 | 0.58 → 0.37 | 0.1123 → 0.1134 | 0.0637 → 0.0640 |
+| Full (plain) | Low light (γ 2.2 + noise 10) | 0.54 → 0.35 | 0.1145 → 0.1154 | 0.0653 → 0.0656 |
+
+- **Refinement removes roughly a third of the flying pixels** for both models in every condition (MiDaS clean, raw: 0.58 → 0.38).
+- **It does not improve accuracy.** Edge AbsRel and global AbsRel change by about 0.001 or less, slightly worse for Depth Anything and mixed for MiDaS. Its value is a cleaner point cloud, not a lower depth error.
+- **Caveat, flying pixels:** the measure counts points whose neighbours on both sides are more than 5% of the depth away. A blurred prediction spreads a depth step over many pixels and falls under that threshold, so the ratio also drops when the depth map is simply smoother (Depth Anything under 25 px motion blur: 0.19% with a higher error). It must be read together with Edge AbsRel.
+- **Caveat, Kinect edges:** the NYU ground truth is in-painted and imprecise near object boundaries, so the edge mask and the edge errors are approximate.
+- Table: `results/tables/depth_refinement_boundary.csv`. Per-image values: `results/tables/depth_per_image.csv`.
+
+Figures: `results/figures/depth_ablation.png`, `depth_robustness_depth_anything.png`, `depth_robustness_midas.png` (metrics); `depth_preprocessing_steps.png`, `depth_refinement_steps.png`, `depth_qualitative.png`, `analysis_edges_segmentation.png` (before/after examples).
 
 ### Visual Results
 - Prompt → 2D image → depth map → 3D mesh (side by side)
@@ -230,8 +312,8 @@ RoomGen3D/
 ## 13. Objectives (Measurable)
 
 1. Train a LoRA that improves FID and CLIP Score over vanilla SD v1.5. *Status: FID 64.5 → 54.6 and KID 19.1 → 10.2 ×10³ (met). CLIP 27.9 → 27.0 (not met; see section 8).*
-2. Show that preprocessing reduces depth error (AbsRel/RMSE) on NYU Depth V2.
-3. Show that preprocessing improves robustness under noise, blur, and low light.
+2. Show that preprocessing reduces depth error (AbsRel/RMSE) on NYU Depth V2. *Status: not met. On clean images every preprocessing step is neutral or slightly worse for both models (Depth Anything AbsRel 0.0546 raw vs. 0.0563 full); see section 8.*
+3. Show that preprocessing improves robustness under noise, blur, and low light. *Status: not met for the full pipeline (worse than raw in 12 of 14 degraded cases). Partly met for denoising alone under strong noise: it recovers 46% of the AbsRel damage at σ=50 and 24% at σ=25 for Depth Anything.*
 4. Produce a 3D mesh from any generated design in under ~1 minute on a GPU.
 5. Deploy a public demo showing 2D and 3D outputs side by side.
 
@@ -243,6 +325,7 @@ RoomGen3D/
 - Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only.
 - Training on a subset of MMIS due to compute limits.
 - Monocular depth is **relative**, not true metric scale.
+- Classical preprocessing did **not** improve depth accuracy on NYU Depth V2: modern depth networks are already robust to moderate noise, blur and low light. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.
 
 ## 15. Future Work
 
