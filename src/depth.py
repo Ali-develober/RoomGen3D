@@ -1,8 +1,10 @@
-"""Depth estimation (Depth Anything, MiDaS baseline) and depth-map refinement.
+"""Depth estimation (Depth Anything, MiDaS baseline, metric Depth Anything V2) and depth-map refinement.
 
-Both models take one RGB image and return RELATIVE inverse depth ("disparity": large = near),
-correct only up to an unknown scale and shift. Evaluation aligns it to ground truth
-(src/evaluate.py); the 3D stage only needs the relative shape.
+Two kinds of model:
+  relative ("depth_anything", "midas"): return RELATIVE inverse depth ("disparity": large = near),
+      correct only up to an unknown scale and shift. Evaluation aligns it to ground truth.
+  metric ("depth_anything_metric"): returns depth in METRES directly. Used by the 3D stage, where
+      an unknown shift would bend the geometry (see reconstruct_3d.disparity_to_depth).
 
 Refinement (refine_depth) works on the predicted map itself, in four steps:
     1. median filter         - removes isolated spikes (salt-and-pepper outliers)
@@ -17,14 +19,17 @@ import numpy as np
 import torch
 
 from .analysis import canny_edges
-from .preprocessing import clahe_lab, denoise, preprocess_for_depth
+from .preprocessing import clahe_lab, denoise, preprocess_for_depth, preprocess_gated
 
 DEPTH_MODELS = {
     "depth_anything": "LiheYoung/depth-anything-base-hf",   # main model
     "midas": "Intel/dpt-hybrid-midas",                      # baseline
+    "depth_anything_metric": "depth-anything/Depth-Anything-V2-Metric-Indoor-Base-hf",   # metres, 3D stage
 }
-DEFAULT_INPUT = "full_plain"      # full-preprocessing variant used by the pipeline (see prepare_input)
-DEPTH_MODEL_LABELS = {"depth_anything": "Depth Anything (ViT-B)", "midas": "MiDaS (DPT-Hybrid)"}
+METRIC_MODELS = {"depth_anything_metric"}     # these return depth in metres, the others disparity
+DEFAULT_INPUT = "gated"           # preprocessing used by the pipeline: noise-gated denoising (see prepare_input)
+DEPTH_MODEL_LABELS = {"depth_anything": "Depth Anything (ViT-B)", "midas": "MiDaS (DPT-Hybrid)",
+                      "depth_anything_metric": "Depth Anything V2 Metric Indoor (ViT-B)"}
 
 # Refinement parameters (the depth map is normalised to [0, 1] first, so they are scale-free).
 REF_MEDIAN = 5            # median window (px)
@@ -51,7 +56,10 @@ def load_depth_model(name: str, device):
 
 @torch.inference_mode()
 def predict_disparity(model, processor, img: np.ndarray, device) -> np.ndarray:
-    """Relative inverse depth (float32 HxW, same size as the RGB uint8 input)."""
+    """Raw network output resized to the input (float32 HxW; input = RGB uint8).
+
+    Relative models: inverse depth (disparity). Metric models: depth in metres (see predict_depth).
+    """
     inp = processor(images=img, return_tensors="pt")["pixel_values"].to(device, torch.float16)
     pred = model(pixel_values=inp).predicted_depth              # 1 x h x w at the model resolution
     pred = torch.nn.functional.interpolate(pred[:, None].float(), size=img.shape[:2], mode="bilinear",
@@ -59,11 +67,17 @@ def predict_disparity(model, processor, img: np.ndarray, device) -> np.ndarray:
     return pred[0, 0].cpu().numpy()
 
 
+def predict_depth(model, processor, img: np.ndarray, device) -> np.ndarray:
+    """Depth in metres from a METRIC model (float32 HxW)."""
+    return np.maximum(predict_disparity(model, processor, img, device), 1e-3)
+
+
 def prepare_input(img: np.ndarray, variant: str) -> np.ndarray:
     """Input preprocessing variants used in the ablation.
 
     "raw" | "denoise" | "clahe" | "full" (noise-aware pipeline, noise_aware=True) |
-    "full_plain" (plain denoise -> CLAHE -> unsharp, noise_aware=False = the pipeline default).
+    "full_plain" (plain denoise -> CLAHE -> unsharp, noise_aware=False) |
+    "gated" (noise-gated denoising, preprocess_gated = the pipeline default, DEFAULT_INPUT).
     """
     if variant == "raw":
         return img
@@ -75,6 +89,8 @@ def prepare_input(img: np.ndarray, variant: str) -> np.ndarray:
         return preprocess_for_depth(img, noise_aware=True)
     if variant == "full_plain":
         return preprocess_for_depth(img, noise_aware=False)
+    if variant == "gated":
+        return preprocess_gated(img)
     raise ValueError(variant)
 
 
@@ -152,3 +168,16 @@ def refine_depth(disp: np.ndarray, rgb: np.ndarray, return_steps: bool = False):
     if return_steps:
         return out, {"input": d0, "median_bilateral": d1, "edge_aware": d2, "hole_filled": d3, "edges": edges}
     return out
+
+
+def refine_metric_depth(depth: np.ndarray, rgb: np.ndarray, return_steps: bool = False):
+    """refine_depth for a metric depth map (metres in, metres out).
+
+    The filters run on INVERSE depth, the same quantity they were evaluated on with the relative
+    models: there near objects get the fine resolution and far walls are not over-weighted.
+    """
+    inv = 1.0 / np.maximum(depth, 1e-3)
+    if return_steps:
+        out, steps = refine_depth(inv, rgb, return_steps=True)
+        return (1.0 / np.maximum(out, 1e-6)).astype(np.float32), steps
+    return (1.0 / np.maximum(refine_depth(inv, rgb), 1e-6)).astype(np.float32)

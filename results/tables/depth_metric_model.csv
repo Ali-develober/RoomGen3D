@@ -1,0 +1,3 @@
+model,label,n_images,protocol,abs_rel,rmse,delta1,edge_abs_rel,edge_rmse,flying_pct
+depth_anything_metric,Depth Anything V2 Metric Indoor (ViT-B),654,aligned,0.06597,0.31465,0.95128,0.11445,0.49353,0.79856
+depth_anything_metric,Depth Anything V2 Metric Indoor (ViT-B),654,metric,0.21953,0.65997,0.66418,0.24996,0.77267,0.81522

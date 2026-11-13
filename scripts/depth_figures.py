@@ -123,7 +123,7 @@ def fig_depth(rows, device):
         show(axes[r, 0], img, "RGB" if r == 0 else None)
         show(axes[r, 1], np.where(gt > 0, gt, np.nan), "Ground truth (Kinect)" if r == 0 else None, **kw)
         a1, a2 = ev.depth_metrics(pred, gt, mask)["abs_rel"], ev.depth_metrics(ref, gt, mask)["abs_rel"]
-        show(axes[r, 2], pred, ("Depth Anything, full preprocessing\n" if r == 0 else "") + f"AbsRel {a1:.3f}", **kw)
+        show(axes[r, 2], pred, ("Depth Anything, gated preprocessing\n" if r == 0 else "") + f"AbsRel {a1:.3f}", **kw)
         im = axes[r, 3].imshow(ref, **kw)
         show(axes[r, 3], ref, ("+ depth refinement\n" if r == 0 else "") + f"AbsRel {a2:.3f}", **kw)
         fig.colorbar(im, ax=list(axes[r]), fraction=0.012, pad=0.01, label="depth (m)")

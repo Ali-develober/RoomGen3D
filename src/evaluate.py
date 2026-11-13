@@ -92,18 +92,9 @@ def load_holdout(csv_path, image_root, limit: int | None = None) -> pd.DataFrame
 # Generation
 # --------------------------------------------------------------------------- #
 def load_pipeline(lora_dir: str | None, device, base_model: str = BASE_MODEL):
-    """SD v1.5 fp16 pipeline with a DDIM scheduler; the LoRA (if any) is fused into the UNet."""
-    from diffusers import DDIMScheduler, StableDiffusionPipeline
-
-    pipe = StableDiffusionPipeline.from_pretrained(base_model, dtype=torch.float16, variant="fp16",
-                                                   safety_checker=None, requires_safety_checker=False)
-    pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
-    if lora_dir is not None:
-        pipe.load_lora_weights(str(lora_dir))
-        pipe.fuse_lora(lora_scale=1.0)
-        pipe.unload_lora_weights()   # weights are fused; drop the adapter layers (faster inference)
-    pipe.set_progress_bar_config(disable=True)
-    return pipe.to(device)
+    """SD v1.5 fp16 pipeline with a DDIM scheduler and the fused LoRA (see generate_2d.load_pipeline)."""
+    from .generate_2d import load_pipeline as _load
+    return _load(lora_dir, device, base_model)
 
 
 def missing_rows(df: pd.DataFrame, out_dir) -> pd.DataFrame:
@@ -517,30 +508,14 @@ def depth_edge_mask(gt: np.ndarray, mask: np.ndarray) -> np.ndarray:
 
 def backproject(depth: np.ndarray) -> np.ndarray:
     """Depth map (m) -> HxWx3 point cloud in camera coordinates (pinhole model, NYU intrinsics)."""
-    h, w = depth.shape
-    z = depth.astype(np.float64)
-    u, v = np.meshgrid(np.arange(w), np.arange(h))
-    return np.stack([(u - NYU_CENTER[0]) / NYU_FOCAL * z, (v - NYU_CENTER[1]) / NYU_FOCAL * z, z], axis=-1)
+    from .reconstruct_3d import backproject as _bp
+    return _bp(depth, NYU_FOCAL, NYU_FOCAL, *NYU_CENTER)
 
 
 def flying_pixel_mask(depth: np.ndarray, mask: np.ndarray) -> np.ndarray:
-    """Flying pixels: 3D points hanging in empty space between a foreground and a background surface.
-
-    A depth map that blurs an object boundary puts intermediate depths there; back-projected,
-    these become a "curtain" of points joining the object to the wall behind it. A point counts
-    as flying if, along its image row or its column, the 3D points on BOTH sides are farther
-    away than FLYING_REL_GAP x its depth (15 cm at 3 m) and one is nearer, the other farther.
-    A perfectly sharp step has none (each side has a close neighbour on its own surface).
-    """
-    pts, z = backproject(depth), depth.astype(np.float64)
-    fly = np.zeros(depth.shape, bool)
-    for ax in (0, 1):
-        p, zz, m = np.moveaxis(pts, ax, 0), np.moveaxis(z, ax, 0), np.moveaxis(mask, ax, 0)
-        gap = np.linalg.norm(p[1:] - p[:-1], axis=-1)           # 3D distance between neighbours
-        lim = FLYING_REL_GAP * zz[1:-1]
-        between = (zz[2:] - zz[1:-1]) * (zz[1:-1] - zz[:-2]) > 0
-        np.moveaxis(fly, ax, 0)[1:-1] |= (gap[:-1] > lim) & (gap[1:] > lim) & between & m[2:] & m[:-2]
-    return fly & mask
+    """Flying pixels with the NYU camera (definition: reconstruct_3d.flying_pixel_mask)."""
+    from .reconstruct_3d import flying_pixel_mask as _fly
+    return _fly(depth, mask, NYU_FOCAL, NYU_FOCAL, *NYU_CENTER, rel_gap=FLYING_REL_GAP)
 
 
 def boundary_metrics(pred: np.ndarray, gt: np.ndarray, mask: np.ndarray, edge: np.ndarray) -> dict:

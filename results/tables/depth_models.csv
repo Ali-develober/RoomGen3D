@@ -1,3 +1,4 @@
 model,label,n_images,abs_rel,rmse,delta1,edge_abs_rel,edge_rmse,flying_pct
 midas,MiDaS (DPT-Hybrid),654,0.09750,0.41796,0.90435,0.14186,0.56961,0.57834
 depth_anything,Depth Anything (ViT-B),654,0.05464,0.27257,0.96480,0.10202,0.43564,0.67106
+depth_anything_metric,Depth Anything V2 Metric Indoor (ViT-B),654,0.06597,0.31465,0.95128,0.11445,0.49353,0.79856

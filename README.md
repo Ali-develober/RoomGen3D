@@ -36,13 +36,13 @@ Text Prompt
 [1] 2D Generation ───── Stable Diffusion v1.5 + custom-trained LoRA (MMIS)
    │
    ▼
-[2] Preprocessing ───── Denoising · CLAHE · Sharpening · Resize/Normalize
+[2] Preprocessing ───── Noise-gated denoising (CLAHE / sharpening evaluated and dropped, see section 8)
    │
    ▼
 [3] Image Analysis ──── Canny edges · Room segmentation (walls / floor / furniture)
    │
    ▼
-[4] Depth Estimation ── Depth Anything (compared with MiDaS)
+[4] Depth Estimation ── Depth Anything V2 Metric Indoor (Depth Anything and MiDaS compared on NYU)
    │
    ▼
 [5] Depth Post-processing ── Bilateral / median filtering · edge-aware refinement · hole filling
@@ -51,7 +51,7 @@ Text Prompt
 [6] 3D Reconstruction ─ Depth → Point Cloud → Mesh (Open3D, Poisson reconstruction)
    │
    ▼
-[7] Interface ───────── Gradio: 2D image + interactive 3D viewer + download (.ply / .obj)
+[7] Interface ───────── Gradio: 2D image + interactive 3D viewer + download (.ply / .glb)
 ```
 
 ---
@@ -92,8 +92,8 @@ We use a **subset of MMIS** (e.g., 5–10K images after cleaning) to fit local G
 |---|---|---|
 | Text-to-image | Stable Diffusion v1.5 | Base generator |
 | Domain adaptation | LoRA (trained by us on MMIS) | Specialize generation for interiors |
-| Depth estimation | Depth Anything (main), MiDaS (baseline) | Monocular depth from a single image |
-| Segmentation | Pretrained semantic segmenter (e.g., SegFormer on ADE20K) | Room-element masks |
+| Depth estimation | Depth Anything (best on NYU), MiDaS (baseline), Depth Anything V2 Metric Indoor (3D stage) | Monocular depth from a single image |
+| Segmentation | SegFormer-B2 (ADE20K) | Room-element masks |
 | 3D | Open3D | Point cloud + mesh reconstruction |
 
 ---
@@ -159,8 +159,9 @@ Protocol: all 654 NYU Depth V2 test images at 480×640. Both models predict rela
 |---|---|---|---|---|---|---|
 | MiDaS (DPT-Hybrid) | 0.0975 | 0.418 | 0.904 | 0.142 | 0.570 | 0.58 |
 | Depth Anything (ViT-B) | **0.0546** | **0.273** | **0.965** | **0.102** | **0.436** | 0.67 |
+| Depth Anything V2 Metric Indoor (ViT-B), aligned the same way | 0.0660 | 0.315 | 0.951 | 0.115 | 0.494 | 0.80 |
 
-Depth Anything has 44% lower AbsRel than MiDaS and is the model used in the pipeline.
+Depth Anything has 44% lower AbsRel than MiDaS and is the model used for all NYU experiments below. The 3D stage uses the metric variant, for the reason given under "3D Reconstruction".
 
 ### Key Experiment: Effect of Image Processing (Ablation)
 Depth estimation on the clean NYU Depth V2 test images under each condition. Denoising and CLAHE are each applied on their own; "full" is denoise → CLAHE → unsharp mask.
@@ -280,10 +281,60 @@ Refinement = median + bilateral filtering of the depth map, edge-aware smoothing
 
 Figures: `results/figures/depth_ablation.png`, `depth_robustness_depth_anything.png`, `depth_robustness_midas.png` (metrics); `depth_preprocessing_steps.png`, `depth_refinement_steps.png`, `depth_qualitative.png`, `analysis_edges_segmentation.png` (before/after examples).
 
+### 3D Reconstruction
+Code: `src/reconstruct_3d.py`, `src/pipeline.py`, `scripts/run_pipeline.py`, `scripts/compare_depth_3d.py`.
+
+**Camera model.** A generated image has no real camera, so one is assumed: a pinhole camera with a **60° horizontal field of view** and the principal point at the image centre (focal length 443 px at 512×512). A pixel (u, v) with depth Z is back-projected to X = (u − cx)·Z/f, Y = (v − cy)·Z/f. A wrong FOV stretches or squeezes the room along the viewing direction.
+
+**Steps.** Metric depth → depth refinement (on inverse depth) → back-projection to a coloured point cloud → flying-pixel removal → statistical outlier removal (Open3D, 20 neighbours, 2 std) → normals (PCA on 30 neighbours, oriented to the camera) → screened Poisson reconstruction (octree depth 9) → trim the 6% least-supported vertices and crop to the point cloud → simplify to 200,000 triangles → export `.ply` (points) and `.glb` / `.obj` (mesh).
+
+**Depth model for the 3D stage: Depth Anything V2 Metric Indoor.** The relative Depth Anything model is the more accurate one on NYU after alignment, but alignment needs ground truth. On a generated image the unknown scale and shift have to be guessed (here: nearest point 1.5 m, farthest 6 m), and a wrong shift is not a uniform scaling: it bends the geometry. The metric model predicts metres directly. Both were compared on the six demo rooms (`results/figures/depth_relative_vs_metric_3d.png`, side and top views):
+
+- **Visual:** with the relative model the far parts of the room are stretched into long streaks (the windows of the living room, the back wall of the bathroom); with the metric model the same rooms are compact and the bathroom wall is a straight line in the top view.
+- **Room size:** the guessed range makes every room 1.4–6 m deep, a bathroom as well as a large living room. The metric model gives each room its own size (bathroom 2.0–3.1 m, living room 3.0–13.4 m).
+- **Plane checks from the segmentation masks are not decisive.** The floor is slightly flatter with the metric model (RMS distance from the best plane 1.16% vs. 1.37% of the scene depth, better or equal in all 5 rooms with a visible floor). The floor–wall angle is closer to 90° for the relative model in 3 of 5 rooms and for the metric model in 2; the means (error 3.5° vs. 14.9°) are dominated by one room. Table: `results/tables/depth_3d_model_choice.csv`.
+
+The choice rests on the visual comparison and on not having to guess a scale and shift. The price, measured on the 654 NYU test images (`scripts/eval_depth_metric.py`):
+
+| Depth Anything V2 Metric Indoor (ViT-B) | AbsRel ↓ | RMSE (m) ↓ | δ<1.25 ↑ |
+|---|---|---|---|
+| Aligned (scale + shift, same protocol as the models table) | 0.0660 | 0.315 | 0.951 |
+| As predicted, in metres, no alignment | 0.2195 | 0.660 | 0.664 |
+
+After alignment it is a little less accurate than the relative model (0.0660 vs. 0.0546) and better than MiDaS. Without alignment its absolute scale is off by about 22% on NYU (it was trained on synthetic indoor scenes, not on NYU), so sizes read from the 3D model are approximate.
+
+**End-to-end run** on six fixed prompts and seeds (not selected after looking at the results), RTX 5060 Laptop 8 GB, seconds per prompt:
+
+| Prompt (seed) | 2D image | Analysis + depth | Point cloud | Mesh | Export | Total |
+|---|---|---|---|---|---|---|
+| a contemporary style living room (11) | 3.3 | 0.12 | 0.7 | 9.5 | 1.7 | 15.3 |
+| a coastal style bedroom (22) | 3.4 | 0.11 | 0.1 | 11.1 | 1.5 | 16.3 |
+| a rustic style kitchen (33) | 3.4 | 0.12 | 0.1 | 10.4 | 1.5 | 15.5 |
+| a mid-century modern style dining room (44) | 3.4 | 0.11 | 0.1 | 7.7 | 1.6 | 12.9 |
+| an art deco style bathroom (55) | 3.4 | 0.13 | 0.1 | 6.2 | 1.6 | 11.4 |
+| a mediterranean style living room (66) | 3.4 | 0.11 | 0.1 | 9.8 | 1.5 | 14.9 |
+| **Mean** | 3.4 | 0.12 | 0.2 | 9.1 | 1.6 | **14.4** |
+
+- **Objective 4 is met:** 14.4 s per prompt on average (max 16.3 s) with the models loaded; loading the three models once adds 12.4 s. "Analysis + depth" covers gated preprocessing, Canny, segmentation, depth and refinement. Poisson meshing on the CPU is the slowest stage.
+- **Peak VRAM:** 2.7 GB (Stable Diffusion); the segmenter and the depth model need about 0.3 GB each. With all three loaded together, as in the demo, the peak is 2.9 GB.
+- **What the 3D model is:** a single-view shell. Surfaces hidden in the image (behind furniture, the wall behind the camera) are holes, and each point cloud loses about 5% of its points to the flying-pixel and outlier filters.
+- Table: `results/tables/pipeline_timing.csv`. Figures: `results/figures/pipeline_3d_results.png` (image, edges, segmentation, depth, point cloud, mesh for each prompt) and `results/figures/pointcloud_refinement.png` (point cloud without and with refinement + cleaning). The 3D files are written to `outputs/pipeline/` (not in git).
+
+### Demo (local)
+`app/app.py` is a Gradio app: prompt, seed, steps and CFG in; 2D image, depth map, edge + segmentation overlay and an interactive 3D viewer out, with download buttons for the image, the mesh (`.glb`) and the point cloud (`.ply`). The three models stay loaded together (2.9 GB VRAM). Launch from the project root and open http://127.0.0.1:7860:
+
+```
+.venv\Scripts\python.exe app\app.py
+```
+
+It is not deployed to Hugging Face Spaces yet.
+
 ### Visual Results
-- Prompt → 2D image → depth map → 3D mesh (side by side)
-- Before/after preprocessing examples
-- Edge and segmentation overlays
+- Prompt → 2D image → edges → segmentation → depth → point cloud → mesh: `results/figures/pipeline_3d_results.png`
+- Point cloud without / with refinement and cleaning: `results/figures/pointcloud_refinement.png`
+- Relative vs. metric depth in 3D: `results/figures/depth_relative_vs_metric_3d.png`
+- Before/after preprocessing examples: `results/figures/depth_preprocessing_steps.png`
+- Edge and segmentation overlays: `results/figures/analysis_edges_segmentation.png`
 
 ---
 
@@ -309,7 +360,9 @@ RoomGen3D/
 │   ├── train_lora.py          # LoRA training
 │   ├── depth.py               # Depth estimation + refinement
 │   ├── reconstruct_3d.py      # Point cloud + mesh
+│   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
+├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures
 ├── app/
 │   └── app.py                 # Gradio demo (2D + 3D viewer)
 ├── results/                   # Figures, tables, sample outputs
@@ -351,8 +404,8 @@ RoomGen3D/
 1. Train a LoRA that improves FID and CLIP Score over vanilla SD v1.5. *Status: FID 64.5 → 54.6 and KID 19.1 → 10.2 ×10³ (met). CLIP 27.9 → 27.0 (not met; see section 8).*
 2. Show that preprocessing reduces depth error (AbsRel/RMSE) on NYU Depth V2. *Status: not met. On clean images every preprocessing step is neutral or slightly worse for both models (Depth Anything AbsRel 0.0546 raw vs. 0.0563 full). The noise-gated pipeline leaves clean images unchanged, so it avoids the loss but gives no gain; see section 8.*
 3. Show that preprocessing improves robustness under noise, blur, and low light. *Status: partly met, for strong noise only. The full pipeline (denoise + CLAHE + unsharp) is worse than raw in 12 of 14 degraded cases. The noise-gated pipeline, selected on the NYU train split and evaluated once on the test split, recovers 49% (σ=25) and 59% (σ=50) of the AbsRel damage for Depth Anything and 14% / 16% for MiDaS. It changes nothing under σ=15 noise, motion blur and moderate low light, and is mixed in severe low light (+6% Depth Anything, −3% MiDaS).*
-4. Produce a 3D mesh from any generated design in under ~1 minute on a GPU.
-5. Deploy a public demo showing 2D and 3D outputs side by side.
+4. Produce a 3D mesh from any generated design in under ~1 minute on a GPU. *Status: met. 14.4 s per prompt on average (max 16.3 s) over six prompts, 2.7 GB peak VRAM; see section 8.*
+5. Deploy a public demo showing 2D and 3D outputs side by side. *Status: the Gradio demo runs locally (`app/app.py`); not deployed yet.*
 
 ---
 
@@ -361,7 +414,7 @@ RoomGen3D/
 - 3D comes from a **single view**, so hidden areas (behind furniture, other walls) are not reconstructed. It is not a full 360° room.
 - Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only.
 - Training on a subset of MMIS due to compute limits.
-- Monocular depth is **relative**, not true metric scale.
+- The 3D stage uses a metric depth model, but its absolute scale is only approximate (AbsRel 0.22 without alignment on NYU), and the camera field of view (60°) is assumed, so sizes in the 3D model are rough.
 - Classical preprocessing did **not** improve depth accuracy on clean NYU Depth V2 images: modern depth networks are already robust to moderate noise, blur and low light. Only noise-gated denoising helps, and only under strong noise (σ ≥ 25); nothing tested helps against blur. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.
 
 ## 15. Future Work

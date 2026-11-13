@@ -1,0 +1,15 @@
+prompt,seed,model,floor_rms_pct,floor_wall_angle,floor_tilt,depth_min_m,depth_max_m,right_angle_error
+a contemporary style living room,11.000,depth_anything,1.382,89.731,4.900,1.403,6.000,0.269
+a coastal style bedroom,22.000,depth_anything,0.315,87.594,1.532,1.440,6.000,2.406
+a rustic style kitchen,33.000,depth_anything,1.970,87.242,4.495,1.411,6.000,2.758
+a mid-century modern style dining room,44.000,depth_anything,1.316,22.182,9.147,1.395,6.000,67.818
+an art deco style bathroom,55.000,depth_anything,,,,1.382,6.000,
+a mediterranean style living room,66.000,depth_anything,1.854,88.752,5.364,1.392,6.000,1.248
+a contemporary style living room,11.000,depth_anything_metric,1.063,87.084,2.394,2.974,13.417,2.916
+a coastal style bedroom,22.000,depth_anything_metric,0.316,85.981,8.125,2.111,6.690,4.019
+a rustic style kitchen,33.000,depth_anything_metric,1.749,88.207,2.751,1.494,7.125,1.793
+a mid-century modern style dining room,44.000,depth_anything_metric,0.855,87.751,3.449,1.896,5.949,2.249
+an art deco style bathroom,55.000,depth_anything_metric,,,,2.032,3.123,
+a mediterranean style living room,66.000,depth_anything_metric,1.795,83.612,8.028,2.250,12.073,6.388
+MEAN,,depth_anything,1.367,75.100,5.088,,,14.900
+MEAN,,depth_anything_metric,1.156,86.527,4.949,,,3.473
