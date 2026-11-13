@@ -6,9 +6,12 @@ Read this first after a restart. Each entry: what was built, results, what faile
 
 | Date | What | Size |
 |---|---|---|
-| — | nothing downloaded yet | 0 GB |
+| 2026-11-14 | `ProGamerGov/360-Diffusion-LoRA-sd-v1-5` (360Diffusion_v1.safetensors) → checkpoints/pano_lora | 0.15 GB |
+| 2026-11-14 | Real-ESRGAN x2plus (from `archerfmy0831/sd-t2i-360panoimage`, single file) → checkpoints/realesrgan | 0.07 GB |
+| 2026-11-14 | DAP code + weights (model.pth) from `Insta360-Research/DAP-weights` → checkpoints/dap | 1.46 GB |
+| 2026-11-14 | SD 2.1-base panorama model (`archerfmy0831/sd-t2i-360panoimage`, sd-base: unet, text encoder, vae, tokenizer; no safety checker, no SR parts) → checkpoints/pano_sd_base | 5.16 GB |
 
-**Total so far: 0 GB.**
+**Total so far: 6.84 GB of 12 GB.** pip (venv only): einops 0.8.2, termcolor 3.3.0 (needed by the DAP code).
 
 ---
 
@@ -35,3 +38,23 @@ Gravity from predicted depth within 1.8° (median) of GT; floor plane found in ~
 - Generated rooms come out tall (ceilings 3.7–5.2 m): scale overestimate or SD bias, cannot be told apart.
 
 **Next:** Milestone 2 — 360° panorama generation (`src/generate_pano.py`): download the panorama LoRA (`ProGamerGov/360-Diffusion-LoRA-sd-v1-5`), circular padding, LoRA weight sweep, seam / CLIP / FID metrics on 30 prompts, super-resolution comparison.
+
+---
+
+## 2026-11-14 — Milestone 2: 360° panorama generation — DONE
+
+**Built**
+- `src/equirect.py`: equirectangular geometry (pixel rays, perspective crops e2p, rotations), seam ratio, Laplacian variance.
+- `src/generate_pano.py`: SD v1.5 + pano LoRA + MMIS LoRA as unfused adapters; alternative SD 2.1-base panorama model loader; circular x-padding patched into every padded Conv2d of UNet + VAE (optional start step); Real-ESRGAN x2 (own RRDBNet, tiled, wrap-padded); bicubic + unsharp baseline (wrap-aware).
+- `scripts/eval_pano.py` (resumable; panoramas in outputs/pano_eval/<config>/).
+
+**Results** (60 panoramas per config = 5 rooms × 6 styles × 2 seeds; crops vs. 500 MMIS hold-out)
+- Circular padding: seam ratio median 3.60 → 0.83 (1 = invisible), no realism cost.
+- MMIS LoRA weight 0 / 0.5 / 0.8 / 1.0 with the pano LoRA: KID 63.7 / 64.1 / 64.6 / 66.3 (std ~3), CLIP 20.4 → 19.8: **no benefit (negative result)**.
+- Alternative SD 2.1 panorama model: KID 38.2, FID 93, CLIP 22.4, 7.3 s — **selected by the fixed rule** (mean rank of KID and CLIP). It was added to the candidates after the six LoRA configs ran but before it ran. Consequence: the 360° mode does not use our MMIS LoRA.
+- Super-resolution (30 panos): Real-ESRGAN x2 Laplacian variance 315 vs. 97 for bicubic+unsharp, 0.76 s; less faithful (PSNR downscaled 33.8 vs. 51.6 dB). Default: Real-ESRGAN.
+- Tables `results/tables/pano_configs.csv`, `pano_per_image.csv`, `pano_sr*.csv`; figures `pano_configs_grid.png`, `pano_configs_metrics.png`, `pano_sr_compare.png`. README section 8 "360° Panorama Generation".
+
+**Failed / limitations**: pano-LoRA rooms repeat objects and have bulging walls; our LoRA does not transfer to panoramas; Real-ESRGAN smooths fine texture.
+
+**Next:** Milestone 3 — panoramic depth. Code is written (`src/pano_depth.py`, `scripts/eval_pano_depth.py`); a first run on the pano-LoRA panoramas showed DAP far better than method A on geometry (floor inliers 93% vs. 33%, plausible room height 97% vs. 0%) but with a wrap seam (seam ratio 11) → added `dap_depth_wrap` (roll + cross-fade). Rerunning on the selected SD 2.1 panoramas.

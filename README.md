@@ -97,6 +97,8 @@ We use a **subset of MMIS** (e.g., 5–10K images after cleaning) to fit local G
 | Component | Model | Role |
 |---|---|---|
 | Text-to-image | Stable Diffusion v1.5 | Base generator |
+| 360° panorama | SD 2.1-base panorama fine-tune (SD-T2I-360PanoImage); compared with SD v1.5 + 360 LoRA | Equirectangular room |
+| Super-resolution | Real-ESRGAN ×2 | Panorama to 2048×1024 |
 | Domain adaptation | LoRA (trained by us on MMIS) | Specialize generation for interiors |
 | Depth estimation | Depth Anything (best on NYU), MiDaS (baseline), Depth Anything V2 Metric Indoor (3D stage) | Monocular depth from a single image |
 | Segmentation | SegFormer-B2 (ADE20K) | Room-element masks |
@@ -396,6 +398,39 @@ All dimensions are marked approximate: the metric depth model is about 22% off i
 
 **Demo rooms** (`results/figures/floorplan_demo.png`, `results/tables/floorplan_demo.csv`): 2–3 walls per room after cleaning, 1–14 furniture items, 0.1–0.7 s to build and 0.1–0.2 s to draw. The generated rooms come out large (ceilings 3.7–5.2 m above the fitted floor), so either the scale is overestimated on generated images too or SD draws tall rooms; without ground truth the two cannot be told apart. In the bathroom no floor or ceiling is visible, so the plan falls back to an upright camera.
 
+### 360° Panorama Generation (milestone 2 of PLAN_V2)
+Code: `src/generate_pano.py`, `src/equirect.py`, `scripts/eval_pano.py`.
+
+A single 60° view can only give a relief of what the camera saw. The 360° mode generates one **equirectangular panorama** (1024×512, 360°×180°) instead, which later stages turn into depth, a full-room mesh and a closed floor plan.
+
+- **Generators.** (a) SD v1.5 + the panorama LoRA `ProGamerGov/360-Diffusion-LoRA-sd-v1-5` (trigger word `qxj`) + our MMIS LoRA at weight 0 / 0.5 / 0.8 / 1.0 (unfused PEFT adapters, so the weight can change per call). (b) The alternative generator of the plan, the SD 2.1-base panorama fine-tune of SD-T2I-360PanoImage (`archerfmy0831/sd-t2i-360panoimage`, only its `sd-base` text-to-panorama part, run with our code). DDIM 30 steps, CFG 7.5, fixed seeds.
+- **Seamless wrap (image processing).** The left and right borders of an equirectangular image are the same meridian. Every padded convolution of the UNet and the VAE decoder is patched to pad **circularly along x** (zeros along y), so the borders are neighbours during the whole denoising and decoding. Optionally the padding is switched on only after half of the steps.
+- **Protocol.** 5 rooms × 6 styles × 2 seeds = 60 panoramas per configuration. Seam ratio = mean |grey difference| across the wrap divided by the mean between neighbouring columns (1 = no visible seam). CLIP (ViT-L/14) and FID/KID are computed on four 90° perspective crops per panorama (yaw 0/90/180/270), 240 crops against the 500 MMIS hold-out images, the same protocol as the 2D evaluation. Selection rule, fixed before the run: lowest mean rank of KID and CLIP among the circular configurations.
+
+| Configuration | Seam ratio (median) ↓ | CLIP ↑ | FID ↓ | KID ×10³ ↓ | s / panorama |
+|---|---|---|---|---|---|
+| Pano LoRA, no circular padding | 3.60 | 20.6 ± 2.5 | 121.9 | 66.0 ± 3.2 | 10.2 |
+| Pano LoRA, circular from 50% of the steps | 0.77 | 20.5 ± 2.5 | 121.0 | 64.5 ± 3.0 | 10.1 |
+| Pano LoRA, circular | 0.83 | 20.4 ± 2.8 | 124.3 | 63.7 ± 2.9 | 10.1 |
+| + MMIS LoRA 0.5 | 0.79 | 20.2 ± 2.8 | 122.3 | 64.1 ± 3.1 | 10.1 |
+| + MMIS LoRA 0.8 | 0.76 | 19.9 ± 2.5 | 123.1 | 64.6 ± 3.3 | 10.1 |
+| + MMIS LoRA 1.0 | 0.73 | 19.8 ± 2.4 | 123.8 | 66.3 ± 3.2 | 10.1 |
+| **SD 2.1 panorama model, circular (selected)** | 0.81 | **22.4 ± 2.0** | **93.3** | **38.2 ± 2.4** | **7.3** |
+
+- **Circular padding removes the seam:** median seam ratio 3.60 → 0.83, i.e. the wrap looks like any other column boundary. Switching it on halfway is equally seamless; neither variant costs realism (KID within one std).
+- **Our MMIS LoRA does not help in panorama mode** (negative result). KID stays within about one std (63.7 → 64.1 / 64.6 / 66.3) and CLIP falls slightly as its weight rises. Visually it changes materials (wood floors, rugs) but not the room layout. The LoRA was trained on perspective photos, so it brings little to equirectangular images.
+- **The alternative generator is clearly better:** KID 38.2 vs. 63.7 (ten standard deviations), FID 93 vs. 124, CLIP +2.0, and 28% faster. The pano-LoRA rooms tend to repeat the same objects around the horizon and have bulging, arch-like walls; the SD 2.1 panorama model draws coherent rooms with straight walls. **It is the 360° generator from here on, so the 360° mode does not use our MMIS LoRA** (the 2D Quick mode still does). Peak VRAM: 3.6 GB (SD 1.5 + two adapters).
+- Tables: `results/tables/pano_configs.csv`, `pano_per_image.csv`. Figures: `results/figures/pano_configs_grid.png` (panoramas rolled so the seam is in the middle), `pano_configs_metrics.png`.
+
+**Super-resolution to 2048×1024** (30 panoramas of the selected configuration):
+
+| Method | Sharpness (Laplacian variance) ↑ | PSNR after downscaling back (dB) | Seam ratio | s / panorama |
+|---|---|---|---|---|
+| Bicubic ×2 + unsharp mask (wrap-aware) | 97 | 51.6 | 0.98 | 0.05 |
+| **Real-ESRGAN ×2** (tiled, wrap-padded) | **315** | 33.8 | 1.04 | 0.76 |
+
+Real-ESRGAN (own minimal RRDBNet implementation, x2plus weights, 256-px tiles; the panorama is padded by 16 columns copied from the opposite border so the network sees continuous content across the seam) is 3.3 times sharper and stays seamless, so it is the default. It is less faithful to the input: downscaled back, it differs from it by 33.8 dB PSNR against 51.6 dB for bicubic, because it smooths fine texture into clean, painterly regions (`results/figures/pano_sr_compare.png`). Tables: `pano_sr.csv`, `pano_sr_per_image.csv`.
+
 ### Visual Results
 - Prompt → 2D image → edges → segmentation → depth → point cloud → mesh: `results/figures/pipeline_3d_results.png`
 - Floor plans of the demo rooms: `results/figures/floorplan_demo.png`; NYU plans from GT vs. predicted depth: `results/figures/floorplan_nyu_examples.png`
@@ -431,6 +466,8 @@ RoomGen3D/
 │   ├── reconstruct_3d.py      # Point cloud, Poisson mesh (comparison)
 │   ├── textured_mesh.py       # Textured grid mesh, disocclusion filling, room planes
 │   ├── floorplan.py           # Floor plan: gravity alignment, walls, furniture, doors/windows, drawing
+│   ├── equirect.py            # Equirectangular geometry, perspective crops, seam ratio
+│   ├── generate_pano.py       # 360° panoramas: circular padding, LoRAs / SD 2.1 panorama model, Real-ESRGAN
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures
@@ -492,7 +529,7 @@ RoomGen3D/
 
 ## 15. Future Work
 
-- Multi-view generation for full 360° rooms
+- A panorama LoRA trained on MMIS-style interiors (our 2D LoRA does not transfer to equirectangular images)
 - Text-guided editing of individual furniture items
 - Metric-scale depth for real measurements
 - AR/VR export
