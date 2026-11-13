@@ -18,8 +18,11 @@ STYLES = ["Art Deco", "Bohemian", "Coastal", "Contemporary", "Eclectic", "Farmho
 ROOMS = ["Bathroom", "Bedroom", "Dining Room", "Kitchen", "Living Room"]
 
 
-def load_pipeline(lora_dir: str | Path | None, device, base_model: str = BASE_MODEL):
-    """SD v1.5 fp16 pipeline with a DDIM scheduler; the LoRA (if any) is fused into the UNet."""
+def load_pipeline(lora_dir: str | Path | None, device, base_model: str = BASE_MODEL, lora_scale: float = 1.0):
+    """SD v1.5 fp16 pipeline with a DDIM scheduler; the LoRA (if any) is fused into the UNet.
+
+    lora_scale < 1 fuses a weaker LoRA (W + scale * BA): less MMIS style, more of the base model.
+    """
     from diffusers import DDIMScheduler, StableDiffusionPipeline
 
     pipe = StableDiffusionPipeline.from_pretrained(base_model, dtype=torch.float16, variant="fp16",
@@ -27,7 +30,7 @@ def load_pipeline(lora_dir: str | Path | None, device, base_model: str = BASE_MO
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
     if lora_dir is not None:
         pipe.load_lora_weights(str(lora_dir))
-        pipe.fuse_lora(lora_scale=1.0)
+        pipe.fuse_lora(lora_scale=float(lora_scale))
         pipe.unload_lora_weights()   # weights are fused; drop the adapter layers (faster inference)
     pipe.set_progress_bar_config(disable=True)
     return pipe.to(device)
@@ -41,3 +44,15 @@ def generate(pipe, prompt: str, seed: int, steps: int = GEN_STEPS, guidance: flo
     img = pipe(prompt, negative_prompt=negative_prompt, num_inference_steps=int(steps),
                guidance_scale=float(guidance), height=size, width=size, generator=gen).images[0]
     return np.asarray(img.convert("RGB"))
+
+
+# "Isometric" mode (experiment): the room as a cutaway seen from a top corner, so that the whole
+# floor, two walls and all furniture are visible in one image.
+ISO_TEMPLATE = ("isometric cutaway view of {room}, corner view from above, two walls and the floor, "
+                "3D render, plain white background")
+ISO_NEGATIVE = "photo, eye-level view, perspective photo, people, text, watermark, blurry"
+
+
+def isometric_prompt(room: str) -> str:
+    """'a coastal style bedroom' -> the isometric cutaway prompt for the same room description."""
+    return ISO_TEMPLATE.format(room=room)

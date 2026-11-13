@@ -1,5 +1,5 @@
 """End-to-end run on the 6 demo prompts: prompt -> 2D image -> gated preprocessing -> Canny +
-segmentation -> metric depth -> refinement -> point cloud -> mesh (see src/pipeline.py).
+segmentation -> metric depth -> refinement -> point cloud -> textured mesh (see src/pipeline.py).
 
 One model on the GPU at a time: all prompts go through SD + LoRA, then the segmenter, then the
 depth model; the 3D stages run on the CPU. Per-prompt time is the sum of its stage times; model
@@ -7,7 +7,7 @@ loading is reported separately (it is paid once, not per prompt).
 
 Outputs:
   outputs/pipeline/<prompt>_s<seed>/   image.png, depth.png, overlay.png, depth_m.npy,
-                                       pointcloud.ply, mesh.glb, mesh.obj      (not in git)
+                                       pointcloud.ply, mesh.glb, mesh.obj/.mtl/.png  (not in git)
   results/tables/pipeline_timing.csv   seconds per stage and prompt, peak VRAM per GPU stage
   results/figures/pipeline_3d_results.png        image | edges | segmentation | depth | point cloud | mesh
   results/figures/pointcloud_refinement.png      point cloud without / with refinement + cleaning
@@ -37,6 +37,7 @@ from src import evaluate as ev  # noqa: E402
 from src import generate_2d as g2  # noqa: E402
 from src import pipeline as pl  # noqa: E402
 from src import reconstruct_3d as r3  # noqa: E402
+from src import textured_mesh as tm  # noqa: E402
 from src.utils import set_seed  # noqa: E402
 
 OUT = ROOT / "outputs" / "pipeline"
@@ -56,11 +57,13 @@ def gpu_stage(name: str, loader, load_s: dict, vram: dict):
 
 def fig_results(results: list, prompts: list, path: Path) -> None:
     n = len(results)
-    titles = ["Generated image", "Canny edges", "Segmentation", "Depth (light = near)", "Point cloud", "Mesh"]
+    titles = ["Generated image", "Canny edges", "Segmentation", "Depth (light = near)",
+              "Point cloud (side, orthographic)", "Textured mesh (camera turned 25°)"]
     fig, axes = plt.subplots(n, 6, figsize=(17.5, 2.95 * n), squeeze=False)
     for r, res in enumerate(results):
         panels = [res["image"], res["edge_overlay"], res["seg_overlay"], pl.depth_image(res["depth"]),
-                  r3.render_pcd(res["pcd"], "side"), r3.render_mesh(res["mesh"], "side")]
+                  r3.render_pcd(res["pcd"], "side"),
+                  tm.render_view(*tm.textured_samples(res["mesh"]), -25, pivot_z=res["mesh"]["target_z"])]
         for c, p in enumerate(panels):
             axes[r, c].imshow(p)
             axes[r, c].set_xticks([])
@@ -75,7 +78,7 @@ def fig_results(results: list, prompts: list, path: Path) -> None:
     handles = [Patch(color=np.array(c) / 255, label=g) for g, c in an.GROUP_COLORS.items()]
     fig.legend(handles=handles, loc="lower center", ncol=4, fontsize=9.5, frameon=False, title="Segmentation groups")
     fig.suptitle("RoomGen3D end to end: prompt → 2D image → edges / segmentation → depth → point cloud → mesh "
-                 "(3D shown from the side, orthographic)", fontsize=12)
+                 "(white = empty)", fontsize=12)
     fig.tight_layout(rect=(0, 0.035, 1, 0.985))
     fig.savefig(path, dpi=110)
     plt.close(fig)
@@ -169,9 +172,8 @@ def main():
         with w.stage("pointcloud"):
             res.update(r3.reconstruct(res["depth"], res["pre"], mesh=False))
         with w.stage("mesh"):
-            r3.estimate_normals(res["pcd"])
-            res["mesh"] = r3.poisson_mesh(res["pcd"])
-            res["stats"]["vertices"], res["stats"]["triangles"] = len(res["mesh"].vertices), len(res["mesh"].triangles)
+            res["mesh"] = pl.build_mesh(res["depth"], res["pre"], res)
+            res["stats"].update(res["mesh"]["stats"])
         with w.stage("export"):
             res["files"] = pl.save_outputs(res, OUT / pl.slug(prompt, seed))
 

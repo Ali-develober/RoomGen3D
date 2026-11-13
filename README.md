@@ -48,7 +48,7 @@ Text Prompt
 [5] Depth Post-processing ── Bilateral / median filtering · edge-aware refinement · hole filling
    │
    ▼
-[6] 3D Reconstruction ─ Depth → Point Cloud → Mesh (Open3D, Poisson reconstruction)
+[6] 3D Reconstruction ─ Depth → Point Cloud (Open3D) → Textured mesh with filled occlusions + room planes
    │
    ▼
 [7] Interface ───────── Gradio: 2D image + interactive 3D viewer + download (.ply / .glb)
@@ -94,7 +94,7 @@ We use a **subset of MMIS** (e.g., 5–10K images after cleaning) to fit local G
 | Domain adaptation | LoRA (trained by us on MMIS) | Specialize generation for interiors |
 | Depth estimation | Depth Anything (best on NYU), MiDaS (baseline), Depth Anything V2 Metric Indoor (3D stage) | Monocular depth from a single image |
 | Segmentation | SegFormer-B2 (ADE20K) | Room-element masks |
-| 3D | Open3D | Point cloud + mesh reconstruction |
+| 3D | Open3D + own textured grid mesh | Point cloud cleaning, RANSAC planes, Poisson (comparison); textured mesh |
 
 ---
 
@@ -286,7 +286,34 @@ Code: `src/reconstruct_3d.py`, `src/pipeline.py`, `scripts/run_pipeline.py`, `sc
 
 **Camera model.** A generated image has no real camera, so one is assumed: a pinhole camera with a **60° horizontal field of view** and the principal point at the image centre (focal length 443 px at 512×512). A pixel (u, v) with depth Z is back-projected to X = (u − cx)·Z/f, Y = (v − cy)·Z/f. A wrong FOV stretches or squeezes the room along the viewing direction.
 
-**Steps.** Metric depth → depth refinement (on inverse depth) → back-projection to a coloured point cloud → flying-pixel removal → statistical outlier removal (Open3D, 20 neighbours, 2 std) → normals (PCA on 30 neighbours, oriented to the camera) → screened Poisson reconstruction (octree depth 9) → trim the 6% least-supported vertices and crop to the point cloud → simplify to 200,000 triangles → export `.ply` (points) and `.glb` / `.obj` (mesh).
+**Steps.** Metric depth → depth refinement (on inverse depth) → back-projection → (a) coloured point cloud with flying-pixel and statistical outlier removal (Open3D, 20 neighbours, 2 std), exported as `.ply`; (b) textured mesh, exported as `.glb` and `.obj`.
+
+**Mesh: textured grid with filled occlusions** (`src/textured_mesh.py`). The first version used Poisson surface reconstruction of the point cloud. It gave blurry colours (one colour per vertex), rounded edges and holes, so the mesh is now built directly on the pixel grid in three layers that share one texture atlas:
+
+1. **Observed surface.** One vertex every 2 pixels, two triangles per quad, the generated image as UV texture at full resolution. Blurred depth edges are first turned into steps by a morphological toggle mapping (each pixel in a transition zone snaps to the local erosion or dilation, whichever is closer), and the foreground is grown by 2 px so that object-coloured boundary pixels stay on the object. Triangles are cut where the depth step between neighbouring vertices is above 8%, or above 4.5% with a Canny edge next to it.
+2. **Disocclusion band.** Behind every cut, the background is continued 24 px under the foreground object: the strip is built by geodesic dilation, its depth is grown in from the background side, and its colour comes from `cv2.inpaint` (Telea) with the mask dilated by 11 px so that no foreground-coloured pixel is used as a source.
+3. **Room planes.** RANSAC planes are fitted to the floor, ceiling and wall masks (up to three walls). Each pixel ray is intersected with the accepted planes and the nearest crossing is the room surface, which extends every plane to the edge of the view frustum and clips the planes against each other. Where that surface is hidden behind furniture it is added to the mesh, coloured by inpainting from the visible part of the same plane and fading to that plane's median colour far from it. A plane is skipped if too few mask points lie on it, if it is not roughly horizontal (floor, ceiling) or vertical (wall), or if more than 15% of the image shows geometry behind it. In the six demo rooms 17 of 25 fitted planes were accepted.
+
+The `.glb` uses an unlit material, so a viewer shows the image colours unchanged. Poisson reconstruction (`reconstruct_3d.poisson_mesh`) is kept as the comparison method.
+
+**Old vs. new mesh** on the six demo rooms (`scripts/compare_mesh.py`), each rendered from the original camera and with the camera turned ±25° around the scene. "Empty" is the share of the rendered picture where there is no surface:
+
+| Method | Time (s) | Triangles | Empty, camera view | Empty, −25° | Empty, +25° |
+|---|---|---|---|---|---|
+| Poisson (old) | 9.3 | 200,000 | 3.1% | 24.0% | 18.7% |
+| Textured grid, cuts only | 0.03 | 128,000 | 0.2% | 25.6% | 21.0% |
+| Textured grid + inpainting + planes (new) | **0.7** | 193,000 | **0.0%** | **14.6%** | **13.0%** |
+
+- **From the camera view the new mesh reproduces the image**, sharp and without holes; the Poisson mesh is blurred and 3% empty.
+- **Turned by 25°, the empty share falls from 24% / 19% to 15% / 13%.** It is lower in all six rooms at −25° and in five of six at +25° (the bathroom, a flat wall, is unchanged). Most of what stays empty is the margin outside the original field of view, which a single image cannot fill.
+- **It is about 12 times faster** (0.7 s vs. 9.3 s) and the `.glb` is 3.3–5.7 MB.
+- **Where the new mesh still fails:**
+  - Filled areas have no real texture. Large hidden regions get a flat plane colour (clearly visible as plain patches in the rustic kitchen).
+  - Thin objects (chair legs, the chandelier, plant leaves) are torn into fragments when the view turns, because the depth map does not resolve them.
+  - Surfaces seen at a grazing angle are stretched (the plants at the left edge of the mediterranean room).
+  - The room planes assume a convex room with the camera inside; 8 of 25 planes were rejected, and those rooms are filled only by the 24 px band.
+  - Beyond about ±30° the missing parts dominate, which is why the demo limits the orbit.
+- Figures: `results/figures/mesh_old_vs_new.png` (all six rooms) and `results/figures/mesh_layers.png` (what each step adds). Table: `results/tables/mesh_old_vs_new.csv`.
 
 **Depth model for the 3D stage: Depth Anything V2 Metric Indoor.** The relative Depth Anything model is the more accurate one on NYU after alignment, but alignment needs ground truth. On a generated image the unknown scale and shift have to be guessed (here: nearest point 1.5 m, farthest 6 m), and a wrong shift is not a uniform scaling: it bends the geometry. The metric model predicts metres directly. Both were compared on the six demo rooms (`results/figures/depth_relative_vs_metric_3d.png`, side and top views):
 
@@ -307,21 +334,26 @@ After alignment it is a little less accurate than the relative model (0.0660 vs.
 
 | Prompt (seed) | 2D image | Analysis + depth | Point cloud | Mesh | Export | Total |
 |---|---|---|---|---|---|---|
-| a contemporary style living room (11) | 3.3 | 0.12 | 0.7 | 9.5 | 1.7 | 15.3 |
-| a coastal style bedroom (22) | 3.4 | 0.11 | 0.1 | 11.1 | 1.5 | 16.3 |
-| a rustic style kitchen (33) | 3.4 | 0.12 | 0.1 | 10.4 | 1.5 | 15.5 |
-| a mid-century modern style dining room (44) | 3.4 | 0.11 | 0.1 | 7.7 | 1.6 | 12.9 |
-| an art deco style bathroom (55) | 3.4 | 0.13 | 0.1 | 6.2 | 1.6 | 11.4 |
-| a mediterranean style living room (66) | 3.4 | 0.11 | 0.1 | 9.8 | 1.5 | 14.9 |
-| **Mean** | 3.4 | 0.12 | 0.2 | 9.1 | 1.6 | **14.4** |
+| a contemporary style living room (11) | 3.9 | 0.10 | 0.6 | 0.7 | 0.7 | 6.0 |
+| a coastal style bedroom (22) | 3.7 | 0.10 | 0.2 | 0.7 | 0.7 | 5.4 |
+| a rustic style kitchen (33) | 3.6 | 0.11 | 0.2 | 0.9 | 0.9 | 5.6 |
+| a mid-century modern style dining room (44) | 3.6 | 0.10 | 0.1 | 0.7 | 0.7 | 5.3 |
+| an art deco style bathroom (55) | 3.6 | 0.10 | 0.1 | 0.3 | 0.5 | 4.6 |
+| a mediterranean style living room (66) | 3.5 | 0.10 | 0.1 | 1.1 | 0.8 | 5.6 |
+| **Mean** | 3.7 | 0.10 | 0.2 | 0.7 | 0.7 | **5.4** |
 
-- **Objective 4 is met:** 14.4 s per prompt on average (max 16.3 s) with the models loaded; loading the three models once adds 12.4 s. "Analysis + depth" covers gated preprocessing, Canny, segmentation, depth and refinement. Poisson meshing on the CPU is the slowest stage.
+- **Objective 4 is met:** 5.4 s per prompt on average (max 6.0 s) with the models loaded; loading the three models once adds 13.1 s. With the earlier Poisson mesh the average was 14.4 s. "Analysis + depth" covers gated preprocessing, Canny, segmentation, depth and refinement. Image generation is now the slowest stage.
 - **Peak VRAM:** 2.7 GB (Stable Diffusion); the segmenter and the depth model need about 0.3 GB each. With all three loaded together, as in the demo, the peak is 2.9 GB.
-- **What the 3D model is:** a single-view shell. Surfaces hidden in the image (behind furniture, the wall behind the camera) are holes, and each point cloud loses about 5% of its points to the flying-pixel and outlier filters.
+- **What the 3D model is:** a single-view reconstruction. It matches the image from the original viewpoint and holds up for moderately turned views; what the image never showed is either filled with plane colour or missing.
 - Table: `results/tables/pipeline_timing.csv`. Figures: `results/figures/pipeline_3d_results.png` (image, edges, segmentation, depth, point cloud, mesh for each prompt) and `results/figures/pointcloud_refinement.png` (point cloud without and with refinement + cleaning). The 3D files are written to `outputs/pipeline/` (not in git).
 
 ### Demo (local)
-`app/app.py` is a Gradio app: prompt, seed, steps and CFG in; 2D image, depth map, edge + segmentation overlay and an interactive 3D viewer out, with download buttons for the image, the mesh (`.glb`) and the point cloud (`.ply`). The three models stay loaded together (2.9 GB VRAM). Launch from the project root and open http://127.0.0.1:7860:
+`app/app.py` is a Gradio app: prompt, seed, steps and CFG in; 2D image, depth map and edge + segmentation overlay out, with download buttons for the image, the mesh (`.glb`) and the point cloud (`.ply`). The 3D model is shown in two tabs:
+
+- **Original view (limited orbit)**, the default: a `<model-viewer>` element that opens exactly at the camera of the generated image (60° field of view) and limits the orbit to ±30° left/right, so the first impression matches the image and the parts a single view cannot know stay out of sight. Its script is loaded from a CDN, so this tab needs an internet connection.
+- **Free orbit**: `gr.Model3D` without limits (works offline). `gr.Model3D` has no setting for orbit limits, which is why the first tab uses a different viewer.
+
+The three models stay loaded together (2.9 GB VRAM); a request takes about 5 s after the first one. Launch from the project root and open http://127.0.0.1:7860:
 
 ```
 .venv\Scripts\python.exe app\app.py
@@ -331,6 +363,7 @@ It is not deployed to Hugging Face Spaces yet.
 
 ### Visual Results
 - Prompt → 2D image → edges → segmentation → depth → point cloud → mesh: `results/figures/pipeline_3d_results.png`
+- Poisson mesh vs. textured grid mesh: `results/figures/mesh_old_vs_new.png`, `results/figures/mesh_layers.png`
 - Point cloud without / with refinement and cleaning: `results/figures/pointcloud_refinement.png`
 - Relative vs. metric depth in 3D: `results/figures/depth_relative_vs_metric_3d.png`
 - Before/after preprocessing examples: `results/figures/depth_preprocessing_steps.png`
@@ -359,7 +392,8 @@ RoomGen3D/
 │   ├── generate_2d.py         # SD + LoRA inference
 │   ├── train_lora.py          # LoRA training
 │   ├── depth.py               # Depth estimation + refinement
-│   ├── reconstruct_3d.py      # Point cloud + mesh
+│   ├── reconstruct_3d.py      # Point cloud, Poisson mesh (comparison)
+│   ├── textured_mesh.py       # Textured grid mesh, disocclusion filling, room planes
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures
@@ -404,7 +438,7 @@ RoomGen3D/
 1. Train a LoRA that improves FID and CLIP Score over vanilla SD v1.5. *Status: FID 64.5 → 54.6 and KID 19.1 → 10.2 ×10³ (met). CLIP 27.9 → 27.0 (not met; see section 8).*
 2. Show that preprocessing reduces depth error (AbsRel/RMSE) on NYU Depth V2. *Status: not met. On clean images every preprocessing step is neutral or slightly worse for both models (Depth Anything AbsRel 0.0546 raw vs. 0.0563 full). The noise-gated pipeline leaves clean images unchanged, so it avoids the loss but gives no gain; see section 8.*
 3. Show that preprocessing improves robustness under noise, blur, and low light. *Status: partly met, for strong noise only. The full pipeline (denoise + CLAHE + unsharp) is worse than raw in 12 of 14 degraded cases. The noise-gated pipeline, selected on the NYU train split and evaluated once on the test split, recovers 49% (σ=25) and 59% (σ=50) of the AbsRel damage for Depth Anything and 14% / 16% for MiDaS. It changes nothing under σ=15 noise, motion blur and moderate low light, and is mixed in severe low light (+6% Depth Anything, −3% MiDaS).*
-4. Produce a 3D mesh from any generated design in under ~1 minute on a GPU. *Status: met. 14.4 s per prompt on average (max 16.3 s) over six prompts, 2.7 GB peak VRAM; see section 8.*
+4. Produce a 3D mesh from any generated design in under ~1 minute on a GPU. *Status: met. 5.4 s per prompt on average (max 6.0 s) over six prompts, 2.7 GB peak VRAM; see section 8.*
 5. Deploy a public demo showing 2D and 3D outputs side by side. *Status: the Gradio demo runs locally (`app/app.py`); not deployed yet.*
 
 ---
@@ -412,6 +446,7 @@ RoomGen3D/
 ## 14. Limitations
 
 - 3D comes from a **single view**, so hidden areas (behind furniture, other walls) are not reconstructed. It is not a full 360° room.
+- An **isometric cutaway mode** (prompting for a corner view from above on a plain white background, so that fewer regions are hidden) was tried with base SD v1.5 and with the LoRA at strength 1.0 and 0.5 on the six demo prompts and dropped: only four of six images got the corner view, five of six had no plain background to remove, and the room style was mostly lost.
 - Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only.
 - Training on a subset of MMIS due to compute limits.
 - The 3D stage uses a metric depth model, but its absolute scale is only approximate (AbsRel 0.22 without alignment on NYU), and the camera field of view (60°) is assumed, so sizes in the 3D model are rough.

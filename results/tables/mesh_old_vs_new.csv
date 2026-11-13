@@ -1,0 +1,22 @@
+prompt,seed,method,seconds,triangles,empty_pct_-25,empty_pct_+0,empty_pct_+25,planes_accepted
+a contemporary style living room,11.000,poisson,10.222,200000.000,18.322,4.490,21.389,
+a contemporary style living room,11.000,grid,0.034,129474.000,20.584,0.075,20.218,0.000
+a contemporary style living room,11.000,full,0.721,190672.000,11.693,0.036,17.143,2.000
+a coastal style bedroom,22.000,poisson,11.539,199999.000,18.332,3.232,19.270,
+a coastal style bedroom,22.000,grid,0.030,128670.000,17.536,0.082,19.413,0.000
+a coastal style bedroom,22.000,full,0.678,188326.000,11.747,0.005,14.286,3.000
+a rustic style kitchen,33.000,poisson,10.237,200000.000,21.038,2.285,31.366,
+a rustic style kitchen,33.000,grid,0.029,127310.000,26.360,0.119,35.176,0.000
+a rustic style kitchen,33.000,full,0.886,243652.000,9.397,0.005,12.960,2.000
+a mid-century modern style dining room,44.000,poisson,7.699,200000.000,28.258,1.289,15.246,
+a mid-century modern style dining room,44.000,grid,0.035,124388.000,33.901,0.528,21.033,0.000
+a mid-century modern style dining room,44.000,full,0.755,186376.000,15.367,0.022,12.714,3.000
+an art deco style bathroom,55.000,poisson,6.131,199999.000,22.306,4.029,15.978,
+an art deco style bathroom,55.000,grid,0.033,131046.000,18.190,0.006,15.877,0.000
+an art deco style bathroom,55.000,full,0.270,135260.000,18.114,0.008,15.855,3.000
+a mediterranean style living room,66.000,poisson,9.693,199999.000,35.728,3.491,9.200,
+a mediterranean style living room,66.000,grid,0.031,127160.000,37.239,0.228,14.254,0.000
+a mediterranean style living room,66.000,full,1.117,211764.000,21.217,0.041,5.001,4.000
+MEAN,,poisson,9.254,199999.500,23.997,3.136,18.741,
+MEAN,,grid,0.032,128008.000,25.635,0.173,20.995,0.000
+MEAN,,full,0.738,192675.000,14.589,0.019,12.993,2.833

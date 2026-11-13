@@ -5,7 +5,8 @@
     [3] analyse        Canny edges + SegFormer room masks (analysis)
     [4] depth          metric depth in metres (depth) + depth refinement
     [5] point cloud    back-projection, flying-pixel + statistical outlier removal (reconstruct_3d)
-    [6] mesh           normals, Poisson reconstruction, density trim, export
+    [6] mesh           textured grid mesh + disocclusion filling + room planes (textured_mesh), export
+                       (the older Poisson mesh, reconstruct_3d.poisson_mesh, is kept for comparison)
 
 Each stage is a small function so the script (scripts/run_pipeline.py) and the demo (app/app.py)
 run exactly the same code. `Stopwatch` records the time of every stage.
@@ -22,6 +23,7 @@ import torch
 from . import analysis as an
 from . import depth as dp
 from . import reconstruct_3d as r3
+from . import textured_mesh as tm
 from .preprocessing import estimate_noise_sigma, preprocess_gated
 
 DEPTH_MODEL_3D = "depth_anything_metric"    # depth model of the 3D stage (choice: README section 8, "3D")
@@ -91,6 +93,11 @@ def estimate_depth(img: np.ndarray, model, proc, device, model_name: str = DEPTH
     return {"depth_raw": raw, "depth": depth}
 
 
+def build_mesh(depth: np.ndarray, img: np.ndarray, ana: dict) -> dict:
+    """[6] Textured grid mesh with disocclusion filling and room planes (see textured_mesh)."""
+    return tm.build_textured_mesh(depth, img, ana["edges"], ana["masks"])
+
+
 def depth_image(depth: np.ndarray) -> np.ndarray:
     """Colour-coded depth map for display (light = near, dark = far), RGB uint8."""
     lo, hi = np.percentile(depth, [1, 99])
@@ -126,9 +133,8 @@ def image_to_3d(img: np.ndarray, seg, depth_model, device, watch: Stopwatch | No
         rec = r3.reconstruct(dep["depth"], pre, mesh=False)
     if mesh:
         with watch.stage("mesh"):
-            r3.estimate_normals(rec["pcd"])
-            rec["mesh"] = r3.poisson_mesh(rec["pcd"])
-            rec["stats"]["vertices"], rec["stats"]["triangles"] = len(rec["mesh"].vertices), len(rec["mesh"].triangles)
+            rec["mesh"] = build_mesh(dep["depth"], pre, ana)
+            rec["stats"].update(rec["mesh"]["stats"])
     out = {"image": img, "pre": pre, "info": info, **ana, **dep, **rec, "seconds": watch.seconds, "files": {}}
     if out_dir is not None:
         with watch.stage("export"):
@@ -150,6 +156,6 @@ def save_outputs(res: dict, out_dir: str | Path) -> dict:
     r3.export_pointcloud(res["pcd"], files["pointcloud"])
     if res.get("mesh") is not None:
         files["mesh_glb"], files["mesh_obj"] = out_dir / "mesh.glb", out_dir / "mesh.obj"
-        r3.export_mesh(res["mesh"], files["mesh_glb"])
-        r3.export_mesh(res["mesh"], files["mesh_obj"])
+        tm.export_glb(res["mesh"], files["mesh_glb"])
+        tm.export_obj(res["mesh"], files["mesh_obj"])        # + mesh.mtl and mesh.png next to it
     return {k: str(v) for k, v in files.items()}
