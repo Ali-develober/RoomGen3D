@@ -51,7 +51,10 @@ Text Prompt
 [6] 3D Reconstruction ─ Depth → Point Cloud (Open3D) → Textured mesh with filled occlusions + room planes
    │
    ▼
-[7] Interface ───────── Gradio: 2D image + interactive 3D viewer + download (.ply / .glb)
+[7] Floor Plan ──────── Gravity alignment (floor plane) → top-down projection → walls (morphology + RANSAC
+   │                    lines + Manhattan snap) · furniture footprints · doors/windows · dimensions (PNG/SVG)
+   ▼
+[8] Interface ───────── Gradio: 2D image + floor plan + interactive 3D viewer + downloads (.png/.svg/.ply/.glb)
 ```
 
 ---
@@ -72,6 +75,9 @@ Text Prompt
 | Depth refinement | Edge-aware refinement using Canny map | Keep sharp object boundaries in 3D |
 | Depth refinement | Morphological operations | Fill holes in the depth map |
 | 3D | Back-projection with pinhole camera model | Convert pixels + depth into 3D points |
+| Floor plan | Orthographic projection to an occupancy grid, morphological closing / opening | Top-down wall and floor maps |
+| Floor plan | RANSAC line fitting, Manhattan snapping, collinear merging | Straight walls from noisy wall points |
+| Floor plan | Connected components + minimum-area rectangles | Furniture instances and footprints |
 
 ---
 
@@ -348,7 +354,7 @@ After alignment it is a little less accurate than the relative model (0.0660 vs.
 - Table: `results/tables/pipeline_timing.csv`. Figures: `results/figures/pipeline_3d_results.png` (image, edges, segmentation, depth, point cloud, mesh for each prompt) and `results/figures/pointcloud_refinement.png` (point cloud without and with refinement + cleaning). The 3D files are written to `outputs/pipeline/` (not in git).
 
 ### Demo (local)
-`app/app.py` is a Gradio app: prompt, seed, steps and CFG in; 2D image, depth map and edge + segmentation overlay out, with download buttons for the image, the mesh (`.glb`) and the point cloud (`.ply`). The 3D model is shown in two tabs:
+`app/app.py` is a Gradio app: prompt, seed, steps and CFG in; the **2D image, the floor plan and the 3D viewer** out, with download buttons for the image, the floor plan (`.svg`), the mesh (`.glb`) and the point cloud (`.ply`). The depth map (grayscale, white = near), the Canny edges and the segmentation are in a collapsed "Analysis" section. The 3D model is shown in two tabs:
 
 - **Original view (limited orbit)**, the default: a `<model-viewer>` element that opens exactly at the camera of the generated image (60° field of view) and limits the orbit to ±30° left/right, so the first impression matches the image and the parts a single view cannot know stay out of sight. Its script is loaded from a CDN, so this tab needs an internet connection.
 - **Free orbit**: `gr.Model3D` without limits (works offline). `gr.Model3D` has no setting for orbit limits, which is why the first tab uses a different viewer.
@@ -361,8 +367,38 @@ The three models stay loaded together (2.9 GB VRAM); a request takes about 5 s a
 
 It is not deployed to Hugging Face Spaces yet.
 
+### Floor Plan (milestone 1 of PLAN_V2)
+Code: `src/floorplan.py`, `scripts/eval_floorplan.py`, `scripts/floorplan_demo.py`.
+
+**Method.** The metric point cloud and the SegFormer class map of one view are turned into a measured, architect-style plan:
+
+1. **Gravity.** A RANSAC plane is fitted to the floor pixels (fallback: the ceiling, then an upright camera). Its normal is "up"; the camera height is its distance. Points are projected orthographically onto the floor plane, x to the right and y forward in metres, camera at the origin.
+2. **Walls.** Wall points higher than 0.3 m are rasterised on a 2 cm grid, cleaned by morphological closing (5×5) and opening (3×3), and lines are found by sequential RANSAC on the occupied cells (inlier band 6 cm or 2% of the range, since depth noise grows with distance). Lines are split at gaps over 35 cm. A **free-space check** drops lines that have more than 15% of the visible floor/wall/furniture points behind them (a real boundary is the last surface along each ray), and of two nearly parallel lines that cover the same viewing directions only the better supported one is kept. If at least 60% of the wall length agrees with one direction (mod 90°), segments within 12° are snapped to it (Manhattan). Collinear segments are merged and perpendicular walls are extended to their corners.
+3. **Furniture.** Each furniture class mask is split into instances (opening + connected components, at least 0.12% of the image, eroded by 3 px). The projected points are cleaned (range IQR filter, largest blob on a 5 cm grid), and the footprint is the **minimum-area rectangle**. One view sees only the front of an object, so a footprint thinner than a class prior (e.g. bed 1.0 m, sofa 0.8 m, chair 0.45 m) is extended away from the camera and drawn dashed. Same-label instances whose footprints overlap are merged (one object split by an occluder).
+4. **Doors and windows** are projected onto the wall line most of their points lie on; their extent along it becomes the opening.
+5. **Drawing.** Walls as thick black bands, door leaf + swing arc, window triple lines, labelled furniture outlines, dimension lines with "≈", a 1 m scale bar, the camera with its field of view, and the floor area if the room polygon is closed (otherwise the visible floor area). PNG and SVG.
+
+All dimensions are marked approximate: the metric depth model is about 22% off in absolute scale on NYU (section 8, 3D Reconstruction).
+
+**Validation on the 654 NYU test images.** Ground-truth floor plans do not exist for NYU, so the plan built from the **ground-truth Kinect depth** is the reference. The same segmentation, the real NYU camera intrinsics and the same pixels (Eigen crop, valid GT) are used for every plan, so the comparison measures what the depth prediction does to the plan. Walls are matched by the overlap of their viewing directions (independent of scale), furniture by shared image instances. "Median-scaled" multiplies the prediction by median(GT / prediction) per image; it needs ground truth and is a diagnostic only, separating the global-scale error from the shape error. Parameters were fixed on the six demo rooms before this run.
+
+| Plan from | Wall recall | Wall precision | Wall length error (mean / rel. mean / rel. median) | Wall length ratio pred/GT (median) | Wall distance error | Furniture IoU | Furniture IoU (observed part) | Centroid error (mean / median) |
+|---|---|---|---|---|---|---|---|---|
+| Predicted metric depth, as is (the app) | 0.54 | 0.57 | 0.60 m / 32% / 23% | 1.16 | 27% | 0.25 | 0.20 | 0.53 m / 0.47 m |
+| Predicted depth, median-scaled (diagnostic) | 0.53 | 0.60 | 0.42 m / 22% / 12% | 0.99 | 15% | 0.51 | 0.43 | 0.22 m / 0.17 m |
+
+- **Scale dominates the error.** With the depth as predicted, walls come out 16% too long (median) and objects are placed about 0.5 m off; furniture footprints overlap their reference with IoU 0.25. Fixing only the global scale halves the relative length error (median 23% → 12%), cuts the centroid error by almost two thirds (median 0.47 → 0.17 m) and doubles the IoU (0.25 → 0.51). So the shape of the plan is mostly right and the absolute size is the weak point, which is what the "≈" marks are for.
+- **Gravity is robust:** the up direction from predicted depth is within 1.8° (median) of the one from ground-truth depth; a floor plane is found in 84–86% of the images.
+- **Walls agree only about half the time** (recall 0.54, precision 0.57). Many NYU views show short, cluttered wall pieces, and the reference plan is itself built from noisy Kinect depth, so small segments appear in one plan and not in the other.
+- **No NYU view gives a closed room** (0 of 654): a single 60° view never shows walls on all four sides. This is why milestones 2–5 move to 360° panoramas.
+- Plan building takes 0.17–0.19 s per image on the CPU. Ceiling height above the fitted floor, median: 2.36 m from GT depth, 2.91 m from predicted depth (the same scale bias).
+- Tables: `results/tables/floorplan_nyu.csv` (summary), `floorplan_nyu_per_image.csv`, `floorplan_nyu_stats.csv`. Figure: `results/figures/floorplan_nyu_examples.png` (image | plan from GT depth | from predicted depth | median-scaled).
+
+**Demo rooms** (`results/figures/floorplan_demo.png`, `results/tables/floorplan_demo.csv`): 2–3 walls per room after cleaning, 1–14 furniture items, 0.1–0.7 s to build and 0.1–0.2 s to draw. The generated rooms come out large (ceilings 3.7–5.2 m above the fitted floor), so either the scale is overestimated on generated images too or SD draws tall rooms; without ground truth the two cannot be told apart. In the bathroom no floor or ceiling is visible, so the plan falls back to an upright camera.
+
 ### Visual Results
 - Prompt → 2D image → edges → segmentation → depth → point cloud → mesh: `results/figures/pipeline_3d_results.png`
+- Floor plans of the demo rooms: `results/figures/floorplan_demo.png`; NYU plans from GT vs. predicted depth: `results/figures/floorplan_nyu_examples.png`
 - Poisson mesh vs. textured grid mesh: `results/figures/mesh_old_vs_new.png`, `results/figures/mesh_layers.png`
 - Point cloud without / with refinement and cleaning: `results/figures/pointcloud_refinement.png`
 - Relative vs. metric depth in 3D: `results/figures/depth_relative_vs_metric_3d.png`
@@ -394,6 +430,7 @@ RoomGen3D/
 │   ├── depth.py               # Depth estimation + refinement
 │   ├── reconstruct_3d.py      # Point cloud, Poisson mesh (comparison)
 │   ├── textured_mesh.py       # Textured grid mesh, disocclusion filling, room planes
+│   ├── floorplan.py           # Floor plan: gravity alignment, walls, furniture, doors/windows, drawing
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures
@@ -446,6 +483,7 @@ RoomGen3D/
 ## 14. Limitations
 
 - 3D comes from a **single view**, so hidden areas (behind furniture, other walls) are not reconstructed. It is not a full 360° room.
+- The **floor plan** of a single view is never a closed room (0 of 654 NYU views); furniture behind the visible face is completed from class priors, and sizes carry the depth model's scale error (wall lengths +16% median on NYU).
 - An **isometric cutaway mode** (prompting for a corner view from above on a plain white background, so that fewer regions are hidden) was tried with base SD v1.5 and with the LoRA at strength 1.0 and 0.5 on the six demo prompts and dropped: only four of six images got the corner view, five of six had no plain background to remove, and the room style was mostly lost.
 - Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only.
 - Training on a subset of MMIS due to compute limits.

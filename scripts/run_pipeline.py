@@ -41,7 +41,7 @@ from src import textured_mesh as tm  # noqa: E402
 from src.utils import set_seed  # noqa: E402
 
 OUT = ROOT / "outputs" / "pipeline"
-STAGES = ["generate", "preprocess", "analysis", "depth", "refine", "pointcloud", "mesh", "export"]
+STAGES = ["generate", "preprocess", "analysis", "depth", "refine", "pointcloud", "mesh", "floorplan", "export"]
 
 
 def gpu_stage(name: str, loader, load_s: dict, vram: dict):

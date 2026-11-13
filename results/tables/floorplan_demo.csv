@@ -1,0 +1,7 @@
+prompt,seed,walls,wall_length_m,furniture,doors,windows,manhattan,closed,area_m2,visible_floor_m2,camera_height_m,ceiling_height_m,gravity,furniture_labels,build_s,draw_s
+a contemporary style living room,11,3,16.010,1,0,1,False,False,,19.592,1.841,4.693,floor plane,cabinet,0.585,0.201
+a coastal style bedroom,22,2,6.906,5,0,4,True,False,,2.958,1.730,3.743,floor plane,"bed, cabinet, drawers, table",0.206,0.184
+a rustic style kitchen,33,3,8.454,14,0,1,True,False,,1.615,1.808,4.005,floor plane,"cabinet, dishwasher, island, plant, shelf, stove, table",0.407,0.224
+a mid-century modern style dining room,44,3,5.933,5,0,1,False,False,,6.714,1.345,4.043,floor plane,"cabinet, chair, table",0.229,0.195
+an art deco style bathroom,55,3,4.184,2,1,0,True,False,,0.000,1.581,,camera upright (no floor / ceiling plane),sink,0.120,0.083
+a mediterranean style living room,66,3,16.223,4,0,1,True,False,,2.609,1.516,5.152,floor plane,"plant, sofa",0.691,0.153

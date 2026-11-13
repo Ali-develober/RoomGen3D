@@ -1,8 +1,13 @@
-"""Gradio demo: text prompt -> 2D image + depth + edges/segmentation + interactive 3D viewer.
+"""Gradio demo: text prompt -> 2D image + floor plan + interactive 3D viewer.
+
+Main outputs: the generated image, an architect-style floor plan (walls, doors / windows, labelled
+furniture footprints, approximate dimensions; src/floorplan.py) and the 3D viewer. The depth map
+(grayscale), the Canny edges and the segmentation are in a collapsed "Analysis" section.
 
 Runs the same code as scripts/run_pipeline.py (src/pipeline.py):
     prompt -> SD v1.5 + LoRA -> noise-gated preprocessing -> Canny + SegFormer -> metric depth
            -> depth refinement -> point cloud -> textured grid mesh with filled occlusions (.glb)
+           -> floor plan (.png / .svg)
 
 3D viewers (two tabs):
   "Original view"  <model-viewer> web component. Opens exactly at the camera of the generated
@@ -33,6 +38,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src import analysis as an  # noqa: E402
 from src import depth as dp  # noqa: E402
+from src import floorplan as fp  # noqa: E402
 from src import generate_2d as g2  # noqa: E402
 from src import pipeline as pl  # noqa: E402
 from src import reconstruct_3d as r3  # noqa: E402
@@ -122,12 +128,24 @@ def run(prompt: str, seed: float, steps: float, cfg: float):
             f"room planes used: {planes}. Point cloud: {st['points']:,} points. "
             f"Estimated image noise σ = {res['info']['noise_est']:.1f} "
             f"({'denoised' if res['info']['denoised'] else 'not denoised'}). "
-            f"Assumed camera: {r3.DEFAULT_FOV_DEG:.0f}° horizontal field of view.")
+            f"Assumed camera: {r3.DEFAULT_FOV_DEG:.0f}° horizontal field of view.\n\n"
+            f"Floor plan ({s['floorplan']:.2f} s): {plan_text(res['plan'])}")
     f = res["files"]
-    return (img, pl.depth_image(d), pl.combined_overlay(res["pre"], res["edges"], res["masks"]),
-            viewer_html(f["mesh_glb"], mesh["target_z"]),
+    return (img, res["plan_image"], viewer_html(f["mesh_glb"], mesh["target_z"]),
             gr.Model3D(value=f["mesh_glb"], camera_position=free_orbit_camera(mesh)),
-            f["image"], f["mesh_glb"], f["pointcloud"], info)
+            pl.depth_gray(d), an.overlay_edges(res["pre"], res["edges"]), an.overlay_masks(res["pre"], res["masks"]),
+            f["image"], f["plan_svg"], f["mesh_glb"], f["pointcloud"], info)
+
+
+def plan_text(plan: dict) -> str:
+    """One-line summary of the floor plan for the info box."""
+    s = fp.plan_summary(plan)
+    furn = sorted({f["label"] for f in plan["furniture"]})
+    area = (f"floor area ≈ {s['area_m2']:.1f} m²" if s["closed"]
+            else f"visible floor ≈ {s['visible_floor_m2']:.1f} m² (room not closed in one view)")
+    return (f"{s['walls']} wall(s), {s['doors']} door(s), {s['windows']} window(s), {s['furniture']} furniture item(s)"
+            f"{' (' + ', '.join(furn) + ')' if furn else ''}; {area}; gravity from the {s['gravity']}. "
+            "Dimensions are approximate (monocular depth, about 20% scale error on NYU).")
 
 
 def build() -> gr.Blocks:
@@ -146,23 +164,30 @@ def build() -> gr.Blocks:
                 info = gr.Markdown()
                 with gr.Row():
                     dl_image = gr.DownloadButton("Download image (.png)")
+                    dl_plan = gr.DownloadButton("Download floor plan (.svg)")
+                with gr.Row():
                     dl_mesh = gr.DownloadButton("Download mesh (.glb)")
                     dl_cloud = gr.DownloadButton("Download point cloud (.ply)")
                 gr.Examples([[p, s] for p, s in pl.DEMO_PROMPTS], inputs=[prompt, seed], label="Example prompts")
             with gr.Column(scale=2):
                 with gr.Row():
-                    image = gr.Image(label="2D image", type="numpy", height=300)
-                    depth = gr.Image(label="Depth map (light = near)", type="numpy", height=300)
-                    overlay = gr.Image(label="Canny edges (white) + segmentation", type="numpy", height=300)
+                    image = gr.Image(label="2D image", type="numpy", height=420)
+                    plan = gr.Image(label="Floor plan (approximate dimensions)", type="numpy", height=420)
                 with gr.Tabs():
                     with gr.Tab("3D: original view (limited orbit)"):
                         viewer = gr.HTML(VIEWER_EMPTY)
                     with gr.Tab("3D: free orbit"):
                         model3d = gr.Model3D(label="Textured mesh (drag to rotate, scroll to zoom)", height=540,
                                              clear_color=[1.0, 1.0, 1.0, 1.0])
-        gr.Markdown("Segmentation colours: blue = wall, orange = floor, green = ceiling, pink = furniture.")
+                with gr.Accordion("Analysis: depth, edges, segmentation", open=False):
+                    with gr.Row():
+                        depth = gr.Image(label="Depth map (white = near, black = far)", type="numpy", height=260)
+                        edges = gr.Image(label="Canny edges", type="numpy", height=260)
+                        seg = gr.Image(label="Segmentation", type="numpy", height=260)
+                    gr.Markdown("Segmentation colours: blue = wall, orange = floor, green = ceiling, pink = furniture.")
         btn.click(run, [prompt, seed, steps, cfg],
-                  [image, depth, overlay, viewer, model3d, dl_image, dl_mesh, dl_cloud, info], concurrency_limit=1)
+                  [image, plan, viewer, model3d, depth, edges, seg, dl_image, dl_plan, dl_mesh, dl_cloud, info],
+                  concurrency_limit=1)
     return demo
 
 

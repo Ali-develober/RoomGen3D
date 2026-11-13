@@ -7,6 +7,8 @@
     [5] point cloud    back-projection, flying-pixel + statistical outlier removal (reconstruct_3d)
     [6] mesh           textured grid mesh + disocclusion filling + room planes (textured_mesh), export
                        (the older Poisson mesh, reconstruct_3d.poisson_mesh, is kept for comparison)
+    [7] floor plan     gravity-aligned top-down plan: walls, doors / windows, furniture footprints,
+                       dimensions (floorplan); PNG + SVG
 
 Each stage is a small function so the script (scripts/run_pipeline.py) and the demo (app/app.py)
 run exactly the same code. `Stopwatch` records the time of every stage.
@@ -22,6 +24,7 @@ import torch
 
 from . import analysis as an
 from . import depth as dp
+from . import floorplan as fp
 from . import reconstruct_3d as r3
 from . import textured_mesh as tm
 from .preprocessing import estimate_noise_sigma, preprocess_gated
@@ -75,9 +78,10 @@ def preprocess(img: np.ndarray) -> tuple[np.ndarray, dict]:
 def analyse(img: np.ndarray, seg_model, seg_proc, device) -> dict:
     """[3] Canny edges + room segmentation. Returns edges, cleaned masks and the two overlays."""
     edges = an.canny_edges(img)
-    masks = an.segment_room(seg_model, seg_proc, img, device, clean=True)
-    return {"edges": edges, "masks": masks, "edge_overlay": an.overlay_edges(img, edges),
-            "seg_overlay": an.overlay_masks(img, masks)}
+    class_map = an.segment_classes(seg_model, seg_proc, img, device)
+    masks = an.room_masks(class_map, seg_model.config.id2label, clean=True)
+    return {"edges": edges, "masks": masks, "class_map": class_map, "id2label": seg_model.config.id2label,
+            "edge_overlay": an.overlay_edges(img, edges), "seg_overlay": an.overlay_masks(img, masks)}
 
 
 def estimate_depth(img: np.ndarray, model, proc, device, model_name: str = DEPTH_MODEL_3D,
@@ -105,6 +109,19 @@ def depth_image(depth: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(cv2.applyColorMap((255 * (1 - d)).astype(np.uint8), cv2.COLORMAP_MAGMA), cv2.COLOR_BGR2RGB)
 
 
+def depth_gray(depth: np.ndarray) -> np.ndarray:
+    """Grayscale depth map for display (white = near, black = far), RGB uint8."""
+    lo, hi = np.percentile(depth, [1, 99])
+    g = (255 * (1 - np.clip((depth - lo) / max(hi - lo, 1e-8), 0, 1))).astype(np.uint8)
+    return np.repeat(g[..., None], 3, axis=2)
+
+
+def build_floorplan(depth: np.ndarray, ana: dict, fov_deg: float = r3.DEFAULT_FOV_DEG) -> dict:
+    """[7] Floor plan of the view (assumed pinhole camera, see reconstruct_3d)."""
+    h, w = depth.shape
+    return fp.build_floorplan(depth, r3.intrinsics(w, h, fov_deg), ana["class_map"], ana["id2label"])
+
+
 def combined_overlay(img: np.ndarray, edges: np.ndarray, masks: dict) -> np.ndarray:
     """Segmentation colours with the Canny edges drawn on top (one picture for the demo)."""
     out = an.overlay_masks(img, masks)
@@ -113,7 +130,7 @@ def combined_overlay(img: np.ndarray, edges: np.ndarray, masks: dict) -> np.ndar
 
 
 def image_to_3d(img: np.ndarray, seg, depth_model, device, watch: Stopwatch | None = None,
-                out_dir: str | Path | None = None, mesh: bool = True) -> dict:
+                out_dir: str | Path | None = None, mesh: bool = True, floorplan: bool = True) -> dict:
     """Stages [2]-[6] for one RGB uint8 image with the models already loaded.
 
     seg = (model, processor) of the segmenter, depth_model = (model, processor) of DEPTH_MODEL_3D.
@@ -135,6 +152,9 @@ def image_to_3d(img: np.ndarray, seg, depth_model, device, watch: Stopwatch | No
         with watch.stage("mesh"):
             rec["mesh"] = build_mesh(dep["depth"], pre, ana)
             rec["stats"].update(rec["mesh"]["stats"])
+    if floorplan:
+        with watch.stage("floorplan"):
+            rec["plan"] = build_floorplan(dep["depth"], ana)
     out = {"image": img, "pre": pre, "info": info, **ana, **dep, **rec, "seconds": watch.seconds, "files": {}}
     if out_dir is not None:
         with watch.stage("export"):
@@ -154,6 +174,9 @@ def save_outputs(res: dict, out_dir: str | Path) -> dict:
                                                     cv2.COLOR_RGB2BGR))
     np.save(out_dir / "depth_m.npy", res["depth"].astype(np.float32))
     r3.export_pointcloud(res["pcd"], files["pointcloud"])
+    if res.get("plan") is not None:
+        files["plan_png"], files["plan_svg"] = out_dir / "floorplan.png", out_dir / "floorplan.svg"
+        res["plan_image"] = fp.draw_floorplan(res["plan"], files["plan_png"], files["plan_svg"])
     if res.get("mesh") is not None:
         files["mesh_glb"], files["mesh_obj"] = out_dir / "mesh.glb", out_dir / "mesh.obj"
         tm.export_glb(res["mesh"], files["mesh_glb"])
