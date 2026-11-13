@@ -1,13 +1,16 @@
-"""Extract the 654 standard NYU Depth V2 test images (official splits.mat) from the labeled .mat.
+"""Extract the official NYU Depth V2 test (654) or train (795) images from the labeled .mat.
 
-Outputs (data/nyu/test/):
+The train split is only used to SELECT preprocessing settings (scripts/eval_gated.py); all
+reported depth metrics are on the test split.
+
+Outputs (data/nyu/<split>/):
   rgb/0001.png          RGB image, 640x480, uint8 (name = 1-based index in the labeled .mat)
   depth/0001.npy        depth in metres, float32 (640x480)
-  depth_png/0001.png    same depth as 16-bit PNG in millimetres (for quick viewing)
+  depth_png/0001.png    same depth as 16-bit PNG in millimetres (for quick viewing; test only)
   index.csv             file name, original index, depth min/max
-Plus results/figures/nyu_test_samples.png and results/tables/nyu_test_stats.csv.
+Plus, for the test split, results/figures/nyu_test_samples.png and results/tables/nyu_test_stats.csv.
 
-Usage: python scripts/extract_nyu.py [--limit 5]
+Usage: python scripts/extract_nyu.py [--split test|train] [--limit 5]
 """
 
 import argparse
@@ -25,21 +28,24 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from src.data_prep import nyu_read_pair, nyu_test_indices  # noqa: E402
+from src.data_prep import nyu_read_pair, nyu_split_indices  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW, OUT = ROOT / "data" / "nyu" / "raw", ROOT / "data" / "nyu" / "test"
+RAW = ROOT / "data" / "nyu" / "raw"
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="only extract N images (test)")
+    ap.add_argument("--split", choices=["test", "train"], default="test")
     args = ap.parse_args()
-    for d in ["rgb", "depth", "depth_png"]:
+    OUT = ROOT / "data" / "nyu" / args.split
+    is_test = args.split == "test"
+    for d in ["rgb", "depth"] + (["depth_png"] if is_test else []):
         (OUT / d).mkdir(parents=True, exist_ok=True)
 
-    idx = nyu_test_indices(RAW / "splits.mat")
-    print(f"official test split: {len(idx)} images")
+    idx = nyu_split_indices(RAW / "splits.mat", args.split)
+    print(f"official {args.split} split: {len(idx)} images")
     if args.limit:
         idx = idx[: args.limit]
 
@@ -51,12 +57,17 @@ def main():
             rgb, depth = nyu_read_pair(h5, int(i))
             cv2.imwrite(str(OUT / "rgb" / f"{name}.png"), cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
             np.save(OUT / "depth" / f"{name}.npy", depth)
-            cv2.imwrite(str(OUT / "depth_png" / f"{name}.png"), np.clip(depth * 1000, 0, 65535).astype(np.uint16))
+            if is_test:
+                cv2.imwrite(str(OUT / "depth_png" / f"{name}.png"),
+                            np.clip(depth * 1000, 0, 65535).astype(np.uint16))
             rows.append({"name": name, "mat_index": int(i), "h": rgb.shape[0], "w": rgb.shape[1],
                          "depth_min_m": float(depth.min()), "depth_max_m": float(depth.max()),
                          "depth_mean_m": float(depth.mean())})
     df = pd.DataFrame(rows)
     df.to_csv(OUT / "index.csv", index=False)
+    if not is_test:
+        print(f"extracted {len(df)} pairs -> {OUT}")
+        return
 
     if not args.limit:
         (ROOT / "results" / "tables").mkdir(parents=True, exist_ok=True)

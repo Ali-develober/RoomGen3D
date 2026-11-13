@@ -157,6 +157,28 @@ def preprocess_for_depth(img: np.ndarray, do_denoise: bool = True, do_clahe: boo
     return img
 
 
+# Noise gate of preprocess_gated. Selected on the 795 NYU TRAIN images by scripts/eval_gated.py
+# (results/tables/depth_gated_selected.csv): best of 2 denoisers x 15 thresholds, never the test split.
+GATE_THRESHOLD = 15.0               # estimated noise std above which the image is denoised
+GATE_METHOD = "gaussian"            # "gaussian" (sigma 1) or "bilateral" (adaptive)
+
+
+def preprocess_gated(img: np.ndarray, threshold: float = GATE_THRESHOLD, method: str = GATE_METHOD) -> np.ndarray:
+    """Noise-gated depth preprocessing: denoise only if the image is actually noisy.
+
+    1. estimate the noise std of the image (estimate_noise_sigma)
+    2. if it is above `threshold`: denoise with `method` ("bilateral" = adaptive bilateral,
+       "gaussian" = Gaussian sigma 1); otherwise return the image UNCHANGED.
+    No CLAHE and no sharpening: on NYU both made depth worse (README section 8), and denoising
+    only paid off under strong noise - hence the gate. threshold = inf never denoises.
+    """
+    if method not in ("bilateral", "gaussian"):
+        raise ValueError(method)
+    if estimate_noise_sigma(img) <= threshold:
+        return img
+    return denoise_gaussian(img) if method == "gaussian" else denoise(img)
+
+
 def psnr(a: np.ndarray, b: np.ndarray) -> float:
     """Peak signal-to-noise ratio in dB between two uint8 images (higher = closer)."""
     mse = np.mean((a.astype(np.float64) - b.astype(np.float64)) ** 2)

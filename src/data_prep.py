@@ -213,6 +213,12 @@ def nyu_test_indices(splits_mat: str | Path) -> np.ndarray:
     return loadmat(splits_mat)["testNdxs"].ravel().astype(int) - 1
 
 
+def nyu_split_indices(splits_mat: str | Path, split: str) -> np.ndarray:
+    """0-based indices of the official "train" (795) or "test" (654) images of the labeled split."""
+    from scipy.io import loadmat
+    return loadmat(splits_mat)[{"train": "trainNdxs", "test": "testNdxs"}[split]].ravel().astype(int) - 1
+
+
 def nyu_read_pair(h5, idx: int) -> tuple[np.ndarray, np.ndarray]:
     """Return (rgb uint8 HxWx3, depth float32 HxW in metres) for one labeled-split index.
 

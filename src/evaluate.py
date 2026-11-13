@@ -564,28 +564,31 @@ def load_nyu_index(nyu_dir, limit: int | None = None) -> pd.DataFrame:
     return df.reset_index(drop=True)
 
 
-def eval_depth_run(model, processor, df: pd.DataFrame, degradation: str, inputs: list[str],
-                   refine_for: list[str], device, desc: str = "") -> pd.DataFrame:
-    """Run one depth model over the NYU images for one degradation.
+def eval_inputs_run(model, processor, df: pd.DataFrame, degradation: str, transforms: dict,
+                    refine_for: list[str], device, desc: str = "", boundary: bool = True) -> pd.DataFrame:
+    """Run one depth model over NYU images for one degradation and several input transforms.
 
-    For every image: degrade -> for each input variant in `inputs` preprocess, predict, align,
-    score (global + boundary metrics). Variants listed in `refine_for` are scored a second time
-    after depth refinement (same forward pass). If two variants give the identical image (the
-    noise-aware and the plain pipeline agree on clean inputs) the prediction is reused.
-    One image is in memory at a time. Returns one row per (image, input variant, refined?).
+    `transforms` maps a variant name to a function RGB uint8 -> RGB uint8. For every image:
+    degrade -> for each variant transform, predict, align, score (global metrics, plus boundary
+    metrics if `boundary`). Variants listed in `refine_for` are scored a second time after depth
+    refinement (same forward pass). If two variants give the identical image (e.g. a gate that
+    did not fire, so the image is the raw one) the prediction is reused.
+    One image is in memory at a time. Returns one row per (image, variant, refined?), each with
+    `noise_est`, the estimated noise std of the degraded image before any preprocessing.
     """
     from . import depth as dp
-    from .preprocessing import load_rgb
+    from .preprocessing import estimate_noise_sigma, load_rgb
 
     rows = []
     for _, r in tqdm(df.iterrows(), total=len(df), desc=desc, unit="img"):
         gt = np.load(r["depth_path"])
         mask = nyu_valid_mask(gt)
-        edge = depth_edge_mask(gt, mask)
+        edge = depth_edge_mask(gt, mask) if boundary else None
         img = degrade(load_rgb(r["rgb_path"]), degradation, seed=int(r["mat_index"]))
+        noise_est = estimate_noise_sigma(img)
         done = {}                                   # variant -> (input image, disparity)
-        for variant in inputs:
-            x = dp.prepare_input(img, variant)
+        for variant, fn in transforms.items():
+            x = fn(img)
             twin = next((v for v, (xv, _) in done.items() if np.array_equal(xv, x)), None)
             disp = done[twin][1] if twin else dp.predict_disparity(model, processor, x, device)
             done[variant] = (x, disp)
@@ -594,10 +597,22 @@ def eval_depth_run(model, processor, df: pd.DataFrame, degradation: str, inputs:
                 preds[True] = dp.refine_depth(disp, x)
             for refined, d in preds.items():
                 depth = align_scale_shift(d, gt, mask)
-                rows.append({"name": r["name"], "degradation": degradation, "input": variant,
-                             "refined": refined, **depth_metrics(depth, gt, mask),
-                             **boundary_metrics(depth, gt, mask, edge)})
+                row = {"name": r["name"], "degradation": degradation, "input": variant, "refined": refined,
+                       "noise_est": noise_est, **depth_metrics(depth, gt, mask)}
+                if boundary:
+                    row.update(boundary_metrics(depth, gt, mask, edge))
+                rows.append(row)
     return pd.DataFrame(rows)
+
+
+def eval_depth_run(model, processor, df: pd.DataFrame, degradation: str, inputs: list[str],
+                   refine_for: list[str], device, desc: str = "") -> pd.DataFrame:
+    """eval_inputs_run for the named ablation variants of depth.prepare_input ("raw", "full", ...)."""
+    from functools import partial
+
+    from . import depth as dp
+    return eval_inputs_run(model, processor, df, degradation,
+                           {v: partial(dp.prepare_input, variant=v) for v in inputs}, refine_for, device, desc)
 
 
 def summarize_depth(per_image: pd.DataFrame, by: list[str]) -> pd.DataFrame:
@@ -780,6 +795,143 @@ def plot_depth_robustness(robust: pd.DataFrame, out_path, model_label: str, metr
     n = int(robust["n_images"].iloc[0])
     fig.suptitle(f"Robustness of {model_label} on degraded NYU images ({n} test images): effect of each "
                  "preprocessing step (hatched = with depth refinement)", fontsize=11.5)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+
+
+# --------------------------------------------------------------------------- #
+# Noise-gated preprocessing: selection on the NYU TRAIN split, one evaluation on TEST
+# --------------------------------------------------------------------------- #
+# preprocessing.preprocess_gated denoises an image only if its estimated noise std is above a
+# threshold. The threshold and the denoiser are chosen on the 795 NYU train images (same
+# synthetic degradations, seeded by image index so they differ from the test images).
+#
+# The search needs only three forward passes per image and degradation - raw, Gaussian,
+# adaptive bilateral - because a gated pipeline outputs either the raw or the denoised image:
+#     metric(gated, threshold t) = metric(denoised) if noise_est > t else metric(raw)
+# so every threshold can be scored afterwards from the same per-image numbers.
+GATE_METHODS = ["gaussian", "bilateral"]
+GATE_THRESHOLDS = [0, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, np.inf]   # 0 = always, inf = never
+# Selection rule (fixed before the run): lowest SCORE, where
+#   SCORE = mean over the 2 models x 8 degradations of the relative AbsRel change against the
+#           raw image, 100 * (AbsRel_gated / AbsRel_raw - 1), each cell weighted equally.
+# Relative change is used so that MiDaS (larger errors) does not dominate. Ties -> higher
+# threshold (the pipeline that touches fewer images).
+
+
+def gate_transforms() -> dict:
+    """The three inputs evaluated in the selection run."""
+    from . import preprocessing as pp
+    return {"raw": lambda x: x, "gaussian": pp.denoise_gaussian, "bilateral": pp.denoise}
+
+
+def gate_selection_tables(per: pd.DataFrame, thresholds=GATE_THRESHOLDS, methods=GATE_METHODS):
+    """Score every (denoiser, threshold) from the per-image selection results.
+
+    `per`: rows from eval_inputs_run with a `model` column, inputs "raw" + each method, unrefined.
+    Returns (summary, cells):
+      cells   - one row per method x threshold x model x degradation: AbsRel / RMSE / delta1 of the
+                gated pipeline, the raw AbsRel, the relative change in % and the share of images gated
+      summary - one row per method x threshold: SCORE (see above), the same per model, the worst
+                cell, and the overall share of images that get denoised; sorted best first.
+    """
+    idx = ["model", "degradation", "name"]
+    wide = per.pivot(index=idx, columns="input", values=DEPTH_METRICS)
+    est = per[per["input"] == "raw"].set_index(idx)["noise_est"].reindex(wide.index)
+    groups = [wide.index.get_level_values("model"), wide.index.get_level_values("degradation")]
+    raw_mean = wide["abs_rel"]["raw"].groupby(groups, sort=False).mean()
+    cells = []
+    for method in methods:
+        for thr in thresholds:
+            fire = (est > thr).to_numpy()
+            out = {m: np.where(fire, wide[m][method].to_numpy(), wide[m]["raw"].to_numpy()) for m in DEPTH_METRICS}
+            g = pd.DataFrame({**out, "gated_share": fire.astype(float)}, index=wide.index).groupby(groups, sort=False)
+            c = g.mean().reset_index()
+            c.insert(0, "threshold", thr)
+            c.insert(0, "method", method)
+            c["abs_rel_raw"] = raw_mean.to_numpy()
+            c["abs_rel_change_pct"] = 100 * (c["abs_rel"] / c["abs_rel_raw"] - 1)
+            cells.append(c)
+    cells = pd.concat(cells, ignore_index=True)
+    g = cells.groupby(["method", "threshold"], sort=False)
+    summary = g.agg(score=("abs_rel_change_pct", "mean"), worst_cell_pct=("abs_rel_change_pct", "max"),
+                    best_cell_pct=("abs_rel_change_pct", "min"), gated_share=("gated_share", "mean")).reset_index()
+    for model, sub in cells.groupby("model", sort=False):
+        s = sub.groupby(["method", "threshold"], sort=False)["abs_rel_change_pct"].mean()
+        summary[f"score_{model}"] = s.to_numpy()
+    summary = summary.sort_values(["score", "threshold"], ascending=[True, False], kind="stable").reset_index(drop=True)
+    summary.insert(0, "rank", np.arange(1, len(summary) + 1))
+    return summary, cells
+
+
+def plot_gate_selection(summary: pd.DataFrame, out_path, n_images: int) -> None:
+    """Selection score against the gate threshold, one line per denoiser (train split)."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    colors = {"gaussian": "#eb6834", "bilateral": "#2a78d6"}
+    labels = {"gaussian": "Gaussian (σ=1)", "bilateral": "Adaptive bilateral"}
+    finite = sorted(t for t in summary["threshold"].unique() if np.isfinite(t))
+    pos = {t: i for i, t in enumerate(finite)}
+    pos[np.inf] = len(finite)
+    best = summary.iloc[0]
+    fig, ax = plt.subplots(figsize=(9, 4.4))
+    for method, sub in summary.groupby("method", sort=False):
+        sub = sub.sort_values("threshold")
+        ax.plot([pos[t] for t in sub["threshold"]], sub["score"], "-o", color=colors[method], lw=2, ms=5,
+                label=labels[method])
+    ax.axhline(0, color="#555", ls="--", lw=1.1, label="raw image (no preprocessing)")
+    ax.scatter([pos[best["threshold"]]], [best["score"]], s=190, facecolors="none", edgecolors="#222", lw=1.8,
+               zorder=4, label="selected")
+    ax.set_xticks(range(len(finite) + 1), [f"{t:g}" for t in finite] + ["never"])
+    ax.set_xlabel("Gate threshold on the estimated noise std (0 = always denoise)")
+    ax.set_ylabel("Mean AbsRel change vs. raw, %  (lower is better)")
+    ax.set_title(f"Noise-gate selection on the NYU train split ({n_images} images, both models, 8 degradations)",
+                 fontsize=11)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.grid(axis="y", color="#e6e6e3", lw=0.8)
+    ax.set_axisbelow(True)
+    ax.legend(frameon=False, fontsize=9)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+
+
+def plot_gated_result(summary: pd.DataFrame, out_path, model_labels: dict, title: str, metric: str = "abs_rel") -> None:
+    """Raw vs. gated pipeline per degradation, one row per model; dashed line = clean raw image."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    degs = [d for d in DEGRADATIONS if d in set(summary["degradation"])]
+    short = {"clean": "Clean", "noise15": "Noise 15", "noise25": "Noise 25", "noise50": "Noise 50",
+             "motion_blur": "Blur 15 px", "motion_blur25": "Blur 25 px", "low_light": "Low light",
+             "low_light_severe": "Low light\n(severe)"}
+    model_names = list(dict.fromkeys(summary["model"]))
+    fig, axes = plt.subplots(len(model_names), 1, figsize=(11, 3.6 * len(model_names)), squeeze=False)
+    x, w = np.arange(len(degs)), 0.38
+    for ax, name in zip(axes[:, 0], model_names):
+        sub = summary[summary["model"] == name].set_index(["degradation", "condition"])[metric]
+        raw = [float(sub[(d, "raw")]) for d in degs]
+        gated = [float(sub[(d, "gated")]) for d in degs]
+        ax.bar(x - w / 2, raw, w, color="#8a8a85", edgecolor="white", label="Raw image")
+        ax.bar(x + w / 2, gated, w, color="#2a78d6", edgecolor="white", label="Noise-gated denoising")
+        top = max(raw + gated)
+        for xi, (a, b) in enumerate(zip(raw, gated)):
+            ax.text(xi - w / 2, a + top * 0.012, f"{a:.3f}", ha="center", va="bottom", fontsize=7.5, color="#222")
+            ax.text(xi + w / 2, b + top * 0.012, f"{b:.3f}", ha="center", va="bottom", fontsize=7.5, color="#222")
+        ax.axhline(raw[degs.index("clean")], color="#555", ls="--", lw=1.1, label="clean raw image")
+        ax.set_ylim(0, top * 1.15)
+        ax.set_xticks(x, [short[d] for d in degs], fontsize=8.5)
+        ax.set_ylabel(METRIC_TITLES[metric], fontsize=9)
+        ax.set_title(model_labels.get(name, name), fontsize=10.5)
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.grid(axis="y", color="#e6e6e3", lw=0.8)
+        ax.set_axisbelow(True)
+    axes[0, 0].legend(frameon=False, fontsize=8.5, ncol=3, loc="upper left")
+    fig.suptitle(title, fontsize=11.5)
     fig.tight_layout()
     fig.savefig(out_path, dpi=150)
     plt.close(fig)

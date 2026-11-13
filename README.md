@@ -205,6 +205,43 @@ Each image is degraded synthetically at a moderate and a severe level, then the 
 
 **Default full pipeline: plain three steps (`noise_aware=False`).** A noise-aware variant (denoise again after CLAHE and skip sharpening when the input is noisy) was also evaluated. The two are identical on clean and blurred images. On noisy and dark images the plain version is better for MiDaS in all five cases (AbsRel lower by 0.004–0.009, five to ten standard errors in a per-image paired comparison) and for Depth Anything in severe low light (0.0843 vs. 0.0894). For Depth Anything under Gaussian noise the two are within 0.001 of each other. The noise-aware variant is never clearly better, so the simpler pipeline is the default. Neither variant beats the raw image.
 
+#### Noise-gated preprocessing
+The results above show that denoising only pays off when the image is really noisy, and that CLAHE and sharpening never help depth. `preprocess_gated` (`src/preprocessing.py`) therefore estimates the noise σ of the image and denoises only if it is above a threshold; otherwise the image is passed through unchanged. No CLAHE, no sharpening.
+
+**Selection on the NYU train split (795 images, never the test split).** For both models and all 8 degradations, the raw, Gaussian-denoised and adaptive-bilateral-denoised images were scored; every threshold was then scored from those per-image numbers. Rule, fixed before the run: lowest mean relative AbsRel change against the raw image, averaged equally over the 2 models × 8 degradations; ties go to the higher threshold. 30 configurations (2 denoisers × 15 thresholds).
+
+| Rank | Denoiser | Threshold (noise σ) | Mean AbsRel change vs. raw | Depth Anything | MiDaS | Worst cell | Images denoised |
+|---|---|---|---|---|---|---|---|
+| **1** | **Gaussian (σ=1)** | **15** | **−1.63%** | −2.91% | −0.34% | +0.40% | 33% |
+| 2 | Gaussian | 12 | −1.62% | −3.35% | +0.12% | +3.04% | 50% |
+| 3 | Gaussian | 10 | −1.61% | −3.35% | +0.12% | +3.05% | 50% |
+| 4 | Gaussian | 20 | −1.49% | −2.59% | −0.39% | 0.00% | 25% |
+| 14 | Adaptive bilateral (its best) | 30 | −0.93% | −1.60% | −0.26% | 0.00% | 13% |
+| 19 | Gaussian | 0 (always denoise) | −0.45% | −3.52% | +2.63% | +6.42% | 100% |
+| 30 | Adaptive bilateral | 0 (always denoise) | +1.14% | −2.23% | +4.51% | +10.13% | 100% |
+
+**Selected: Gaussian denoising when the estimated noise σ is above 15.** The top three are within 0.02 points of each other, so the exact threshold between 10 and 15 matters little. The Gaussian filter beats the adaptive bilateral filter at every threshold even though the bilateral filter has the better PSNR at σ=15 and σ=25: for depth, removing the noise completely matters more than keeping edges sharp. Tables: `results/tables/depth_gated_selection.csv`, `depth_gated_selection_cells.csv`, `depth_gated_selected.csv`.
+
+**Evaluation on the 654 test images (run once with the selected config).** AbsRel, raw → gated; recovery = share of the damage won back.
+
+| Degradation | Images denoised | Depth Anything | Recovery | MiDaS | Recovery |
+|---|---|---|---|---|---|
+| Clean | 0% | 0.0546 → 0.0546 | – | 0.0975 → 0.0975 | – |
+| Gaussian noise σ=15 | 0% | 0.0580 → 0.0580 | 0% | 0.1008 → 0.1008 | 0% |
+| Gaussian noise σ=25 | 100% | 0.0616 → **0.0582** | 49% | 0.1066 → **0.1054** | 14% |
+| Gaussian noise σ=50 | 100% | 0.0786 → **0.0643** | 59% | 0.1205 → **0.1167** | 16% |
+| Motion blur 15 px | 0% | 0.0636 → 0.0636 | 0% | 0.1252 → 0.1252 | 0% |
+| Motion blur 25 px | 0% | 0.0754 → 0.0754 | 0% | 0.1433 → 0.1433 | 0% |
+| Low light (γ 2.2 + noise 10) | 0% | 0.0618 → 0.0618 | 0% | 0.1096 → 0.1096 | 0% |
+| Low light (γ 3.0 + noise 20) | 59% | 0.0789 → **0.0774** | 6% | 0.1314 → 0.1324 | −3% |
+
+- **The gated pipeline never hurts where it does nothing:** clean, lightly noisy, blurred and moderately dark images pass through unchanged (5 of 8 conditions), so the losses of the full pipeline on those cases are gone.
+- **It helps under strong Gaussian noise.** Depth Anything recovers 49% of the AbsRel damage at σ=25 and 59% at σ=50 (RMSE 0.350 → 0.303 m, δ<1.25 0.933 → 0.954); per image, AbsRel improves on 71% and 83% of the images. MiDaS gains less (14% and 16%).
+- **Severe low light is mixed:** a small gain for Depth Anything (6%), a small loss for MiDaS (−3%, about two standard errors).
+- **It does not address blur or moderate low light,** and it does not improve clean images. Averaged over the 8 conditions the AbsRel change is −3.2% for Depth Anything and −0.4% for MiDaS, close to the train-split estimates (−2.9% and −0.3%), so the selection did not overfit.
+- **Depth refinement** on top of the gated input behaves as before: flying pixels drop by roughly a third (Depth Anything, σ=25: 0.61% → 0.39%), AbsRel changes by less than 0.001.
+- Tables: `results/tables/depth_gated_test.csv`, `depth_gated_per_image.csv`. Figures: `results/figures/depth_gated_selection.png`, `depth_gated_test.png`. Code: `scripts/eval_gated.py`.
+
 #### Denoising quality
 PSNR and SSIM against the clean image, mean over the 654 images. "Adaptive bilateral" sets the colour sigma to three times the estimated noise level and is what the pipeline uses.
 
@@ -312,8 +349,8 @@ RoomGen3D/
 ## 13. Objectives (Measurable)
 
 1. Train a LoRA that improves FID and CLIP Score over vanilla SD v1.5. *Status: FID 64.5 → 54.6 and KID 19.1 → 10.2 ×10³ (met). CLIP 27.9 → 27.0 (not met; see section 8).*
-2. Show that preprocessing reduces depth error (AbsRel/RMSE) on NYU Depth V2. *Status: not met. On clean images every preprocessing step is neutral or slightly worse for both models (Depth Anything AbsRel 0.0546 raw vs. 0.0563 full); see section 8.*
-3. Show that preprocessing improves robustness under noise, blur, and low light. *Status: not met for the full pipeline (worse than raw in 12 of 14 degraded cases). Partly met for denoising alone under strong noise: it recovers 46% of the AbsRel damage at σ=50 and 24% at σ=25 for Depth Anything.*
+2. Show that preprocessing reduces depth error (AbsRel/RMSE) on NYU Depth V2. *Status: not met. On clean images every preprocessing step is neutral or slightly worse for both models (Depth Anything AbsRel 0.0546 raw vs. 0.0563 full). The noise-gated pipeline leaves clean images unchanged, so it avoids the loss but gives no gain; see section 8.*
+3. Show that preprocessing improves robustness under noise, blur, and low light. *Status: partly met, for strong noise only. The full pipeline (denoise + CLAHE + unsharp) is worse than raw in 12 of 14 degraded cases. The noise-gated pipeline, selected on the NYU train split and evaluated once on the test split, recovers 49% (σ=25) and 59% (σ=50) of the AbsRel damage for Depth Anything and 14% / 16% for MiDaS. It changes nothing under σ=15 noise, motion blur and moderate low light, and is mixed in severe low light (+6% Depth Anything, −3% MiDaS).*
 4. Produce a 3D mesh from any generated design in under ~1 minute on a GPU.
 5. Deploy a public demo showing 2D and 3D outputs side by side.
 
@@ -325,7 +362,7 @@ RoomGen3D/
 - Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only.
 - Training on a subset of MMIS due to compute limits.
 - Monocular depth is **relative**, not true metric scale.
-- Classical preprocessing did **not** improve depth accuracy on NYU Depth V2: modern depth networks are already robust to moderate noise, blur and low light. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.
+- Classical preprocessing did **not** improve depth accuracy on clean NYU Depth V2 images: modern depth networks are already robust to moderate noise, blur and low light. Only noise-gated denoising helps, and only under strong noise (σ ≥ 25); nothing tested helps against blur. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.
 
 ## 15. Future Work
 

@@ -1,0 +1,2 @@
+method,threshold,score,selected_on,rule
+gaussian,15.0,-1.626373167882822,"NYU train, 795 images",lowest mean relative AbsRel change vs. raw over 2 models x 8 degradations; ties -> higher threshold
