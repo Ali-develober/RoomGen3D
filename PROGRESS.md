@@ -324,3 +324,11 @@ Restart rule: read this section, continue with the first milestone not marked DO
 **Failed / limitations**: periodic tiling (new) not selected; first open-side rule (beyond share of inferred sides) found nothing — all demo sides were "detected" far walls; second rule cut real furniture out of the plans (rejected); final rule marks open sides but rarely shrinks the area. Doors / windows on refined views: negative result.
 
 **Next**: Final — v4 default with v3 toggle (done), page layout, summary figure per demo room, summary table, README; do not start the course notebook.
+
+## 2026-11-14 — PLAN_V4 Final — DONE
+
+- App: 360° Room runs v4 by default (v4 / v3 / v2 switch); layout: design-shot gallery + plan with view cones on top, then tabs Inside / Dollhouse / Top-down / 360° panorama / free orbit, then Analysis; options: candidates (default 3), generated furniture objects (default 4), img2img detail pass. UI build checked; per-mode headless tests in the milestone entries (last: v4 k=3 + 4 objects 97 s cold, 6.4 GB).
+- `scripts/v4_summary.py`: summary figure per demo room (`results/figures/v4_summary_<room>.png`, overview) and `results/tables/v4_summary.csv` (22 of 27 comparable rows improve; not improved: GLB size, furniture silhouette IoU, synthetic-hole SSIM, door / window recall). Demo rooms rebuilt with the final v4 pipeline in `outputs/room360/<room>/v4`.
+- README: per-milestone sections, PLAN_V4 summary table, objectives 12-16, v4 limitations, repository structure.
+- Downloads PLAN_V4: TripoSR 1.56 GB + small (piq, SqueezeNet, omegaconf, trimesh) of 10 GB. Free disk at the end: 32 GB.
+- Not done: the course notebook (per the plan). Intermediate files NOT deleted (deletion needs the owner's OK per CLAUDE.md): `outputs/objects_eval/<bench rooms>` (~150 MB, bench 4096 panoramas + object caches), `outputs/room_v4_eval` (69 MB), `outputs/app` (219 MB, app test runs), `outputs/room360/*/v4/room_v4_nomip.glb` (mipmap test files).

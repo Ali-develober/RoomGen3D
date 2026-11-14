@@ -1,5 +1,10 @@
 """Gradio demo: text prompt -> 2D image + floor plan + interactive 3D viewer.
 
+PLAN_V4 (default 360° pipeline "v4", src/pipeline_v4.py): a gallery of readable design shots (hero + wall views)
+next to the floor plan with view cones, a 4096 x 2048 sharpened panorama, a sharp inside view that opens facing
+the hero, optional TripoSR furniture objects (slider) with relief for uncertain pieces, open sides on the plan;
+tabs Inside / Dollhouse / Top-down / 360° panorama / free orbit, then Analysis. v3 and v2 stay selectable.
+
 Main outputs: the generated image, an architect-style floor plan (walls, doors / windows, labelled
 furniture footprints, approximate dimensions; src/floorplan.py) and the 3D viewer. The depth map
 (grayscale), the Canny edges and the segmentation are in a collapsed "Analysis" section.
@@ -546,12 +551,13 @@ def build() -> gr.Blocks:
                         plan = gr.Image(label="Floor plan with camera and view cones (approximate dimensions)",
                                         type="numpy", height=420)
                 with gr.Tabs():
-                    with gr.Tab("3D viewer (original view / inside the 360° room)"):
+                    with gr.Tab("Inside (3D)"):
                         viewer = gr.HTML(VIEWER_EMPTY)
                     with gr.Tab("Dollhouse (360°)"):
                         doll = gr.HTML(DOLL_EMPTY)
-                        topview = gr.Image(label="Top view (orthographic, same orientation as the floor plan; v3)",
-                                           type="numpy", height=320)
+                    with gr.Tab("Top-down"):
+                        topview = gr.Image(label="Top view (orthographic, same orientation as the floor plan; v3 / v4)",
+                                           type="numpy", height=420)
                     with gr.Tab("360° panorama"):
                         pano_view = gr.HTML(PANO_EMPTY)
                     with gr.Tab("3D: free orbit (offline)"):

@@ -942,8 +942,45 @@ Rule (dev): SSIM within 0.02 of NS on synthetic holes, then mean rank of |energy
 
 App (headless): 360° v4 with 3 candidates and 4 objects 97 s cold, peak 6.4 GB; v3 14 s; Layout-first 20 s.
 
+### PLAN_V4 summary (before / after)
+All numbers from `results/tables/v4_summary.csv` (built by `scripts/v4_summary.py` from the milestone tables; "data" says which rooms):
+
+| Milestone | Metric | Data | v3 | v4 |
+|---|---|---|---|---|
+| 1 design shots | layout furniture >= 50% in the main 2D view (v3: first wall) | held-out bench | 0.700 | **1.350** |
+| 1 design shots | main piece in the main 2D view (v3: first wall) | held-out bench | 0.100 | **0.250** |
+| 1 design shots | predicted instances in the main 2D view (v3: first wall) | held-out bench | 0.450 | **1.700** |
+| 2 sharper panorama | shot sharpness (Laplacian var.) (v4: i2i_lora_0.3) | held-out bench + demo | 18.9 | **30.1** |
+| 2 sharper panorama | shot BRISQUE (v4: i2i_lora_0.3) | held-out bench + demo | 49.6 | **43.0** |
+| 2 sharper panorama | shot KID x1e3 vs MMIS (v4: i2i_lora_0.3) | held-out bench + demo | 75.0 | **69.4** |
+| 2 sharper panorama | shot CLIP (v4: i2i_lora_0.3) | held-out bench + demo | 19.0 | **19.4** |
+| 2 sharper panorama | shot sharpness (v4 app default: ESRGAN views) | held-out bench + demo | 18.9 | **52.1** |
+| 3 sharp 3D | inside render vs shot PSNR | held-out bench + demo (offline) | 28.5 | **37.5** |
+| 3 sharp 3D | inside render vs shot SSIM | held-out bench + demo (offline) | 0.915 | **0.984** |
+| 3 sharp 3D | inside render vs shot LPIPS | held-out bench + demo (offline) | 0.124 | **0.027** |
+| 3 sharp 3D | furniture silhouette jaggedness | held-out bench + demo (offline) | 1.183 | **1.079** |
+| 3 sharp 3D | inside GLB size (MB) | held-out bench + demo (offline) | 1.559 | 5.335 |
+| 3 sharp 3D | browser render vs shot PSNR | demo rooms, headed Chromium | 25.0 | **28.4** |
+| 3 sharp 3D | browser SSIM | demo rooms, headed Chromium | 0.860 | **0.921** |
+| 3 sharp 3D | browser LPIPS | demo rooms, headed Chromium | 0.152 | **0.048** |
+| 3 sharp 3D | browser colour error dE2000 | demo rooms, headed Chromium | 2.771 | **1.771** |
+| 4 furniture | silhouette IoU from the centre | held-out bench | 0.657 | 0.658 |
+| 4 furniture | full-room render vs panorama PSNR | held-out bench | 24.4 | **26.2** |
+| 4 furniture | full-room render SSIM | held-out bench | 0.922 | **0.931** |
+| 4 furniture | full-room render LPIPS | held-out bench | 0.070 | **0.063** |
+| 4 furniture | furniture found per room (IoU >= 0.25), with relief | held-out bench | 2.050 | **2.600** |
+| 4 furniture | share of pieces as generated objects | held-out bench | 0.000 | 0.049 |
+| 5 weaknesses | hidden-area fill |texture energy ratio - 1| (v4: patch) | held-out bench | 0.503 | **0.405** |
+| 5 weaknesses | hidden-area darkness (v4: patch) | held-out bench | 32.5 | **24.5** |
+| 5 weaknesses | hidden-area BRISQUE (v4: patch) | held-out bench | 51.9 | **45.0** |
+| 5 weaknesses | synthetic-hole SSIM (v4: patch) | held-out bench | 0.795 | 0.785 |
+| 5 weaknesses | door / window recall (refined views) | held-out bench | 0.023 | 0.023 |
+| 5 weaknesses | demo rooms with open sides marked | demo rooms | 0.000 | 4.000 |
+
+23 of 27 comparable rows improve (bold). Not improved: inside GLB size (1.6 → 5.3 MB, within the 25 MB target), silhouette IoU of the furniture (generated objects rarely beat blocks), synthetic-hole SSIM (−0.01 for the texture-keeping fill) and door / window recall. Summary figures (hero shot, wall shots, plan with view cones, v3 / v4 dollhouse, v3 / v4 inside render): `results/figures/v4_summary_<room>.png` for the six demo rooms and `v4_summary_overview.png`.
+
 ### Demo modes (v4)
-**360° Room** runs **v4** by default (pipeline switch v4 / v3 / v2). The top of the page is a **gallery of design shots** (hero first, then A–D, captions with the plan letters; Quick and the other modes show their single image or panorama there) next to the **floor plan with view cones**; the viewer tabs are Inside, Dollhouse (+ top view), **360° panorama** (new) and Free orbit; the panorama itself is in the Analysis section. New download: the design shots + plan as a zip. Headless test: v4 one candidate 40.7 s including the first model loads, peak 5.9 GB; v3 15.1 s; Quick 13.0 s.
+**360° Room** runs **v4** by default (pipeline switch v4 / v3 / v2; options: candidates (default 3), number of generated furniture objects (default 4), img2img detail pass). Page layout: design-shot gallery + floor plan with view cones on top, then the viewer tabs **Inside**, **Dollhouse**, **Top-down**, **360° panorama** (+ free orbit), then the Analysis section. The top of the page is a **gallery of design shots** (hero first, then A–D, captions with the plan letters; Quick and the other modes show their single image or panorama there) next to the **floor plan with view cones**; the viewer tabs are Inside, Dollhouse (+ top view), **360° panorama** (new) and Free orbit; the panorama itself is in the Analysis section. New download: the design shots + plan as a zip. Headless test: v4 one candidate 40.7 s including the first model loads, peak 5.9 GB; v3 15.1 s; Quick 13.0 s.
 
 ### Demo modes (v3)
 The **360° Room** mode now runs the v3 pipeline by default (`app/app.py` → `src/pipeline_v3.py`); the "360° Room options" accordion has the **pipeline switch** (v3 / v2 for comparison) and the **Candidates** slider (1–4 panoramas, the most box-like one is kept). Outputs: the panorama, the architectural plan (PNG, SVG and **DXF** downloads), the inside viewer (background = the room's mean colour), the dollhouse viewer (single-sided, near walls culled, neutral background) with the **orthographic top view** next to it, and the free-orbit fallback. Mask2Former is parked on the CPU with the other large models when another mode is active. Headless test of all modes (one request each, after switching): v3 with 1 candidate 13.7 s, with 2 candidates 29.6 s, peak 5.9 GB VRAM; v2 15.2 s; Quick 6.2 s (2.9 GB); Layout-first 18.0 s (4.6 GB).
@@ -1068,6 +1105,14 @@ Version 3 (PLAN_V3.md):
 10. A readable floor plan. *Status: met: axis-aligned, symbols, collision-free labels, PNG/SVG/DXF; overlapping furniture 2.9 → 0.3 pairs per plan, furniture outside the walls 17.9% → 0.1%. Doors / windows are not detected reliably (recall 0.02 on the bench).*
 11. Better layout-first images. *Status: met: KID 120 → 63 ×10³, CLIP 18.5 → 21.6 at unchanged adherence (SD 2.1 panorama model + SD 2.1 depth ControlNet, shaped proxies).*
 
+Version 4 (PLAN_V4.md):
+
+12. Readable 2D design shots instead of the raw panorama. *Status: met: level perspective hero + wall views; on the held-out bench the hero view holds 1.35 layout furniture pieces vs 0.70 for "always the first wall" (CI [0.00, +1.35]); view cones on the plan; 360° viewer opens facing the hero.*
+13. A sharper panorama. *Status: met: 4096 × 2048 from 26 refined views; shot sharpness 18.9 → 52.1 (ESRGAN views, app default), BRISQUE 49.6 → 43.0; the rule-selected img2img + MMIS LoRA pass is more photo-like (KID 75 → 69) but not sharper; our LoRA re-enters the 360° mode only through this optional pass, and LoRA vs. no LoRA is within noise.*
+14. A sharp, clean 3D view. *Status: met: inside renders vs. design shots PSNR 28.5 → 37.5 dB offline, 25.0 → 28.4 dB in a real browser, ΔE 2.8 → 1.8; stair-steps removed (jaggedness 1.18 → 1.08); grain traced to sampling (mipmaps added).*
+15. Real furniture shapes. *Status: not met: TripoSR objects fit the panorama silhouettes worse than blocks in every class (dev 0.55 vs 0.71), so only 5 % of held-out pieces use them; the relief tier for uncertain instances improves the full-room render (PSNR 24.4 → 26.2) and recall (2.05 → 2.60 pieces per room).*
+16. Remaining v3 weaknesses. *Status: partly met: hidden-area fill keeps texture (energy ratio 0.50 → 0.91, BRISQUE 51.9 → 45.0); open sides are detected and drawn (4 of 6 demo rooms) but the area rarely shrinks; door / window recall unchanged (0.02).*
+
 ---
 
 ## 14. Limitations
@@ -1079,6 +1124,7 @@ Version 3 (PLAN_V3.md):
 - The **360° mode does not use our MMIS LoRA** (it did not help on panoramas), and the panorama model sometimes repeats large furniture. **Layout-first** gives exact geometry but box-shaped furniture and weaker styles.
 - The 360° room box and plan are rectangles; open-plan and L-shaped rooms are boxed too large.
 - **v3 (PLAN_V3):** the room is always one rectangle and the furniture always boxes (hidden faces repeat the visible side's texture); hidden wall / floor regions are inpainted smoothly (Navier–Stokes was chosen by SSIM; the patch fill keeps more texture). Doors and windows are rarely found on generated images. The box fit takes the farthest strong wall peak, which fixes rooms cut by furniture fronts but boxes open-plan panoramas around the neighbouring spaces (dining 74.7 m²). All v3 numbers come from layout-conditioned panoramas whose images follow the layout only approximately; the selection of the best of k panoramas favours one "look" and reduces variety.
+- **v4 (PLAN_V4):** all design shots and the inside view share one camera (the panorama centre, ~1.2 m high); moving it would open disocclusion holes. The hero choice is better than a fixed wall but far from the oracle (1.35 vs 2.25 pieces). Generated 3D furniture (TripoSR, single cropped view) does not beat boxes, so the dollhouse is still mostly blocks plus relief shells that can look like floating fragments. Open-plan rooms are now marked "open" but stay large, because furniture seen in the adjoining space cannot be assigned. Doors and windows remain rarely detected. The img2img detail pass costs ~75–90 s per room. Real-browser numbers come from scripted camera poses, not mouse interaction.
 - Training on a subset of MMIS due to compute limits.
 - The 3D stage uses a metric depth model, but its absolute scale is only approximate (AbsRel 0.22 without alignment on NYU), and the camera field of view (60°) is assumed, so sizes in the 3D model are rough.
 - Classical preprocessing did **not** improve depth accuracy on clean NYU Depth V2 images: modern depth networks are already robust to moderate noise, blur and low light. Only noise-gated denoising helps, and only under strong noise (σ ≥ 25); nothing tested helps against blur. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.

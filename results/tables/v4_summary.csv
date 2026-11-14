@@ -1,0 +1,30 @@
+milestone,metric,data,v3,v4,v4_better
+1 design shots,layout furniture >= 50% in the main 2D view (v3: first wall),held-out bench,0.7000,1.3500,True
+1 design shots,main piece in the main 2D view (v3: first wall),held-out bench,0.1000,0.2500,True
+1 design shots,predicted instances in the main 2D view (v3: first wall),held-out bench,0.4500,1.7000,True
+2 sharper panorama,shot sharpness (Laplacian var.) (v4: i2i_lora_0.3),held-out bench + demo,18.8598,30.0843,True
+2 sharper panorama,shot BRISQUE (v4: i2i_lora_0.3),held-out bench + demo,49.5958,42.9934,True
+2 sharper panorama,shot KID x1e3 vs MMIS (v4: i2i_lora_0.3),held-out bench + demo,75.0353,69.3760,True
+2 sharper panorama,shot CLIP (v4: i2i_lora_0.3),held-out bench + demo,18.9513,19.3501,True
+2 sharper panorama,shot sharpness (v4 app default: ESRGAN views),held-out bench + demo,18.8598,52.0623,True
+3 sharp 3D,inside render vs shot PSNR,held-out bench + demo (offline),28.4907,37.5117,True
+3 sharp 3D,inside render vs shot SSIM,held-out bench + demo (offline),0.9148,0.9844,True
+3 sharp 3D,inside render vs shot LPIPS,held-out bench + demo (offline),0.1238,0.0270,True
+3 sharp 3D,furniture silhouette jaggedness,held-out bench + demo (offline),1.1830,1.0791,True
+3 sharp 3D,inside GLB size (MB),held-out bench + demo (offline),1.5594,5.3350,False
+3 sharp 3D,browser render vs shot PSNR,"demo rooms, headed Chromium",24.9692,28.3862,True
+3 sharp 3D,browser SSIM,"demo rooms, headed Chromium",0.8595,0.9214,True
+3 sharp 3D,browser LPIPS,"demo rooms, headed Chromium",0.1523,0.0476,True
+3 sharp 3D,browser colour error dE2000,"demo rooms, headed Chromium",2.7710,1.7713,True
+4 furniture,silhouette IoU from the centre,held-out bench,0.6574,0.6584,False
+4 furniture,full-room render vs panorama PSNR,held-out bench,24.4027,26.1706,True
+4 furniture,full-room render SSIM,held-out bench,0.9221,0.9310,True
+4 furniture,full-room render LPIPS,held-out bench,0.0703,0.0634,True
+4 furniture,"furniture found per room (IoU >= 0.25), with relief",held-out bench,2.0500,2.6000,True
+4 furniture,share of pieces as generated objects,held-out bench,0.0000,0.0492,
+5 weaknesses,hidden-area fill |texture energy ratio - 1| (v4: patch),held-out bench,0.5032,0.4049,True
+5 weaknesses,hidden-area darkness (v4: patch),held-out bench,32.5478,24.5275,True
+5 weaknesses,hidden-area BRISQUE (v4: patch),held-out bench,51.8653,44.9812,True
+5 weaknesses,synthetic-hole SSIM (v4: patch),held-out bench,0.7949,0.7847,False
+5 weaknesses,door / window recall (refined views),held-out bench,0.0227,0.0227,False
+5 weaknesses,demo rooms with open sides marked,demo rooms,0.0000,4.0000,
