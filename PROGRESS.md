@@ -271,7 +271,7 @@ Restart rule: read this section, continue with the first milestone not marked DO
 
 | Date | What | Size |
 |---|---|---|
-| — | none so far | 0 GB |
+| 2026-11-14 | pip (venv, `--no-deps`): piq 0.8.0 + BRISQUE SVM weights (torch hub cache) | < 1 MB |
 
 ## 2026-11-14 — V4 Milestone 1: readable 2D design shots — DONE
 
@@ -282,3 +282,13 @@ Restart rule: read this section, continue with the first milestone not marked DO
 **Failed / limitations**: first score (instances only) picked cluttered close-ups (cabinet walls); main-piece and depth terms added and tuned on dev — the coastal-bedroom hero is still the cabinet wall (fragmented cabinet instances each count). The first viewer check looked zoomed: model-viewer clamps the FOV to its 45° default max unless max-field-of-view is set (the app sets it; the check now does too). All shots share the panorama centre as camera (1.1–1.3 m high, a little below eye height). Shots are only as sharp as the 2048-px panorama (→ milestone 2).
 
 **Next**: Milestone 2 — sharper panorama (measure px/deg and sharpness of the current views; per-view Real-ESRGAN + low-strength img2img with / without the MMIS LoRA; blend to 4096×2048; drift checks; comparison table).
+
+## 2026-11-14 — V4 Milestone 2: a sharper panorama — DONE
+
+**Built**: `src/pano_refine.py` (26 views of 75° covering the sphere; optional img2img on the 512 views with low-frequency lock; Real-ESRGAN x2 per view; GPU multi-band blend with wrap padding to 4096×2048; checks: overlap disagreement, boundary gradient ratio, structural edge F1, coverage); `pipeline_v4.sharpen` + `build(hires=)` (shots from the 4096 panorama, pano_4096.jpg saved); app: v4 always sharpens with ESRGAN views (12.6 s), "detail pass" checkbox (img2img + MMIS LoRA 0.3, +~88 s, 360° models parked on the CPU meanwhile). `scripts/eval_pano_refine.py` (resumable; gen → metrics → report).
+
+**Results**: budget: pano 2.8 px/deg, texture 5.7, shots need 8.9–10.7, output 11.4. Dev (10 bench rooms): rule (fixed beforehand: drift guard, then mean rank of sharpness / BRISQUE / KID / CLIP) selected **img2img + MMIS LoRA, strength 0.3**; LoRA vs base within noise. Held-out (10 bench + 6 demo): v3 texture / ESRGAN views / selected: sharpness 18.9 / 52.1 / 30.1, BRISQUE 49.6 / 43.0 / 43.0, KID×10³ 75.0 / 76.0 / 69.4, CLIP 18.95 / 18.97 / 19.35, edge F1 1 / 0.97 / 0.95, depth AbsRel 0.011 / 0.014 / 0.018, 0 / 13 / 86 s. App headless: v4 53.3 s cold (peak 6.4 GB), v4 + detail 117.9 s (6.2 GB), v3 14.0 s, Quick 18.2 s. Tables `pano_refine_*.csv/json`, figure `pano_refine_crops.png`, README "A sharper panorama".
+
+**Failed / limitations**: img2img on 1024² views: 16–21 s per view and it smoothed the views (negative, moved before the upscaler). img2img makes shots more photo-like but not sharper than ESRGAN alone and doubles view disagreement; hence opt-in in the app. First edge-F1 definition (fine edges at 2048) penalised new detail even for ESRGAN (0.65) → structural edges at 1024×512 (changed after a one-room smoke test, before the real run). Intermediate panoramas (outputs/pano_refine, 1.4 GB) deleted; demo 4096 panoramas kept in outputs/room360/<room>/v4/.
+
+**Next**: Milestone 3 — sharp, clean 3D view (texture path: shell texel 1.5 cm / 1024 px cap and vertical atlas stacking are the first suspects; grain source; furniture stair-steps; colour; camera facing the hero; render-vs-shot metrics; headed screenshots).

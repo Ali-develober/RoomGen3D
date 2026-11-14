@@ -2,8 +2,10 @@
 sharper panorama, a sharper 3D view and real furniture shapes).
 
     [1]-[5]  as v3 (src/pipeline_v3.py): candidates, instances, room box, solid furniture, openings
+    [5b]     sharper panorama (src/pano_refine.py, milestone 2): 26 perspective views of the texture, optional
+             img2img detail pass, Real-ESRGAN x2 per view, multi-band blend to 4096 x 2048 (`hires`)
     [6]      design shots (src/design_shots.py): hero view(s) + four wall views, perspective, level,
-             1024 x 768, cut from the super-resolved panorama texture
+             1024 x 768, cut from the sharpest panorama available (hires if given, else the texture)
     [7]      outputs: v3 files with suffix _v4, the floor plan with the shots' camera and view cones
              (letters A-D, H), shots/<letter>.png, shots.json; the panorama as an inward-facing sphere
              (pano_sphere.glb) for the interactive 360° viewer
@@ -27,10 +29,19 @@ generate_candidates = p3v.generate_candidates
 analyse = p3v.analyse
 
 
+def sharpen(texture: np.ndarray, esrgan, i2i=None, prompt: str = "", strength: float = 0.0, seed: int = 0):
+    """[5b] 4096 x 2048 panorama from the 2048 x 1024 texture (see src/pano_refine.py). Returns (pano, info)."""
+    from . import pano_refine as pr
+    pano, info = pr.refine(texture, esrgan, i2i, prompt, strength, seed)
+    info.pop("views", None)
+    return pano, info
+
+
 def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furniture_params: dict | None = None,
-          shot_weights: dict | None = None) -> dict:
+          shot_weights: dict | None = None, hires: np.ndarray | None = None) -> dict:
     res = p3v.build(dist, texture, ana, id2label, furniture_params)
-    res["shots"] = ds.design_shots(texture, res["box"], ana["class_map"], ana["inst_map"], ana["instances"],
+    res["hires"] = hires
+    res["shots"] = ds.design_shots(texture if hires is None else hires, res["box"], ana["class_map"], ana["inst_map"], ana["instances"],
                                    id2label, shot_weights, dist=dist)
     return res
 
@@ -52,6 +63,9 @@ def save(res: dict, out_dir, title: str | None = None, pano: np.ndarray | None =
     (out / "shots.json").write_text(json.dumps({"shots": meta, "seconds": res["shots"]["seconds"],
                                                 "camera_height_m": res["box"]["camera_height"]}, indent=1,
                                                default=float))
+    if res.get("hires") is not None:
+        files["pano_hires"] = str(out / "pano_4096.jpg")
+        cv2.imwrite(files["pano_hires"], cv2.cvtColor(res["hires"], cv2.COLOR_RGB2BGR), [cv2.IMWRITE_JPEG_QUALITY, 95])
     if pano is not None:
         files["pano_sphere_glb"] = str(out / "pano_sphere.glb")
         vw.pano_sphere_glb(pano, files["pano_sphere_glb"])

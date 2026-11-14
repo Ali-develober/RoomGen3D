@@ -836,6 +836,33 @@ Hero selection vs. "always the first wall" (same 80° FOV), **20 held-out bench 
 - Figures: `results/figures/shots_<room>.png` (hero + walls + plan with view cones), `shots_overview.png`, `shots_before_after.png` (raw panorama → hero shot).
 - **Limitations:** the shots are as sharp as the panorama (a 90° view of a 2048-px panorama is upsampled about 2× — milestone 2); all shots share one camera position (the panorama centre: moving it would open disocclusion holes), and that camera sits at 1.1–1.3 m, a little below eye height; the hero still sometimes prefers a cluttered close-up (coastal bedroom: cabinets, the bed is in H2 and the wall views) because fragmented instances (cabinet doors) each count; the improvement over the baseline is modest against the oracle (1.35 vs. 2.25 pieces).
 
+### A sharper panorama (milestone 2 of PLAN_V4)
+Code: `src/pano_refine.py`, `pipeline_v4.sharpen`, `scripts/eval_pano_refine.py`.
+
+**Measured first (detail budget):** the generated panorama is 1024 px wide = 2.8 px/deg; the v3 texture (Real-ESRGAN ×2 on the equirectangular image) 5.7 px/deg; a 1024-px design shot needs 8.9 px/deg at its centre (90° FOV) or 10.7 px/deg (80°). So the shots were upsampled ~1.6–2× from the texture, and the v3 shots had a mean Laplacian variance of 15.5 (dev rooms).
+
+**Method:** 26 perspective views of the texture (75° FOV; 8 at pitch 0, 8 at ±42°, 2 poles; every sphere point covered, ~3 views per point), each 512² (no loss vs. the texture) → optional **img2img on the 512 view** (SD 1.5 at its native size, with or without the MMIS LoRA fused, same prompt + "sharp focus, high detail", fixed seed per view, 30 DDIM steps × strength, guidance 5; **low-frequency lock**: only the SD output's detail band above a 2-px Gaussian is kept) → **Real-ESRGAN ×2 per view** (undistorted perspective image) → **multi-band blend** (5-level Laplacian pyramids on the GPU, cos feather weights in normalised view coordinates, wrap-around padding so the left/right seam stays continuous) to **4096 × 2048** (11.4 px/deg). Blend 1.7 s; the round trip without refinement reproduces the texture at 45 dB PSNR.
+
+**First attempt, negative:** img2img on the 1024² views (after upscaling) took 16–21 s per view (~8 min per room) and *smoothed* the views (SD 1.5 is outside its training resolution there) → moved before the upscaler.
+
+Development rooms (10 bench rooms; 8 level shots per room, 80° FOV, 1024 × 768; `results/tables/pano_refine_dev.csv`):
+
+| Configuration | Sharpness (Lap. var.) ↑ | BRISQUE ↓ | KID ×10³ ↓ (std 4.5) | CLIP ↑ | Edge F1 vs. input ↑ | Depth AbsRel vs. input ↓ | View overlap diff | s / room | VRAM GB |
+|---|---|---|---|---|---|---|---|---|---|
+| v3 texture (2048) | 15.5 | 49.6 | 110.5 | 17.62 | 1.00 | 0.012 | – | 0 | – |
+| bicubic views | 14.0 | 50.2 | 111.4 | 17.61 | 0.98 | 0.015 | 0.62 | 3.6 | 2.0 |
+| **Real-ESRGAN views** | **47.6** | 41.1 | 108.9 | 17.27 | 0.97 | 0.016 | 1.57 | 12.8 | 2.0 |
+| img2img base 0.2 + ESRGAN | 28.4 | 41.1 | 100.3 | 17.65 | 0.95 | 0.022 | 2.91 | 65.6 | 6.0 |
+| img2img base 0.3 + ESRGAN | 25.7 | 40.8 | 98.6 | 17.77 | 0.94 | 0.026 | 2.99 | 90.6 | 6.0 |
+| img2img LoRA 0.2 + ESRGAN | 28.2 | 40.8 | 100.9 | 17.65 | 0.94 | 0.022 | 2.98 | 65.4 | 6.0 |
+| **img2img LoRA 0.3 + ESRGAN (selected)** | 26.0 | **40.1** | 99.3 | **17.81** | 0.94 | 0.026 | 3.16 | 96.6 | 6.0 |
+
+- **Selection rule (fixed before running):** among configurations within the drift guard (edge F1 ≥ 0.9 × ESRGAN's, depth AbsRel ≤ 2 × ESRGAN's + 0.01 — all passed), best mean rank of sharpness, BRISQUE, KID and CLIP → **img2img + MMIS LoRA, strength 0.3** (`pano_refine_decision.json`). So our LoRA re-enters the 360° mode by the rule, but honestly: **LoRA vs. no LoRA is within noise** (KID 99.3 vs 98.6, BRISQUE 40.1 vs 40.8, CLIP 17.81 vs 17.77).
+- Held-out report (10 bench + 6 demo rooms, `pano_refine_report.csv`): v3 texture / ESRGAN views / selected — sharpness 18.9 / **52.1** / 30.1, BRISQUE 49.6 / 43.0 / 43.0, KID 75.0 / 76.0 / **69.4** (std 3.4), CLIP 18.95 / 18.97 / **19.35**, edge F1 1.00 / 0.97 / 0.95, depth AbsRel 0.011 / 0.014 / 0.018, 0 / 12.8 / 86 s. Demo rooms alone: sharpness 29.2 / 79.0 / 42.1.
+- **What img2img does and does not do:** it makes the shots more photo-like (KID −7, CLIP +0.4, both about 2 std) but *not sharper* than Real-ESRGAN alone: SD at strength 0.3 smooths fine texture before the upscaler; neighbouring views disagree twice as much (overlap difference 3.2 vs 1.6 grey levels, hidden by the multi-band blend: boundary gradient ratio 1.01 vs 1.05) and depth drifts slightly more. Both refinements clearly beat the v3 texture (BRISQUE 50 → 41–43, less grain: compare `results/figures/pano_refine_crops.png`).
+- **Used:** offline v4 runs use the selected configuration (demo rooms: `outputs/room360/<room>/v4/pano_4096_detail.png`, ESRGAN-only `pano_4096_esrgan.png`). In the **app** the img2img detail pass is an opt-in checkbox (+~75–90 s per room, peak 6.2 GB with the 360° models parked on the CPU); by default v4 sharpens with Real-ESRGAN views only (12.6 s), which gives the sharpest shots. The design shots and the 360° viewer use the 4096 panorama.
+- Limitations: KID is computed at 256 px (MMIS resolution), so it sees content and style, not fine detail; "sharpness" (Laplacian variance) also rewards Real-ESRGAN's crisp but sometimes painted-looking texture; refined panoramas exist for the demo and bench rooms only (intermediate files, 1.4 GB, deleted after the tables were saved).
+
 ### Demo modes (v4)
 **360° Room** runs **v4** by default (pipeline switch v4 / v3 / v2). The top of the page is a **gallery of design shots** (hero first, then A–D, captions with the plan letters; Quick and the other modes show their single image or panorama there) next to the **floor plan with view cones**; the viewer tabs are Inside, Dollhouse (+ top view), **360° panorama** (new) and Free orbit; the panorama itself is in the Analysis section. New download: the design shots + plan as a zip. Headless test: v4 one candidate 40.7 s including the first model loads, peak 5.9 GB; v3 15.1 s; Quick 13.0 s.
 
@@ -899,6 +926,7 @@ RoomGen3D/
 │   ├── viewers.py             # v3: room colour, orthographic top view; v4: panorama sphere for the 360° viewer
 │   ├── pipeline_v3.py         # v3 360° Room stages (comparison in the demo)
 │   ├── design_shots.py        # v4: level perspective design shots (hero + wall views) from the panorama
+│   ├── pano_refine.py         # v4: 4096 x 2048 panorama from refined perspective views (ESRGAN, img2img, multi-band blend)
 │   ├── pipeline_v4.py         # v4 360° Room stages (default in the demo)
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
