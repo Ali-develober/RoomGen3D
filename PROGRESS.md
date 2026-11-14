@@ -129,3 +129,41 @@ Gravity from predicted depth within 1.8° (median) of GT; floor plane found in ~
 - README: new pipeline diagram (three modes), sections for milestones 1–6 with all tables and figures, objectives 6–8 added with status, limitations updated.
 - Everything committed and pushed. Downloads 7.56 GB of the 12 GB budget.
 - Not done (on purpose / open): the final course notebook (waits for the owner's review, per the plan); the `<model-viewer>` inside / dollhouse modes were tested headlessly but not checked by hand in a browser; the app is not deployed. The older untracked `*_smoke` result files and the modified `ARTI308_Demo.ipynb` in the working tree were left untouched (not mine to commit).
+
+---
+
+# PLAN_V3 work log
+
+## 2026-11-14 — Disk cleanup (before PLAN_V3) — DONE
+
+Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured with a Python `os.scandir` walk (junctions not followed).
+
+**Before**
+
+| Location | Size | Notes |
+|---|---|---|
+| `checkpoints/` | 10.27 GB | pano_sd_base 7.75 (fp32 `sd-base` 5.16 + fp16 `sd-base-fp16` 2.58), dap 1.46, controlnet_depth 0.72, pano_lora 0.15, lora_mmis 0.11 (6 steps), realesrgan 0.07, lora_smoke 0.02 |
+| `.venv/` | 5.96 GB | kept |
+| `outputs/` | 3.28 GB | pano_eval 1.06, eval_2d 0.82, floorplan_eval 0.41, layout 0.30, app 0.20, pipeline 0.17, pano_depth 0.16, room360 0.14, depth_eval/gated/isometric/smoke 0.04 |
+| `data/` | 2.87 GB | nyu/train 1.33, nyu/test 1.24, mmis 0.30 (images 0.10, meta json 0.19) |
+| `results/` | 0.10 GB | kept |
+| `.git/` | 0.09 GB | kept |
+| HF cache `~/.cache/huggingface/hub` | 7.27 GB | SD 1.5 2.13, CLIP-L/14 1.71, DPT-hybrid MiDaS 0.98, DA-V2 metric indoor 0.39, Depth Anything base 0.39, SegFormer-b2 0.22, **not this project:** arabertv02 0.54, timm convnext_base 0.35, vit_base 0.35, convnext_tiny 0.11, vit_small 0.09 (DAP and SD-2.1-pano entries are empty refs; files live in `checkpoints/`) |
+| pip cache `%LOCALAPPDATA%/pip/cache` | 3.85 GB | |
+| torch hub `~/.cache/torch/hub` | 0.10 GB | Inception weights for FID, kept |
+| Temp `%TEMP%/claude/<project>` | 0.20 GB | 2 old session scratchpads + current |
+
+**Deleted**
+- pip cache (`pip cache purge`): 3.85 GB.
+- Duplicate model: `checkpoints/pano_sd_base/sd-base` (fp32 .bin, 5.16 GB). The loader uses the fp16 safetensors copy `sd-base-fp16` first; verified it still loads. (If the fp16 copy is ever deleted, the fallback needs a re-download, 5.2 GB.)
+- Regenerable eval dumps whose tables/figures are saved: `outputs/pano_eval`, `eval_2d`, `floorplan_eval`, `app`, `pano_depth`, `depth_eval(_smoke)`, `depth_gated(_smoke)`, `isometric`, `isometric_grid.png`, `mesh_compare_smoke.*`, `test_sd.png`, smoke logs.
+- Intermediate LoRA checkpoints step 500–2500 and `checkpoints/lora_smoke` (final `lora_mmis/step_03000` kept).
+- `__pycache__` in app/, scripts/, src/, checkpoints/dap/; two old session scratchpads.
+- No incomplete downloads were found in the HF cache; no raw archives were left (`data/nyu/raw` holds only `splits.mat`, kept).
+
+**Kept on purpose**: `outputs/room360`, `outputs/pipeline` (referenced in the README; v2 rooms for the v3 comparison), `outputs/layout` (layout-first bench), all of `results/` — including the untracked `results/*_smoke*` tables/figures, because results/tables and results/figures are on the never-delete list (they total < 5 MB).
+
+**For the owner to decide** (outside this project's scope, not deleted)
+- HF cache models from other projects (dated before this project started on 2026-11-10): `FatimahEmadEldin/EXP-001_arabertv02_wojood_flat_baseline` 0.54 GB, `timm/convnext_base.fb_in22k_ft_in1k` 0.35 GB, `timm/vit_base_patch16_224.augreg2_in21k_ft_in1k` 0.35 GB, `timm/convnext_tiny.fb_in22k_ft_in1k` 0.11 GB, `timm/vit_small_patch16_224.augreg_in21k_ft_in1k` 0.09 GB — 1.44 GB total. Remove with `huggingface-cli delete-cache` if no longer needed.
+- `Intel/dpt-hybrid-midas` (0.98 GB) is only used by the old depth-model comparison (`scripts/eval_depth.py`); kept because code still loads it.
+- The ~22 GB drop since project start is fully explained by the items above (project 22.5 GB + HF 5.8 GB + pip 3.9 GB); nothing large outside these locations was scanned.
