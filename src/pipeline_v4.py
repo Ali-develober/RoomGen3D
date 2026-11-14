@@ -48,7 +48,8 @@ def sharpen(texture: np.ndarray, esrgan, i2i=None, prompt: str = "", strength: f
 
 def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furniture_params: dict | None = None,
           shot_weights: dict | None = None, hires: np.ndarray | None = None, mesh_opts: dict | None = None,
-          triposr=None, device=None, max_objects: int = 0, cache_dir=None, open_sides: bool = True) -> dict:
+          triposr=None, device=None, max_objects: int = 0, cache_dir=None, open_sides: bool = True,
+          prompt: str | None = None, shot_net=None) -> dict:
     res = p3v.build(dist, texture, ana, id2label, furniture_params, open_sides=open_sides)
     res["hires"] = hires
     if hires is not None:
@@ -61,7 +62,11 @@ def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furn
         m = r4.build_meshes(dist, hires, res, ana, id2label, mesh_opts, block_solids=blocks, relief=relief)
         res["mesh"], res["dollhouse"], res["mesh_opts"] = m["inside"], m["dollhouse"], m["opts"]
     res["shots"] = ds.design_shots(texture if hires is None else hires, res["box"], ana["class_map"], ana["inst_map"], ana["instances"],
-                                   id2label, shot_weights, dist=dist)
+                                   id2label, shot_weights, dist=dist, room=ds.room_type_of(prompt))
+    if shot_net is not None:      # polish round: Real-ESRGAN on each design shot -> 1536 x 1152 (gallery default)
+        from . import shot_enhance as se
+        for s in res["shots"]["shots"]:
+            s["image"], _ = se.esrgan_shot(shot_net, s["image"])
     return res
 
 

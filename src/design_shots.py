@@ -41,10 +41,15 @@ MIN_FRAME = 0.003          # ... and it covers >= 0.3% of the frame
 ANCHOR = {"bed", "sofa", "table", "dining table", "desk", "bathtub", "kitchen island", "island", "counter",
           "countertop", "pool table", "coffee table"}
 DEPTH_CAP = 4.0            # m: the depth term saturates here
+# polish round: the room type's MAIN piece must be in the hero view (>= MAIN_MIN of it) and is rewarded for being
+# centred; among several, the largest and least occluded one is the main piece
+MAIN_CLASSES = {"bedroom": {"bed"}, "living room": {"sofa"}, "dining room": {"table"},
+                "kitchen": {"kitchen island", "counter", "countertop"}, "bathroom": {"bathtub", "sink", "counter"}}
+MAIN_MIN = 0.5
 # score weights; DEFAULT_WEIGHTS were fixed before any tuning; the sweep (scripts/eval_design_shots.py) picks
 # weights on the development bench rooms and stores them in results/tables/shots_weights_selected.json
 DEFAULT_WEIGHTS = {"inst": 1.0, "fam": 0.5, "furn": 4.0, "wall": 1.0, "cf": 2.0, "cf_free": 0.45,
-                   "anchor": 0.0, "anchor_share": 0.0, "depth": 0.0}
+                   "anchor": 0.0, "anchor_share": 0.0, "depth": 0.0, "main_centre": 0.0}
 
 
 # --------------------------------------------------------------------------- #
@@ -122,8 +127,48 @@ def class_sets(id2label: dict) -> dict:
             "furn": class_ids(id2label, set(FURNITURE))}
 
 
+def room_type_of(prompt: str | None) -> str | None:
+    """'a coastal style bedroom' -> 'bedroom' (None if no known room type is named)."""
+    from .layout import room_type
+    try:
+        return room_type((prompt or "").lower())
+    except ValueError:
+        return None
+
+
+def main_piece(inst_map: np.ndarray, instances: list[dict], dist: np.ndarray, box: dict, room: str | None,
+               labels: dict | None = None) -> dict | None:
+    """The room's main piece: among instances of the room type's MAIN_CLASSES, the one with the largest
+    visible solid angle x (1 - occlusion); occlusion = share of a 9 px ring around its mask covered by CLOSER
+    other instances. labels: instance id -> class name (default: from `instances`). Returns id, yaw (frame B,
+    of its mean direction), occlusion, solid angle, label - or None."""
+    if room not in MAIN_CLASSES:
+        return None
+    lab = labels if labels is not None else {int(i["id"]): str(i["label"]).strip() for i in instances}
+    H, W = inst_map.shape
+    sa = np.cos(np.pi / 2 - np.pi * (np.arange(H) + 0.5) / H)[:, None] * np.ones((1, W))
+    dirs = _pano_dirs(W, H)
+    best = None
+    for iid, name in lab.items():
+        if name not in MAIN_CLASSES[room]:
+            continue
+        m = inst_map == iid
+        if m.sum() < 30:
+            continue
+        ring = (cv2.dilate(m.astype(np.uint8), np.ones((19, 19), np.uint8)) > 0) & ~m
+        own = float(np.median(dist[m]))
+        occ = float((ring & (inst_map >= 0) & (inst_map != iid) & (dist < own * 0.97)).sum() / max(ring.sum(), 1))
+        size = float(sa[m].sum())
+        if best is None or size * (1 - occ) > best["size"] * (1 - best["occlusion"]):
+            d = (dirs[m] * sa[m][:, None]).sum(0) @ box["R"].T @ box["Q"]
+            best = {"id": int(iid), "label": name, "occlusion": occ, "size": size,
+                    "yaw": float(np.degrees(np.arctan2(d[0], d[2])) % 360)}
+    return best
+
+
 def view_measures(class_map: np.ndarray, inst_map: np.ndarray, families: dict, M: np.ndarray, hfov: float,
-                  sets: dict, w: int = SCORE_W, h: int = SCORE_H, dist: np.ndarray | None = None) -> dict:
+                  sets: dict, w: int = SCORE_W, h: int = SCORE_H, dist: np.ndarray | None = None,
+                  main_id: int | None = None) -> dict:
     """What a view at rotation M shows, measured on label maps (pano grid):
         frame shares of furniture / wall / ceiling / floor (nearest-neighbour rendered labels),
         instances in view: >= MIN_COMPLETE of the instance's solid angle inside the frustum and
@@ -151,7 +196,9 @@ def view_measures(class_map: np.ndarray, inst_map: np.ndarray, families: dict, M
         depth = float(np.median(render_view(dist.astype(np.float32), M, w // 4, h // 4, hfov, cv2.INTER_NEAREST)))
     return {"inst": len(full), "fam": len(fams), "furn": share["furn"], "wall": share["wall"],
             "ceiling": share["ceiling"], "floor": share["floor"], "anchor": float(len(anc) > 0),
-            "anchor_share": float(max((frame[i] for i in anc), default=0.0)), "depth": depth, "inst_ids": full}
+            "anchor_share": float(max((frame[i] for i in anc), default=0.0)), "depth": depth, "inst_ids": full,
+            "main_complete": float(vis[main_id] / tot[main_id]) if main_id is not None and main_id < len(tot)
+            and tot[main_id] > 0 else 0.0}
 
 
 def score_view(m: dict, weights: dict | None = None) -> float:
@@ -161,14 +208,21 @@ def score_view(m: dict, weights: dict | None = None) -> float:
     cf = np.maximum(0.0, m["ceiling"] + m["floor"] - w["cf_free"])
     return (w["inst"] * m["inst"] + w["fam"] * m["fam"] + w["furn"] * m["furn"] + w["wall"] * m["wall"] - w["cf"] * cf
             + w["anchor"] * m.get("anchor", 0.0) + w["anchor_share"] * m.get("anchor_share", 0.0)
-            + w["depth"] * np.minimum(m.get("depth", 0.0), DEPTH_CAP))
+            + w["depth"] * np.minimum(m.get("depth", 0.0), DEPTH_CAP) + w["main_centre"] * m.get("main_centre", 0.0))
 
 
 def scan_yaws(box: dict, class_map: np.ndarray, inst_map: np.ndarray, families: dict, sets: dict,
-              hfov: float = HERO_FOV, step: float = HERO_STEP, dist: np.ndarray | None = None) -> list[dict]:
-    """view_measures for every candidate yaw (0, step, ... < 360) in frame B."""
-    return [{"yaw": float(y), **view_measures(class_map, inst_map, families, view_to_cam(box, y), hfov, sets,
-                                              dist=dist)} for y in np.arange(0.0, 360.0, step)]
+              hfov: float = HERO_FOV, step: float = HERO_STEP, dist: np.ndarray | None = None,
+              main: dict | None = None) -> list[dict]:
+    """view_measures for every candidate yaw (0, step, ... < 360) in frame B; with a main piece also how
+    complete it is in the view and how centred (1 at the centre, 0 at the frame border)."""
+    out = []
+    for y in np.arange(0.0, 360.0, step):
+        m = view_measures(class_map, inst_map, families, view_to_cam(box, y), hfov, sets, dist=dist,
+                          main_id=None if main is None else main["id"])
+        m["main_centre"] = 0.0 if main is None else max(0.0, 1 - _gap(y, main["yaw"]) / (hfov / 2))
+        out.append({"yaw": float(y), **m})
+    return out
 
 
 def _gap(a: float, b: float) -> float:
@@ -176,10 +230,16 @@ def _gap(a: float, b: float) -> float:
     return min(d, 360 - d)
 
 
-def pick_heroes(scan: list[dict], weights: dict | None = None, n_max: int = 2) -> list[dict]:
-    """Best yaw; optionally a second one >= HERO2_MIN_GAP away scoring >= HERO2_MIN_RATIO of the best."""
+def pick_heroes(scan: list[dict], weights: dict | None = None, n_max: int = 2, require_main: bool = True) -> list[dict]:
+    """Best yaw; optionally a second one >= HERO2_MIN_GAP away scoring >= HERO2_MIN_RATIO of the best.
+    require_main: the first hero must show >= MAIN_MIN of the most of the main piece that any candidate shows
+    (relative: a low, close piece such as a bed never fits a level view completely)."""
     sc = sorted(({**m, "score": score_view(m, weights)} for m in scan), key=lambda m: -m["score"])
-    out = [sc[0]]
+    first = sc
+    best_main = max((m.get("main_complete", 0.0) for m in sc), default=0.0)
+    if require_main and best_main > 0.05:
+        first = [m for m in sc if m.get("main_complete", 0.0) >= MAIN_MIN * best_main]
+    out = [first[0]]
     if n_max > 1:
         for m in sc[1:]:
             if _gap(m["yaw"], out[0]["yaw"]) >= HERO2_MIN_GAP:
@@ -194,13 +254,14 @@ def pick_heroes(scan: list[dict], weights: dict | None = None, n_max: int = 2) -
 # --------------------------------------------------------------------------- #
 def design_shots(texture: np.ndarray, box: dict, class_map: np.ndarray, inst_map: np.ndarray, instances: list[dict],
                  id2label: dict, weights: dict | None = None, size: tuple[int, int] = (SHOT_W, SHOT_H),
-                 n_hero: int = 2, dist: np.ndarray | None = None) -> dict:
+                 n_hero: int = 2, dist: np.ndarray | None = None, room: str | None = None) -> dict:
     """Hero view(s) + four wall views from the (highest-resolution) panorama texture.
     Returns {"shots": [{"letter", "kind", "yaw", "fov", "image", "measures"}...] (hero first), "scan", "seconds"}."""
     t0 = time.perf_counter()
     fam = {int(i["id"]): i.get("family", i.get("label", "")) for i in instances}
     sets = class_sets(id2label)
-    scan = scan_yaws(box, class_map, inst_map, fam, sets, dist=dist)
+    main = main_piece(inst_map, instances, dist, box, room) if dist is not None else None
+    scan = scan_yaws(box, class_map, inst_map, fam, sets, dist=dist, main=main)
     heroes = pick_heroes(scan, selected_weights() if weights is None else weights, n_hero)
     shots = []
     for k, hm in enumerate(heroes):
@@ -212,14 +273,17 @@ def design_shots(texture: np.ndarray, box: dict, class_map: np.ndarray, inst_map
         m = view_measures(class_map, inst_map, fam, M, WALL_FOV, sets, dist=dist)
         shots.append({"letter": letter, "kind": "wall", "yaw": yaw, "fov": WALL_FOV,
                       "image": render_view(texture, M, *size, WALL_FOV), "measures": m})
-    return {"shots": shots, "scan": scan, "seconds": time.perf_counter() - t0}
+    return {"shots": shots, "scan": scan, "seconds": time.perf_counter() - t0, "main": main}
 
 
 def selected_weights() -> dict:
     """Weights chosen on the development bench rooms (results/tables/shots_weights_selected.json), else defaults."""
     import json
     from pathlib import Path
-    p = Path(__file__).resolve().parents[1] / "results/tables/shots_weights_selected.json"
+    root = Path(__file__).resolve().parents[1] / "results/tables"
+    p = root / "hero_v2_weights.json"                     # polish round (falls back to milestone 1's weights)
+    if not p.exists():
+        p = root / "shots_weights_selected.json"
     try:
         return {**DEFAULT_WEIGHTS, **json.loads(p.read_text())}
     except (OSError, ValueError):

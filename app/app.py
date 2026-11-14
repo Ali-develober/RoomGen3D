@@ -237,7 +237,7 @@ def load_models(mode: str = QUICK) -> dict:
 
 
 def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: str = V4, candidates: float = 1,
-        detail: bool = False, n_objects: float = 0):
+        detail: bool = False, n_objects: float = 0, sharp_shots: bool = True):
     """One request in the chosen mode. The first output becomes the gallery: v4 returns its design shots
     (hero first), the other modes their single image / panorama. Then: the 360° panorama viewer, the panorama
     for the Analysis section and the design-shot zip (v4)."""
@@ -250,7 +250,8 @@ def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: 
             out = [*run_360(prompt, seed, steps, cfg), None, None]
         else:
             out = list(run_360_v3(prompt, seed, steps, cfg, int(candidates), v4=(version != V3), extra=extra,
-                                       detail=bool(detail), n_objects=int(n_objects)))
+                                       detail=bool(detail), n_objects=int(n_objects),
+                                       sharp_shots=bool(sharp_shots)))
     elif mode == LAYOUT:
         out = [*run_layout(prompt, seed, steps, cfg), None, None]
     else:
@@ -361,7 +362,7 @@ def run_360(prompt: str, seed: float, steps: float, cfg: float):
 
 
 def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1, v4: bool = True,
-               extra: dict | None = None, detail: bool = False, n_objects: int = 0):
+               extra: dict | None = None, detail: bool = False, n_objects: int = 0, sharp_shots: bool = True):
     """360° Room, v3 (PLAN_V3): k candidate panoramas (one-room prompt), the most box-like one kept ->
     Real-ESRGAN -> panoptic instances -> room box shell + solid furniture -> architectural plan.
     v4 (PLAN_V4): the same room plus design shots (gallery, view cones on the plan, panorama sphere)."""
@@ -403,12 +404,14 @@ def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1, v
                 MODELS[kk] = MODELS[kk].to("cpu")
             torch.cuda.empty_cache()
             MODELS["triposr"] = o3.load_triposr(DEVICE) if "triposr" not in MODELS else MODELS["triposr"].to(DEVICE)
-            res = P.build(dist, tex, ana, id2label, hires=hires, triposr=MODELS["triposr"], device=DEVICE,
+            res = P.build(dist, tex, ana, id2label, hires=hires, prompt=prompt,
+                          shot_net=MODELS["esrgan"] if sharp_shots else None, triposr=MODELS["triposr"], device=DEVICE,
                           max_objects=n_objects, cache_dir=out_dir / "objects")      # cached per prompt + seed
             MODELS["triposr"] = MODELS["triposr"].to("cpu")
             torch.cuda.empty_cache()
         elif v4:
-            res = P.build(dist, tex, ana, id2label, hires=hires)
+            res = P.build(dist, tex, ana, id2label, hires=hires, prompt=prompt,
+                          shot_net=MODELS["esrgan"] if sharp_shots else None)
         else:
             res = P.build(dist, tex, ana, id2label)
     with watch.stage("export"):
@@ -524,6 +527,8 @@ def build() -> gr.Blocks:
                     version = gr.Radio([V4, V3, V2], value=V4, label="Pipeline")
                     candidates = gr.Slider(1, 4, value=3, step=1, label="Candidates (v3 / v4): panoramas generated, "
                                            "the most box-like one is kept (1 = fast)")
+                    sharp_shots = gr.Checkbox(value=True, label="v4 sharp design shots: Real-ESRGAN on each shot, "
+                                              "1536 x 1152 (~1 s per shot; off = fast 1024 x 768 shots)")
                     n_objects = gr.Slider(0, 12, value=DEFAULT_OBJECTS, step=1,
                                           label="v4 furniture objects: how many pieces (largest first) are generated "
                                                 "as real 3D shapes with TripoSR (~3 s each; 0 = v3 blocks)")
@@ -570,7 +575,7 @@ def build() -> gr.Blocks:
                         edges = gr.Image(label="Canny edges", type="numpy", height=260)
                         seg = gr.Image(label="Segmentation", type="numpy", height=260)
                     gr.Markdown("Segmentation colours: blue = wall, orange = floor, green = ceiling, pink = furniture.")
-        btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates, detail, n_objects],
+        btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates, detail, n_objects, sharp_shots],
                   [image, plan, viewer, doll, model3d, depth, edges, seg, dl_image, dl_plan, dl_mesh, dl_cloud, info,
                    dl_dxf, topview, pano_view, pano_img, dl_shots],
                   concurrency_limit=1)

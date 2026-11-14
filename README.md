@@ -942,6 +942,32 @@ Rule (dev): SSIM within 0.02 of NS on synthetic holes, then mean rank of |energy
 
 App (headless): 360° v4 with 3 candidates and 4 objects 97 s cold, peak 6.4 GB; v3 14 s; Layout-first 20 s.
 
+### Polish round (after PLAN_V4)
+Code: `design_shots.MAIN_CLASSES / main_piece / pick_heroes(require_main)`, `src/shot_enhance.py`, `pipeline_v4.build(prompt=, shot_net=)`, app checkbox "sharp design shots", `scripts/eval_hero_v2.py`, `scripts/eval_shot_enhance.py`, `scripts/eval_objects_final.py`.
+
+**1. Hero view shows the room's main piece.** Main classes per room type (bed; sofa; dining table; island / counter; bathtub / vanity); the main piece is the largest, least occluded instance of them (occlusion = closer instances on a ring around its mask). The hero must show at least half of the most of it that any yaw shows (relative, because a low bed close to a level camera at ~1.2 m never fits a frame completely), and a centring weight was tuned on dev (selected weight 0: centring did not help on dev). Bench, ground truth main piece = layout box 0 (`hero_v2_bench.csv`):
+
+| | Dev: main-piece share in view / centred / layout pieces | Held-out: main-piece share / centred / layout pieces |
+|---|---|---|
+| before (milestone 1) | 0.312 / 0.334 / 2.15 | 0.281 / 0.149 / 1.35 |
+| after (main piece) | 0.275 / 0.300 / 2.10 | **0.337 / 0.214 / 1.50** |
+
+Mixed on dev, better on held-out. The main piece is found in 30 % (dev) / 45 % (held-out) of the bench rooms only (instance recall); elsewhere the hero is unchanged. Demo rooms (`hero_v2_demo.csv`, `results/figures/hero_v2_demo.png`): **coastal bedroom hero now shows the bed** (before: the cabinet wall), art-deco bathroom now shows the bathtub; living, dining and Mediterranean rooms keep their hero (it already showed the sofa / table); the kitchen has no detected island or counter instance, so it is unchanged.
+
+**2. Sharper design shots** (perspective shots only, 1536 × 1152; demo rooms: hero + 4 walls, 10 held-out bench rooms: hero + wall A; `shot_enhance.csv`):
+
+| Method | Sharpness bench / demo ↑ | BRISQUE bench / demo ↓ | Edge F1 vs. original shot ↑ | s / shot |
+|---|---|---|---|---|
+| shot cut at 1536 from the 4096 panorama (fast path) | 13.8 / 28.4 | 56.1 / 49.2 | 1.00 | 0 |
+| from the img2img detail-pass panorama (demo) | – / 15.7 | – / 50.7 | 0.79 | 0 |
+| **Real-ESRGAN on the 1024 shot (selected)** | **39.9 / 58.9** | **38.1 / 39.8** | 0.97 | 0.9 |
+| SD 1.5 + ControlNet tile, strength 0.35 | 13.9 / 24.2 | 47.8 / 45.7 | 0.92 / 0.89 | 27.2 |
+| SD 1.5 + ControlNet tile, strength 0.5 | 13.4 / 21.2 | 47.4 / 46.0 | 0.90 / 0.87 | 38.9 |
+
+Rule (fixed before running): best sharpness and best BRISQUE among methods with edge F1 ≥ 0.85, BRISQUE ≥ 3 below the fast path → **Real-ESRGAN on the shot** is clearly better and is now the gallery default (checkbox; off = the fast 1024 shots). The tile ControlNet gives cleaner, more coherent texture (better BRISQUE) but not more measurable detail, at 30–40 s per shot (4.1 GB); the detail pass moves geometry (edge F1 0.79). Figure `shot_enhance_crops.png`. Download: `lllyasviel/control_v11f1e_sd15_tile` (1.38 GB, fp32 .bin; only used in this comparison).
+
+**3. Last furniture attempt** (largest piece per room, enhanced crop + clean cut-out → TripoSR): not finished — the run was stopped by the system for low memory after the inputs were prepared; see `PROGRESS.md`.
+
 ### PLAN_V4 summary (before / after)
 All numbers from `results/tables/v4_summary.csv` (built by `scripts/v4_summary.py` from the milestone tables; "data" says which rooms):
 

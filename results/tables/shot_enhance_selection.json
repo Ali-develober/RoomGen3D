@@ -1,0 +1,13 @@
+{
+ "clearly_better": true,
+ "method": "esrgan_shot",
+ "best_sharpness": "esrgan_shot",
+ "best_brisque": "esrgan_shot",
+ "passed_edge_guard": [
+  "esrgan_shot",
+  "fast",
+  "tile_0.35",
+  "tile_0.5"
+ ],
+ "rule": "best sharpness AND best BRISQUE among methods with edge F1 >= 0.85, BRISQUE >= 3 below fast"
+}
