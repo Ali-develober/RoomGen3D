@@ -1,0 +1,14 @@
+{
+ "verdict": "final negative result",
+ "held_out": {
+  "n": 20,
+  "iou_block": 0.6649087679657719,
+  "iou_m4_input": 0.4726496913555297,
+  "iou_enhanced": 0.47610886021945015,
+  "share_beats_block": 0.2,
+  "share_beats_m4": 0.5,
+  "enhance_s": 1.5981169949984178,
+  "triposr_s": 3.24903173999337,
+  "enhancer": "esrgan_shot"
+ }
+}

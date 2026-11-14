@@ -333,7 +333,7 @@ Restart rule: read this section, continue with the first milestone not marked DO
 - Downloads PLAN_V4: TripoSR 1.56 GB + small (piq, SqueezeNet, omegaconf, trimesh) of 10 GB. Free disk at the end: 32 GB.
 - Not done: the course notebook (per the plan). Intermediate files NOT deleted (deletion needs the owner's OK per CLAUDE.md): `outputs/objects_eval/<bench rooms>` (~150 MB, bench 4096 panoramas + object caches), `outputs/room_v4_eval` (69 MB), `outputs/app` (219 MB, app test runs), `outputs/room360/*/v4/room_v4_nomip.glb` (mipmap test files).
 
-## 2026-11-14 — Polish round (owner request, no plan file) — steps 1-2 DONE, step 3 INTERRUPTED
+## 2026-11-14 — Polish round (owner request, no plan file) — DONE
 
 - Deleted on the owner's OK: `outputs/objects_eval/<bench rooms>`, `outputs/room_v4_eval`, `outputs/app`, `outputs/room360/*/v4/room_v4_nomip.glb`.
 - Download: `lllyasviel/control_v11f1e_sd15_tile` → checkpoints/controlnet_tile (config + fp32 .bin, 1.38 GB). PLAN_V4 + polish total ≈ 2.95 GB of 10 GB.
@@ -341,3 +341,9 @@ Restart rule: read this section, continue with the first milestone not marked DO
 - **Step 2 (sharper shots)**: Real-ESRGAN on the shot clearly best (sharpness 13.8 → 39.9 bench, BRISQUE 56.1 → 38.1, edge F1 0.97, 0.9 s/shot); tile ControlNet better BRISQUE (47-48) but not sharper, 27-39 s/shot; detail pass moves edges (F1 0.79). Now the gallery default (1536 x 1152), fast 1024 path = checkbox. `shot_enhance*.csv/json`, `shot_enhance_crops.png`.
 - **Step 3 (largest piece, enhanced input)**: `scripts/eval_objects_final.py` prepared all 46 enhanced inputs (Real-ESRGAN, the step-2 winner) and was then STOPPED BY THE SYSTEM (machine low on memory) during the TripoSR stage; no result yet. Resume: `python scripts/eval_objects_final.py --cache <scratchpad>/shot_cache` (the 40 bench 4096 panoramas are cached there; inputs are recomputed in ~2 min). Not restarted automatically, per the low-memory notice.
 - Not re-run yet after these changes: app headless test, `scripts/v4_summary.py` (demo v4 outputs still have the old hero / 1024 shots).
+
+### 2026-11-15 — Polish round step 3 (rerun on the owner's request) — DONE: final negative result
+
+- `scripts/eval_objects_final.py` completed: largest piece per room, Real-ESRGAN-enhanced crop + clean cut-out → TripoSR. Silhouette IoU held-out: block 0.665, milestone-4 input 0.473, enhanced 0.476 (beats the block in 20 % of rooms; dev 0.712 / 0.511 / 0.509, demo 0.646 / 0.570 / 0.564). Verdict (rule fixed before the run): **final negative result** — no more furniture attempts. `objects_final*.csv/json`, `objects_final_inputs.png`.
+- Demo rooms rebuilt with the new hero rule and sharp 1536 shots (`scripts/v4_summary.py`; coastal bedroom hero = the bed). App headless: v4 sharp shots 76 s cold, fast shots 38.7 s, 6.4 GB.
+- Scratch cache of 40 bench 4096 panoramas lives in the session scratchpad (outside the project).

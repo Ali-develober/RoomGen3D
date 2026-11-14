@@ -46,6 +46,8 @@ DEVICE = torch.device("cuda")
 def figures():
     id2label = erb.id2label_ade()
     model = o3.load_triposr(DEVICE)
+    from src import generate_pano as gp
+    net = gp.load_esrgan(DEVICE)                       # polish round: sharp 1536 design shots
     over = []
     for prompt, seed in tqdm(pl.DEMO_PROMPTS, desc="demo rooms"):
         slug = pl.slug(prompt, seed)
@@ -55,7 +57,7 @@ def figures():
                "inst_map": cv2.imread(str(d / "v3/inst_v3.png"), cv2.IMREAD_UNCHANGED).astype(np.int32) - 1,
                "instances": json.loads((d / "v3/inst_v3.json").read_text())}
         tex, hires = mb.rgb(d / "texture.png"), mb.rgb(d / "v4/pano_4096_detail.png")
-        r4_ = p4v.build(dist, tex, ana, id2label, hires=hires, prompt=prompt, triposr=model, device=DEVICE, max_objects=4,
+        r4_ = p4v.build(dist, tex, ana, id2label, hires=hires, prompt=prompt, shot_net=net, triposr=model, device=DEVICE, max_objects=4,
                         cache_dir=ROOT / "outputs/objects_eval" / f"demo_{slug}")
         p4v.save(r4_, d / "v4", title=prompt, pano=hires)
         r3_ = p3v.build(dist, tex, ana, id2label)

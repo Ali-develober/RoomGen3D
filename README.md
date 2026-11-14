@@ -966,7 +966,17 @@ Mixed on dev, better on held-out. The main piece is found in 30 % (dev) / 45 % (
 
 Rule (fixed before running): best sharpness and best BRISQUE among methods with edge F1 ≥ 0.85, BRISQUE ≥ 3 below the fast path → **Real-ESRGAN on the shot** is clearly better and is now the gallery default (checkbox; off = the fast 1024 shots). The tile ControlNet gives cleaner, more coherent texture (better BRISQUE) but not more measurable detail, at 30–40 s per shot (4.1 GB); the detail pass moves geometry (edge F1 0.79). Figure `shot_enhance_crops.png`. Download: `lllyasviel/control_v11f1e_sd15_tile` (1.38 GB, fp32 .bin; only used in this comparison).
 
-**3. Last furniture attempt** (largest piece per room, enhanced crop + clean cut-out → TripoSR): not finished — the run was stopped by the system for low memory after the inputs were prepared; see `PROGRESS.md`.
+**3. Last furniture attempt — final negative result.** Only the single largest piece per room; input = the instance-centred crop enhanced with the step-2 winner (Real-ESRGAN, 1024 px) and a clean cut-out (mask upsampled, GrabCut at 1024 px, holes filled, occlusions inpainted, feathered), then TripoSR and the same render-and-compare placement; paired with the milestone-4 input for the same instance (`objects_final.csv`, `objects_final_per_instance.csv`, `objects_final_inputs.png`):
+
+| Silhouette IoU from the centre | Block (v3) | TripoSR, milestone-4 input | TripoSR, enhanced input | Enhanced beats block |
+|---|---|---|---|---|
+| Dev (19 rooms) | **0.712** | 0.511 | 0.509 | 16 % |
+| Held-out (20 rooms) | **0.665** | 0.473 | 0.476 | 20 % |
+| Demo (6 rooms) | **0.646** | 0.570 | 0.564 | 33 % |
+
+The sharper input changes nothing (0.473 → 0.476 held-out) and the generated shape still loses clearly to the block, so by the rule fixed before the run this is recorded as the **final negative result** for single-view image-to-3D furniture in this project; no further attempts. (Cost: 1.6 s enhancement + 3.2 s TripoSR per object.)
+
+App after the polish round: v4 with sharp shots 76 s (cold, incl. model loads) / fast 1024 shots 38.7 s, peak 6.4 GB; the six demo rooms and `v4_summary_<room>.png` were rebuilt with the new hero rule and the sharp shots.
 
 ### PLAN_V4 summary (before / after)
 All numbers from `results/tables/v4_summary.csv` (built by `scripts/v4_summary.py` from the milestone tables; "data" says which rooms):
