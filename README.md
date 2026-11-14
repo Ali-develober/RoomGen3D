@@ -712,6 +712,22 @@ Code: `src/boxiness.py`, `generate_pano.ONE_ROOM_TEMPLATE / ONE_ROOM_NEGATIVE`, 
 - **App:** 360° Room now runs the v3 pipeline by default (v2 selectable for comparison) with the candidate slider; tested headlessly in all modes: v3 with 1 candidate 13.7 s, with 2 candidates 29.6 s, peak VRAM 5.9 GB; v2 15.2 s; Quick 6.2 s (2.9 GB); Layout-first 18.0 s (4.6 GB).
 - Figure: `results/figures/oneroom_candidates.png` (held-out: 4 candidates per template, the kept one framed). Tables: `results/tables/oneroom_templates.csv`, `oneroom_selection.csv`, `oneroom_per_pano.csv`, `oneroom_decision.json`.
 
+### Viewers (milestone 6 of PLAN_V3)
+Code: `src/viewers.py`, `textured_mesh.export_glb(double_sided=...)`, `pipeline_v3.build / save`, `app/app.py`, `scripts/viewer_check.py`.
+
+- **Dollhouse:** the v3 meshes are exported **single-sided** (glTF `doubleSided: false`). The shell's quads face inwards and the furniture solids outwards, so in any viewer the walls between the viewer and the room are back faces and disappear by themselves, while the far walls stay (the commercial "dollhouse" look); the ceiling is not exported. Neutral background (#e9e8e4). The material stays unlit: the panorama already contains the lighting, a second lighting pass would darken it twice.
+- **Inside:** the inside mesh is the box shell **plus the observed surfaces of everything clearly in front of it** (furniture, but also a real wall standing in front of the fitted one), not the solids: from the centre it reproduces the panorama, and the closed shell behind leaves no cracks. The viewer background is the room's mean colour instead of white. (A first version with the solids looked crude from inside: big flat box faces right in front of the camera.)
+- **Top view:** an orthographic ray-cast of the dollhouse straight down, in the orientation of the floor plan, shown next to the plan in the app and in `results/figures/plan_vs_topdown.png`; beds, tables and islands sit where the plan draws them.
+- **Real browser:** Playwright 1.65 drove a **headed Chromium** (WebGL on the GPU) with `<model-viewer>` 3.5, the component the app uses, for the six demo rooms. Inside views: camera at the centre, azimuth 0/90/180/270°. To measure holes, the page background was set to pure magenta and the share of magenta pixels counted:
+
+| Inside views (6 rooms × 4 directions) | Mean share of the view showing no surface | Worst view |
+|---|---|---|
+| v2 mesh | 0.34% | 2.0% |
+| **v3 (shell + observed surfaces)** | **0.00%** | **0.00%** |
+
+- Screenshots: `results/figures/viewer_inside.png` (v2 vs v3 inside, 3 rooms × 4 directions; v2 shows white specks at depth edges, v3 none) and `results/figures/viewer_dollhouse.png` (4 orbit angles: v2 shows fragments and walls sticking out, v3 a closed room with solid furniture and the near walls culled). All screenshots: `outputs/viewer_check/`. Table: `results/tables/viewer_gaps.csv`, `viewer_gaps_per_view.csv`.
+- **Limitations:** furniture solids are boxes whose hidden faces repeat the visible side's texture, which is obvious in close dollhouse views; the inpainted floor under furniture shows smooth blotches in the top view. The orbit and zoom limits of the app's viewers were checked by setting camera attributes from a script, not by dragging with a mouse.
+
 ### Demo modes (v2)
 `app/app.py` now has three modes (radio button): **Quick (single view)**, **360° Room** and **Layout-first**. 360° and layout-first show the panorama, the floor plan (360° plan / exact layout plan), an **inside** viewer (camera at the room centre, look around, move up to 1 m) and a **dollhouse** viewer (ceiling removed, orbit from above), with `gr.Model3D` as the offline fallback. Only the active mode's large models sit on the GPU. Measured peaks: Quick 2.9 GB, Layout-first 4.6 GB, 360° 5.5 GB (6.8 GB reserved). One request: Quick 7–9 s, 360° 17.5 s, Layout-first 17.9 s. Tested headlessly in all three modes with switching back and forth; the `<model-viewer>` inside / dollhouse modes have not been checked by hand in a browser yet.
 

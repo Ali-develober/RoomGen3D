@@ -228,3 +228,13 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 **Failed / limitations**: template effect not significant; the score favours one look (same seed kept in 5 of 6 held-out rows), reducing variety. Intermediate panoramas (outputs/one_room) and app test outputs deleted after the tables/figures were saved.
 
 **Next**: Milestone 6 — viewers (single-sided dollhouse, background colour, top view) + headed browser screenshots (`scripts/viewer_check.py` written; Playwright 1.65 + Chromium installed in the venv / %LOCALAPPDATA%\ms-playwright).
+
+## 2026-11-14 — V3 Milestone 6: viewers — DONE
+
+**Built**: single-sided GLB export (`export_glb(double_sided=False)`), `src/viewers.py` (room mean colour, orthographic top view), v3 inside mesh = shell + observed surfaces in front of it (`pipeline_v3.in_front_of_shell`), dollhouse = shell without ceiling + solids; app: inside background = room colour, neutral dollhouse background, top view next to the plan; `scripts/viewer_check.py` (Playwright headed Chromium + `<model-viewer>` 3.5, local HTTP server, magenta-background gap measurement).
+
+**Results**: headed browser worked. Inside gaps (6 rooms × 4 directions): v2 0.34% mean / 2.0% worst → v3 0.00% / 0.00%. Dollhouse screenshots: v3 closed room, near walls culled automatically. Figures `viewer_inside.png`, `viewer_dollhouse.png`, `plan_vs_topdown.png`.
+
+**Failed / limitations**: first v3 inside mesh used the solids and looked crude from inside → replaced by observed surfaces (solids stay in the dollhouse). Box solids with repeated textures; smooth inpainted floor blotches. Mouse dragging not tested, only scripted camera positions. Playwright's Chromium lives in %LOCALAPPDATA%\ms-playwright (~0.3 GB, outside the project).
+
+**Next**: Milestone 7 — layout-first image quality (shaped proxies, ControlNet strength / step-range sweep, doors/windows, SD 2.1 compatibility, optional img2img pass).

@@ -5,7 +5,8 @@
     [3] room box       dominant directions, per-side wall fit, textured exact shell (src/room_box.py)
     [4] furniture      cleaned, prior-checked, wall-aligned solids (src/furniture.py)
     [5] openings       doors / windows on the box walls (src/plan_v3.openings_on_box)
-    [6] outputs        room mesh (shell + solids), dollhouse mesh (ceiling removed), floor plan PNG / SVG / DXF
+    [6] outputs        inside mesh (shell + observed furniture surfaces), dollhouse mesh (shell without ceiling +
+                       furniture solids), floor plan PNG / SVG / DXF, top view
 
 The v2 pipeline stays callable (src/pipeline_360.py) for before / after comparisons.
 """
@@ -60,6 +61,16 @@ def analyse(panoptic, pano: np.ndarray, seg_class_map: np.ndarray, id2label: dic
     return {"class_map": ins.hybrid_class_map(seg_class_map, v3), "inst_map": v3["inst_map"], "instances": v3["instances"]}
 
 
+def in_front_of_shell(dist: np.ndarray, box: dict, rel: float = 0.04, abs_: float = 0.05) -> np.ndarray:
+    """Pixels whose observed surface lies clearly in front of the box shell (furniture, but also a real wall
+    that stands in front of the fitted one, alcoves, curtains): their observed surface is kept in the inside
+    mesh so that the view from the centre reproduces the panorama."""
+    from . import equirect as eq
+    H, W = dist.shape
+    dirs = (eq.pixel_dirs(W, H) @ box["R"].T) @ box["Q"]
+    return dist < bx.box_exit(dirs, box) * (1 - rel) - abs_
+
+
 def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furniture_params: dict | None = None) -> dict:
     """[3]-[5] box, solids, openings, meshes."""
     cm = ana["class_map"]
@@ -70,9 +81,12 @@ def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furn
         inst_map, _ = fu.add_leftovers(ana["inst_map"], ana["instances"], cm, id2label)
     shell = rb.build_shell(box, texture, dist)
     furn = fu.solids_part(solids, box, dist, inst_map, texture)
-    parts = shell["parts"] + ([furn] if len(furn["faces"]) else [])
-    mesh = rb.combine(parts)
+    # inside view: shell + the OBSERVED surfaces in front of it (from the centre it reproduces the panorama; the
+    # closed shell behind them leaves no gaps); dollhouse: shell without ceiling + furniture solids
+    seen = rb.observed_part(dist, texture, box["R"], in_front_of_shell(dist, box))
+    mesh = rb.combine(shell["parts"] + ([seen] if len(seen["faces"]) else []))
     mesh.update({"box": box, "camera_height": box["camera_height"]})
+    parts = shell["parts"] + ([furn] if len(furn["faces"]) else [])
     doll = rb.combine([p for p in parts if p["kind"] != "ceiling"])
     doll.update({"box": box, "camera_height": box["camera_height"]})
     openings = pv.openings_on_box(dist, cm, id2label, box)
