@@ -85,6 +85,33 @@ Text prompt                                            Text prompt (room type + 
 [7] App: panorama + plan + inside / dollhouse viewers
 ```
 
+Version 3 (PLAN_V3.md) makes the 360° room a **clean box room with solid furniture and an architect's plan** (the v2 360° pipeline stays selectable for comparison):
+
+```
+360° Room mode, v3 (default)
+────────────────────────────
+Text prompt
+   │
+[1] 1–4 candidate panoramas (SD 2.1 panorama model, one-room prompt) → DAP depth + SegFormer
+    → boxiness score (wall fit, enclosed share, measured sides) → the most box-like one is kept
+   │
+[2] Instances: Mask2Former panoptic on 13 perspective views, merged across views (union-find);
+    walls / floor / ceiling from SegFormer, furniture from the panoptic instances
+   │
+[3] Room box: dominant wall directions (normal histogram mod 90°), per-side wall = farthest strong
+    density peak (detected) or floor extent (inferred); exact textured planes, openings flattened
+    onto the walls, hidden texels inpainted in texture space (Navier–Stokes)
+   │
+[4] Furniture solids: cleaned + trimmed instance points → wall-aligned footprint → class size priors
+    (clamp / reject) → back to the wall → overlaps merged / shrunk → extruded, textured box
+   │
+[5] Floor plan: axis-aligned, solid / hatched walls, doors with swings, windows, furniture symbols,
+    collision-free labels, dimensions, scale bar, area → PNG / SVG / DXF
+   │
+[6] Viewers: inside (shell + observed surfaces, no cracks), dollhouse (single-sided: near walls
+    disappear, solids), top view next to the plan
+```
+
 ---
 
 ## 4. Image-Processing Techniques (Course Concepts)
@@ -727,6 +754,45 @@ Code: `src/viewers.py`, `textured_mesh.export_glb(double_sided=...)`, `pipeline_
 
 - Screenshots: `results/figures/viewer_inside.png` (v2 vs v3 inside, 3 rooms × 4 directions; v2 shows white specks at depth edges, v3 none) and `results/figures/viewer_dollhouse.png` (4 orbit angles: v2 shows fragments and walls sticking out, v3 a closed room with solid furniture and the near walls culled). All screenshots: `outputs/viewer_check/`. Table: `results/tables/viewer_gaps.csv`, `viewer_gaps_per_view.csv`.
 - **Limitations:** furniture solids are boxes whose hidden faces repeat the visible side's texture, which is obvious in close dollhouse views; the inpainted floor under furniture shows smooth blotches in the top view. The orbit and zoom limits of the app's viewers were checked by setting camera attributes from a script, not by dragging with a mouse.
+
+### Layout-first image quality (milestone 7 of PLAN_V3)
+Code: `layout.proxy_parts / render_full(shapes=True)`, `generate_pano.load_controlnet_pipeline_sd21`, `generate_pano_controlled(end=...)`, `scripts/eval_layout_quality.py`.
+
+1. **Shaped proxies** in the depth condition instead of boxes: bed = mattress + headboard, sofa / armchair = seat + back + arms, chair = seat + four legs + back, desk / tables = top + four legs (the back is the side facing the nearest wall).
+2. **Doors and windows in the condition:** drawn as recesses (door 12 cm, window 25 cm behind the wall), so the depth map shows them.
+3. **ControlNet strength** 1.0 / 0.75 / 0.5 × **step range** (all steps / first 60%).
+4. **SD 2.1:** the SD 2.1 panorama model selected in PLAN_V2 milestone 2 is compatible with an SD 2.1 depth ControlNet (`thibaud/controlnet-sd21-depth-diffusers`, 0.73 GB; same UNet, 1024-d text embeddings), so it was tried with the same shaped conditions.
+5. **img2img texture pass** (strength 0.3, no ControlNet) after the selected configuration.
+
+The 40 bench layouts and prompts, dev = layout seeds 1–4, held-out = 5–8. Adherence is measured against each configuration's own layout rendering; quality by CLIP (8 crops per panorama) and KID / FID of the 160 crops of a configuration against the 500 MMIS hold-out images. Rule fixed before running: among the dev configurations with depth AbsRel ≤ 0.10, the highest CLIP (ties within 0.1 → lower KID).
+
+| Dev layouts (20) | Depth AbsRel | Furniture IoU | Door / window IoU | mIoU | CLIP | KID ×10³ |
+|---|---|---|---|---|---|---|
+| Milestone 6 (boxes, SD 1.5, scale 1.0) | 0.060 | 0.42 | 0.00 / 0.00 | 0.46 | 18.0 | 114 ± 4 |
+| Shapes, SD 1.5, scale 1.0 all steps | **0.044** | 0.45 | 0.40 / 0.12 | **0.51** | 19.1 | 104 ± 4 |
+| Shapes, SD 1.5, scale 0.75, first 60% | 0.063 | 0.38 | 0.34 / 0.15 | 0.49 | 20.0 | 87 ± 3 |
+| Shapes, SD 1.5, scale 0.5, all steps | 0.071 | 0.38 | 0.20 / 0.14 | 0.49 | 20.5 | 75 ± 3 |
+| Shapes, SD 2.1, scale 1.0 all steps | 0.046 | 0.36 | 0.42 / 0.37 | 0.41 | 19.6 | 77 ± 3 |
+| **Shapes, SD 2.1, scale 0.75, first 60% (selected)** | 0.055 | **0.48** | 0.39 / **0.45** | 0.42 | **20.6** | **67 ± 3** |
+| Selected + img2img 0.3 | 0.057 | 0.50 | 0.35 / 0.44 | 0.42 | 20.5 | 69 ± 4 |
+
+(all nine dev configurations: `results/tables/lq_summary.csv`, trade-off plot `results/figures/lq_tradeoff.png`)
+
+| Held-out layouts (20) | Depth AbsRel | Furniture IoU | Door / window IoU | mIoU | CLIP | KID ×10³ | FID |
+|---|---|---|---|---|---|---|---|
+| Milestone 6 | 0.060 | 0.43 | 0.02 / 0.00 | **0.47** | 18.5 | 120 ± 4 | 192 |
+| Shapes, SD 1.5, scale 1.0 | **0.050** | 0.47 | 0.22 / 0.10 | 0.50 | 19.2 | 107 ± 4 | 175 |
+| **Selected (SD 2.1, shapes, 0.75, first 60%)** | 0.059 | 0.47 | **0.31 / 0.24** | 0.42 | **21.6** | **63 ± 3** | **139** |
+| Selected + img2img 0.3 | 0.062 | **0.48** | 0.27 / 0.22 | 0.43 | 21.5 | 66 ± 3 | 139 |
+
+- **Image quality is the big change:** with the SD 2.1 panorama model under the depth ControlNet, KID halves (120 → 63 ×10³), FID drops 192 → 139 and CLIP rises 18.5 → 21.6 (the 360° mode's own SD 2.1 panoramas scored 22.4 in PLAN_V2), while the layout is followed as well as before (depth AbsRel 0.059 vs. 0.060, furniture IoU 0.47 vs. 0.43). Beds get pillows and bedding, dining tables chairs, rooms have real windows and doors (`results/figures/lq_examples.png`).
+- **Shaped proxies alone** (SD 1.5) already help adherence (AbsRel 0.050, furniture IoU 0.47) and make doors visible (IoU 0.02 → 0.22), but barely improve quality.
+- **Strength / step range:** less ControlNet buys quality (dev KID 104 → 75 from scale 1.0 to 0.5) at the cost of adherence (AbsRel 0.044 → 0.071), a clean trade-off; applying it only for the first 60% of the steps is in between.
+- **Negative:** the selected configuration recognises walls / floor / ceiling slightly worse (mIoU 0.47 → 0.42: wooden panelling and lighting coves confuse SegFormer). The **img2img pass** did not raise dev CLIP (20.6 → 20.5) and lowered adherence slightly, so it is **not used**.
+- **App:** Layout-first now uses the shaped layout, the SD 2.1 panorama model + SD 2.1 depth ControlNet at scale 0.75 for the first 60% of the steps, and builds the mesh on the shaped (exact) geometry: 20.8 s per room, 4.8 GB peak VRAM.
+
+### Demo modes (v3)
+The **360° Room** mode now runs the v3 pipeline by default (`app/app.py` → `src/pipeline_v3.py`); the "360° Room options" accordion has the **pipeline switch** (v3 / v2 for comparison) and the **Candidates** slider (1–4 panoramas, the most box-like one is kept). Outputs: the panorama, the architectural plan (PNG, SVG and **DXF** downloads), the inside viewer (background = the room's mean colour), the dollhouse viewer (single-sided, near walls culled, neutral background) with the **orthographic top view** next to it, and the free-orbit fallback. Mask2Former is parked on the CPU with the other large models when another mode is active. Headless test of all modes (one request each, after switching): v3 with 1 candidate 13.7 s, with 2 candidates 29.6 s, peak 5.9 GB VRAM; v2 15.2 s; Quick 6.2 s (2.9 GB); Layout-first 18.0 s (4.6 GB).
 
 ### Demo modes (v2)
 `app/app.py` now has three modes (radio button): **Quick (single view)**, **360° Room** and **Layout-first**. 360° and layout-first show the panorama, the floor plan (360° plan / exact layout plan), an **inside** viewer (camera at the room centre, look around, move up to 1 m) and a **dollhouse** viewer (ceiling removed, orbit from above), with `gr.Model3D` as the offline fallback. Only the active mode's large models sit on the GPU. Measured peaks: Quick 2.9 GB, Layout-first 4.6 GB, 360° 5.5 GB (6.8 GB reserved). One request: Quick 7–9 s, 360° 17.5 s, Layout-first 17.9 s. Tested headlessly in all three modes with switching back and forth; the `<model-viewer>` inside / dollhouse modes have not been checked by hand in a browser yet.

@@ -268,8 +268,59 @@ def render(layout: dict, w: int = 1024, h: int = 512) -> tuple[np.ndarray, np.nd
     return dist, label
 
 
-def render_full(layout: dict, w: int = 1024, h: int = 512) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """As render(), plus the instance map: index of the furniture box seen at each pixel (-1 = room shell)."""
+DOOR_RECESS, WINDOW_RECESS = 0.12, 0.25     # m: openings drawn as recesses in the depth condition (shapes=True)
+
+
+def _back_dir(b: dict, W: float, D: float) -> str:
+    """Side of a furniture box that faces the nearest wall: '-x', '+x', '-z' or '+z'."""
+    gaps = {"-x": b["x0"], "+x": W - b["x1"], "-z": b["z0"], "+z": D - b["z1"]}
+    return min(gaps, key=gaps.get)
+
+
+def proxy_parts(b: dict, W: float, D: float) -> list[tuple]:
+    """Shaped proxy of a furniture box as part boxes (x0, y0, z0, x1, y1, z1), y up from the floor
+    (PLAN_V3 milestone 7): bed = mattress + headboard, sofa / armchair = seat + back + arms,
+    chair = seat + 4 legs + back, table / desk = top + 4 legs; other classes stay one box."""
+    lab, h = b["label"], b["h"]
+    back = _back_dir(b, W, D)
+    ax = 0 if back[1] == "x" else 2                                   # depth axis (back -> front)
+    lo_d, hi_d = (b["x0"], b["x1"]) if ax == 0 else (b["z0"], b["z1"])
+    lo_w, hi_w = (b["z0"], b["z1"]) if ax == 0 else (b["x0"], b["x1"])
+    sgn = -1 if back[0] == "-" else 1                                  # the back lies at lo_d if sgn < 0
+
+    def part(d0, d1, w0, w1, y0, y1):
+        """Depth fractions from the back (0..1), width fractions, absolute heights -> part box."""
+        L = hi_d - lo_d
+        a0, a1 = (lo_d + d0 * L, lo_d + d1 * L) if sgn < 0 else (hi_d - d1 * L, hi_d - d0 * L)
+        Wd = hi_w - lo_w
+        c0, c1 = lo_w + w0 * Wd, lo_w + w1 * Wd
+        x0, x1, z0, z1 = (a0, a1, c0, c1) if ax == 0 else (c0, c1, a0, a1)
+        return (x0, y0, z0, x1, y1, z1)
+
+    leg = 0.05
+    if lab == "bed":
+        return [part(0, 1, 0, 1, 0, 0.5), part(0, 0.05, 0, 1, 0, 1.0)]
+    if lab in ("sofa", "armchair"):
+        arm = 0.12 if lab == "sofa" else 0.18
+        return [part(0, 1, 0, 1, 0, 0.42), part(0, 0.25, 0, 1, 0, h), part(0, 1, 0, arm, 0, 0.62),
+                part(0, 1, 1 - arm, 1, 0, 0.62)]
+    if lab == "chair":
+        Ld, Lw = (hi_d - lo_d), (hi_w - lo_w)
+        fd, fw = leg / max(Ld, 1e-6), leg / max(Lw, 1e-6)
+        return [part(0, 1, 0, 1, 0.42, 0.47), part(0, 0.12, 0, 1, 0.47, h)] + \
+            [part(a, a + fd, c, c + fw, 0, 0.42) for a in (0, 1 - fd) for c in (0, 1 - fw)]
+    if lab in ("desk", "dining table", "coffee table"):
+        Ld, Lw = (hi_d - lo_d), (hi_w - lo_w)
+        fd, fw = leg / max(Ld, 1e-6), leg / max(Lw, 1e-6)
+        return [part(0, 1, 0, 1, h - 0.04, h)] + \
+            [part(a, a + fd, c, c + fw, 0, h - 0.04) for a in (0.03, 0.97 - fd) for c in (0.03, 0.97 - fw)]
+    return [(b["x0"], 0.0, b["z0"], b["x1"], h, b["z1"])]
+
+
+def render_full(layout: dict, w: int = 1024, h: int = 512, shapes: bool = False) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """As render(), plus the instance map: index of the furniture box seen at each pixel (-1 = room shell).
+    shapes=True (PLAN_V3 milestone 7): furniture as shaped proxies (proxy_parts) and doors / windows as
+    recesses of DOOR_RECESS / WINDOW_RECESS behind the wall, so that the depth condition shows them."""
     W, D, H = layout["W"], layout["D"], layout["H"]
     C = np.array(layout["camera"])
     dc = eq.pixel_dirs(w, h).reshape(-1, 3)
@@ -289,13 +340,20 @@ def render_full(layout: dict, w: int = 1024, h: int = 512) -> tuple[np.ndarray, 
         along = P[:, 0] if wall in ("N", "S") else P[:, 2]
         m = on & (np.abs(along - o["c"]) <= o["w"] / 2) & (P[:, 1] >= o["y0"]) & (P[:, 1] <= o["y1"])
         label[m] = ADE["door"] if o["kind"] == "door" else ADE["windowpane"]
+        if shapes:                                                 # recess: the wall plane moves back
+            k = 2 if wall in ("N", "S") else 0
+            pos = {"N": D, "S": 0.0, "E": W, "W": 0.0}[wall] + (1 if wall in ("N", "E") else -1) * \
+                (DOOR_RECESS if o["kind"] == "door" else WINDOW_RECESS)
+            dist[m] = (pos - C[k]) * inv[m, k]
     inst = np.full(len(d), -1, np.int32)
-    for bi, b in enumerate(layout["boxes"]):                      # furniture: entry distance of each box
-        blo, bhi = np.array([b["x0"], 0.0, b["z0"]]), np.array([b["x1"], b["h"], b["z1"]])
-        t1, t2 = (blo - C) * inv, (bhi - C) * inv
-        tn, tf = np.minimum(t1, t2).max(1), np.maximum(t1, t2).min(1)
-        hit = (tf >= np.maximum(tn, 0)) & (tn > 0) & (tn < dist)
-        dist[hit], label[hit], inst[hit] = tn[hit], b["ade"], bi
+    for bi, b in enumerate(layout["boxes"]):                      # furniture: entry distance of each box / part
+        parts = proxy_parts(b, W, D) if shapes else [(b["x0"], 0.0, b["z0"], b["x1"], b["h"], b["z1"])]
+        for x0, y0, z0, x1, y1, z1 in parts:
+            blo, bhi = np.array([x0, y0, z0]), np.array([x1, y1, z1])
+            t1, t2 = (blo - C) * inv, (bhi - C) * inv
+            tn, tf = np.minimum(t1, t2).max(1), np.maximum(t1, t2).min(1)
+            hit = (tf >= np.maximum(tn, 0)) & (tn > 0) & (tn < dist)
+            dist[hit], label[hit], inst[hit] = tn[hit], b["ade"], bi
     return dist.reshape(h, w).astype(np.float32), label.reshape(h, w), inst.reshape(h, w)
 
 

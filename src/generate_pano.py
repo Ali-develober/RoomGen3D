@@ -195,20 +195,40 @@ def load_controlnet_pipeline(device, mmis_lora: str | Path | None = None):
     return pipe
 
 
+CONTROLNET_DEPTH_SD21 = ROOT / "checkpoints" / "controlnet_sd21_depth"     # thibaud/controlnet-sd21-depth-diffusers
+
+
+def load_controlnet_pipeline_sd21(device, path: Path = ALT_MODEL):
+    """The SD 2.1-base panorama model (milestone 2's selected generator) + an SD 2.1 depth ControlNet
+    (same UNet architecture, 1024-d text embeddings), fp16, DDIM (PLAN_V3 milestone 7)."""
+    from diffusers import ControlNetModel, DDIMScheduler, StableDiffusionControlNetPipeline
+    cn = ControlNetModel.from_pretrained(str(CONTROLNET_DEPTH_SD21), dtype=torch.float16)
+    pipe = StableDiffusionControlNetPipeline.from_pretrained(str(path.parent / (path.name + "-fp16")), controlnet=cn,
+                                                             dtype=torch.float16, safety_checker=None,
+                                                             requires_safety_checker=False)
+    pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
+    pipe.set_progress_bar_config(disable=True)
+    return pipe.to(device)
+
+
 @torch.inference_mode()
 def generate_pano_controlled(pipe, room: str, seed: int, control: np.ndarray, scale: float = 1.0,
-                             mmis_weight: float = 0.0, steps: int = PANO_STEPS, guidance: float = PANO_GUIDANCE) -> np.ndarray:
+                             mmis_weight: float = 0.0, steps: int = PANO_STEPS, guidance: float = PANO_GUIDANCE,
+                             end: float = 1.0, prompt: str | None = None, negative: str | None = None) -> np.ndarray:
     """Panorama that follows a depth condition (control: H x W x 3 uint8, near = white).
-    scale = 0 gives the unconditioned panorama of the same pipeline and seed (the baseline)."""
+    scale = 0 gives the unconditioned panorama of the same pipeline and seed (the baseline).
+    end: the ControlNet acts only during the first `end` share of the denoising steps (PLAN_V3 milestone 7).
+    prompt / negative: full prompts (default: the SD 1.5 + 360 LoRA template)."""
     from PIL import Image
     install_circular(pipe.unet, pipe.vae, pipe.controlnet)
     set_weights(pipe, mmis_weight)
     set_circular(True, pipe.unet, pipe.controlnet)
     h, w = control.shape[:2]
     gen = torch.Generator(pipe.device).manual_seed(int(seed))
-    lat = pipe(pano_prompt(room), image=Image.fromarray(control), negative_prompt=PANO_NEGATIVE,
+    lat = pipe(prompt or pano_prompt(room), image=Image.fromarray(control), negative_prompt=negative or PANO_NEGATIVE,
                num_inference_steps=int(steps), guidance_scale=float(guidance), width=w, height=h,
-               controlnet_conditioning_scale=float(scale), generator=gen, output_type="latent").images
+               controlnet_conditioning_scale=float(scale), control_guidance_end=float(end), generator=gen,
+               output_type="latent").images
     set_circular(True, pipe.vae)
     img = pipe.vae.decode(lat / pipe.vae.config.scaling_factor, return_dict=False)[0]
     set_circular(False, pipe.unet, pipe.vae, pipe.controlnet)

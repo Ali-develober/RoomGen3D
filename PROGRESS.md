@@ -174,6 +174,10 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 |---|---|---|
 | 2026-11-14 | `facebook/mask2former-swin-large-ade-panoptic` (config + model.safetensors only) → checkpoints/mask2former_ade_panoptic | 0.87 GB |
 | 2026-11-14 | HorizonNet code (git clone, github.com/sunset1995/HorizonNet) + `sunset1995/HorizonNet` resnet50_rnn__mp3d.pth → checkpoints/horizonnet | 0.33 GB |
+| 2026-11-14 | `thibaud/controlnet-sd21-depth-diffusers` (config + .bin) → checkpoints/controlnet_sd21_depth | 0.73 GB |
+| 2026-11-14 | pip (venv): shapely 2.2.0, playwright 1.65.2 + its Chromium (%LOCALAPPDATA%\ms-playwright) | ~0.3 GB |
+
+**Total PLAN_V3 downloads: ~2.2 GB of 8 GB.**
 
 ## 2026-11-14 — Test bench for PLAN_V3 — DONE
 
@@ -238,3 +242,13 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 **Failed / limitations**: first v3 inside mesh used the solids and looked crude from inside → replaced by observed surfaces (solids stay in the dollhouse). Box solids with repeated textures; smooth inpainted floor blotches. Mouse dragging not tested, only scripted camera positions. Playwright's Chromium lives in %LOCALAPPDATA%\ms-playwright (~0.3 GB, outside the project).
 
 **Next**: Milestone 7 — layout-first image quality (shaped proxies, ControlNet strength / step-range sweep, doors/windows, SD 2.1 compatibility, optional img2img pass).
+
+## 2026-11-14 — V3 Milestone 7: layout-first image quality — DONE
+
+**Built**: `layout.proxy_parts` + `render_full(shapes=True)` (bed/sofa/armchair/chair/table proxies, door and window recesses), `generate_pano_controlled(end=, prompt=, negative=)`, `load_controlnet_pipeline_sd21` (SD 2.1 panorama model + SD 2.1 depth ControlNet), `scripts/eval_layout_quality.py` (9 dev configurations, rule-based selection, held-out report, img2img pass). App Layout-first mode switched to the selected configuration (20.8 s, 4.8 GB).
+
+**Results (held-out)**: selected = SD 2.1 + depth ControlNet, shaped proxies, scale 0.75, first 60% of steps. KID 120 → 63 ×10³, FID 192 → 139, CLIP 18.5 → 21.6; depth AbsRel 0.060 → 0.059; furniture IoU 0.43 → 0.47; door / window IoU 0.02 / 0.00 → 0.31 / 0.24. Shapes alone (SD 1.5): AbsRel 0.050, KID 107.
+
+**Failed / limitations**: mIoU of room surfaces 0.47 → 0.42; img2img pass not adopted (dev CLIP 20.6 → 20.5). Intermediate panoramas (outputs/layout_quality, see size above) deleted after tables/figures were saved.
+
+**Next**: Final — summary figure per room, summary table, README / objectives, push.

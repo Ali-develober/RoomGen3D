@@ -18,8 +18,10 @@ Two modes:
                        v2 (comparison, src/pipeline_360.py): SD 2.1 panorama -> Real-ESRGAN -> DAP ->
                        SegFormer -> full-room mesh + dollhouse + 360° floor plan.
   Layout-first         src/layout.py: rule-based room layout (room type from the prompt, the seed
-                       picks the layout) -> layout depth -> SD 1.5 + ControlNet depth + pano LoRA
-                       -> Real-ESRGAN -> mesh on the EXACT layout geometry + the true floor plan.
+                       picks the layout) -> layout depth with shaped furniture proxies and door / window
+                       recesses -> SD 2.1 panorama model + SD 2.1 depth ControlNet (scale 0.75, first 60%
+                       of the steps; PLAN_V3 milestone 7) -> Real-ESRGAN -> mesh on the EXACT layout
+                       geometry + the true floor plan.
 
 3D viewers (tabs):
   "3D viewer"      <model-viewer> web component (script from a CDN, needs internet).
@@ -75,6 +77,7 @@ QUICK, ROOM360, LAYOUT = "Quick (single view)", "360° Room", "Layout-first"
 BIG = {QUICK: ("sd",), ROOM360: ("alt", "dap", "m2f"), LAYOUT: ("cn",)}     # large models of each mode
 V3, V2 = "v3: clean box room (default)", "v2: previous mesh (comparison)"
 NEUTRAL_BG = "#e9e8e4"        # dollhouse background (v3)
+LAYOUT_CN_SCALE, LAYOUT_CN_END = 0.75, 0.6   # layout-first: SD 2.1 panorama model + SD 2.1 depth ControlNet (milestone 7)
 VIEWER_EMPTY = ('<div style="height:540px;display:flex;align-items:center;justify-content:center;'
                 'color:#888;border:1px solid #ddd;border-radius:8px">The 3D model appears here.</div>')
 
@@ -177,7 +180,7 @@ def load_models(mode: str = QUICK) -> dict:
     torch.cuda.empty_cache()
     loaders = {"sd": lambda: g2.load_pipeline(g2.DEFAULT_LORA if g2.DEFAULT_LORA.exists() else None, DEVICE),
                "alt": lambda: gp.load_alt_pipeline(DEVICE), "dap": lambda: pdp.load_dap(DEVICE)[0],
-               "cn": lambda: gp.load_controlnet_pipeline(DEVICE), "m2f": _load_m2f}
+               "cn": lambda: gp.load_controlnet_pipeline_sd21(DEVICE), "m2f": _load_m2f}
     for k in BIG[mode]:
         MODELS[k] = loaders[k]() if k not in MODELS else MODELS[k].to(DEVICE)
     if mode != QUICK and "esrgan" not in MODELS:
@@ -214,9 +217,11 @@ def run_layout(prompt: str, seed: float, steps: float, cfg: float):
     watch = pl.Stopwatch()
     with watch.stage("layout"):
         lay = ly.generate_layout(room, seed)
-        dist, lab = ly.render(lay)
-    with watch.stage("panorama"):
-        pano = gp.generate_pano_controlled(models["cn"], prompt, seed, ly.control_image(dist), steps=steps, guidance=cfg)
+        dist, lab, _ = ly.render_full(lay, shapes=True)            # shaped proxies + door / window recesses
+    with watch.stage("panorama"):                                   # PLAN_V3 milestone 7 selection
+        pano = gp.generate_pano_controlled(models["cn"], prompt, seed, ly.control_image(dist), LAYOUT_CN_SCALE,
+                                           steps=steps, guidance=cfg, end=LAYOUT_CN_END,
+                                           prompt=gp.ALT_TEMPLATE.format(room=prompt), negative=gp.PANO_NEGATIVE)
     with watch.stage("super_res"):
         tex = gp.esrgan_upscale(models["esrgan"], pano)
     id2label = models["seg"][0].config.id2label
