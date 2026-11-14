@@ -249,6 +249,14 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 
 **Results (held-out)**: selected = SD 2.1 + depth ControlNet, shaped proxies, scale 0.75, first 60% of steps. KID 120 → 63 ×10³, FID 192 → 139, CLIP 18.5 → 21.6; depth AbsRel 0.060 → 0.059; furniture IoU 0.43 → 0.47; door / window IoU 0.02 / 0.00 → 0.31 / 0.24. Shapes alone (SD 1.5): AbsRel 0.050, KID 107.
 
-**Failed / limitations**: mIoU of room surfaces 0.47 → 0.42; img2img pass not adopted (dev CLIP 20.6 → 20.5). Intermediate panoramas (outputs/layout_quality, see size above) deleted after tables/figures were saved.
+**Failed / limitations**: mIoU of room surfaces 0.47 → 0.42; img2img pass not adopted (dev CLIP 20.6 → 20.5). Intermediate panoramas (outputs/layout_quality, 1.3 GB) deleted after tables/figures were saved.
 
 **Next**: Final — summary figure per room, summary table, README / objectives, push.
+
+## 2026-11-14 — PLAN_V3 Final — DONE
+
+- `scripts/v3_summary.py`: one summary figure per demo room (panorama | v2 dollhouse | v3 dollhouse | v2 plan | v3 plan, `results/figures/v3_summary_<room>.png`, overview) and the before/after table `results/tables/v3_summary.csv` (27 of 31 held-out rows improve; not improved: raw area error, dollhouse flatness, furniture recall; door/window recall has no v2 counterpart).
+- App: 360° Room runs v3 by default with the v2 toggle and the candidate slider; Layout-first uses the milestone-7 configuration. Headless test of all modes after the last change: v3 k=1 17.1 s / k=2 47.4 s (wall time incl. first model loads), v2 15.4 s, Quick 10.8 s, Layout-first 20.8 s; peak VRAM 5.9 GB.
+- README: v3 pipeline diagram, sections for milestones 1–7, PLAN_V3 summary table, demo modes v3, objectives 9–11, limitations, repository structure.
+- Kept on disk: `outputs/bench` (0.3 GB, the test bench every v3 script reads), `outputs/room360/*/v3` (demo rooms), `outputs/viewer_check` (browser screenshots). Free space at the end: 30.4 GB.
+- Not done (on purpose): the final course notebook (per the plan). Open: door/window detection on generated images; non-rectangular rooms; mouse-driven viewer testing.

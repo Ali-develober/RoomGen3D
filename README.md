@@ -791,6 +791,24 @@ The 40 bench layouts and prompts, dev = layout seeds 1–4, held-out = 5–8. Ad
 - **Negative:** the selected configuration recognises walls / floor / ceiling slightly worse (mIoU 0.47 → 0.42: wooden panelling and lighting coves confuse SegFormer). The **img2img pass** did not raise dev CLIP (20.6 → 20.5) and lowered adherence slightly, so it is **not used**.
 - **App:** Layout-first now uses the shaped layout, the SD 2.1 panorama model + SD 2.1 depth ControlNet at scale 0.75 for the first 60% of the steps, and builds the mesh on the shaped (exact) geometry: 20.8 s per room, 4.8 GB peak VRAM.
 
+### PLAN_V3 summary (before / after)
+All numbers on held-out data (`results/tables/v3_summary.csv`, built by `scripts/v3_summary.py`):
+
+| Milestone | Metric | v2 | v3 |
+|---|---|---|---|
+| 1 instances | instance F1 / precision / recall | 0.17 / 0.14 / 0.21 | **0.35 / 0.44 / 0.28** |
+| 2 room box | walls measured (of 4) · corner error · planarity | 2.5 · 0.33 m · 7.6 cm | **3.85 · 0.25 m · 4.1 cm** |
+| 2 room box | area error as predicted / camera-height scaled | **12.1%** / 6.6% | 12.6% / **4.9%** |
+| 2 room box | flat pixels in dollhouse renders | **7.6%** | 10.8% |
+| 3 furniture | F1 · precision · recall (BEV IoU ≥ 0.25) | 0.42 · 0.39 · **0.47** | **0.48 · 0.67** · 0.38 |
+| 3 furniture | centre · long-side size · orientation error | 0.24 m · 30% · 5.3° | **0.20 m · 25% · 1.4°** |
+| 4 floor plan | off-axis · hatched sides · overlapping pairs · furniture outside walls | 3.8° · 1.5 · 2.9 · 17.9% | **0° · 0.15 · 0.3 · 0.1%** |
+| 5 one room | boxiness · walls measured · CLIP (current template ×1 → one-room, best of 4) | 0.80 · 3.45 · 21.8 | **0.92 · 4.00 · 23.4** |
+| 6 viewers | inside view showing no surface (real browser) | 0.34% | **0.00%** |
+| 7 layout-first | depth AbsRel · furniture IoU · CLIP · KID ×10³ | 0.060 · 0.43 · 18.5 · 120 | **0.059 · 0.47 · 21.6 · 63** |
+
+Summary figures (panorama | v2 dollhouse | v3 dollhouse | v2 plan | v3 plan): `results/figures/v3_summary_<room>.png` for the six demo rooms and `v3_summary_overview.png`. Not improved (written down above): raw area error (DAP scale), flatter inpainted surfaces, lower furniture recall, door / window detection (recall 0.02 on the bench).
+
 ### Demo modes (v3)
 The **360° Room** mode now runs the v3 pipeline by default (`app/app.py` → `src/pipeline_v3.py`); the "360° Room options" accordion has the **pipeline switch** (v3 / v2 for comparison) and the **Candidates** slider (1–4 panoramas, the most box-like one is kept). Outputs: the panorama, the architectural plan (PNG, SVG and **DXF** downloads), the inside viewer (background = the room's mean colour), the dollhouse viewer (single-sided, near walls culled, neutral background) with the **orthographic top view** next to it, and the free-orbit fallback. Mask2Former is parked on the CPU with the other large models when another mode is active. Headless test of all modes (one request each, after switching): v3 with 1 candidate 13.7 s, with 2 candidates 29.6 s, peak 5.9 GB VRAM; v2 15.2 s; Quick 6.2 s (2.9 GB); Layout-first 18.0 s (4.6 GB).
 
@@ -843,6 +861,13 @@ RoomGen3D/
 │   ├── room_mesh.py           # Full-room mesh from a panorama: wrap-around grid, poles, room box, dollhouse, ray casting
 │   ├── pipeline_360.py        # 360° Room mode stages (used by the script and the demo)
 │   ├── layout.py              # Layout-first: parametric room layouts, equirectangular depth / label rendering
+│   ├── instances.py           # v3: Mask2Former panoptic on 13 views, cross-view instance merging, hybrid class map
+│   ├── room_box.py            # v3: wall directions, per-side box fit, textured exact shell, texture-space inpainting
+│   ├── furniture.py           # v3: furniture solids (cleaning, priors, wall snapping, overlaps, textured boxes)
+│   ├── plan_v3.py             # v3: openings on walls, architectural plan drawing, PNG / SVG / DXF
+│   ├── boxiness.py            # v3: "one closed room" score for candidate selection
+│   ├── viewers.py             # v3: room colour, orthographic top view
+│   ├── pipeline_v3.py         # v3 360° Room stages (default in the demo)
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures
@@ -896,6 +921,12 @@ Version 2 (PLAN_V2.md):
 7. Build the whole room, not a relief. *Status: met. 360° mode: 0.4% of the view empty from the room centre (single view 89.7%), 0.7% at 1 m off-centre; 16.8 s per room, 5.5 GB peak VRAM. Every 360° floor plan is closed (6/6). Our MMIS LoRA does not carry over to panoramas (negative result), so the 360° mode uses another generator.*
 8. Make the geometry exact by generating the layout first. *Status: met as an experiment. The generated panoramas follow the layout (depth AbsRel 0.062, furniture IoU 0.45, vs. 0.227 and 0.07 without conditioning) and the 3D is exact, at the cost of image quality (CLIP 21.2 → 18.6). Kept as a separate mode; the 360° mode stays the default.*
 
+Version 3 (PLAN_V3.md):
+
+9. Turn the 360° room into a clean box room with solid furniture. *Status: met on the layout-first bench (40 rooms, held-out half): 3.85 of 4 walls measured (v2 2.5), corner error 0.25 m (0.33), wall planarity 4.1 cm (7.6), furniture F1 0.48 (0.42) with orientation error 1.4° (5.3°); the area error as predicted is not better (12.6% vs. 12.1%, DAP scale).*
+10. A readable floor plan. *Status: met: axis-aligned, symbols, collision-free labels, PNG/SVG/DXF; overlapping furniture 2.9 → 0.3 pairs per plan, furniture outside the walls 17.9% → 0.1%. Doors / windows are not detected reliably (recall 0.02 on the bench).*
+11. Better layout-first images. *Status: met: KID 120 → 63 ×10³, CLIP 18.5 → 21.6 at unchanged adherence (SD 2.1 panorama model + SD 2.1 depth ControlNet, shaped proxies).*
+
 ---
 
 ## 14. Limitations
@@ -906,6 +937,7 @@ Version 2 (PLAN_V2.md):
 - Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only; for panoramas only plausibility checks (and the layout-first adherence) are available, since no licensed real RGB-D panorama set was used.
 - The **360° mode does not use our MMIS LoRA** (it did not help on panoramas), and the panorama model sometimes repeats large furniture. **Layout-first** gives exact geometry but box-shaped furniture and weaker styles.
 - The 360° room box and plan are rectangles; open-plan and L-shaped rooms are boxed too large.
+- **v3 (PLAN_V3):** the room is always one rectangle and the furniture always boxes (hidden faces repeat the visible side's texture); hidden wall / floor regions are inpainted smoothly (Navier–Stokes was chosen by SSIM; the patch fill keeps more texture). Doors and windows are rarely found on generated images. The box fit takes the farthest strong wall peak, which fixes rooms cut by furniture fronts but boxes open-plan panoramas around the neighbouring spaces (dining 74.7 m²). All v3 numbers come from layout-conditioned panoramas whose images follow the layout only approximately; the selection of the best of k panoramas favours one "look" and reduces variety.
 - Training on a subset of MMIS due to compute limits.
 - The 3D stage uses a metric depth model, but its absolute scale is only approximate (AbsRel 0.22 without alignment on NYU), and the camera field of view (60°) is assumed, so sizes in the 3D model are rough.
 - Classical preprocessing did **not** improve depth accuracy on clean NYU Depth V2 images: modern depth networks are already robust to moderate noise, blur and low light. Only noise-gated denoising helps, and only under strong noise (σ ≥ 25); nothing tested helps against blur. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.

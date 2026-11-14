@@ -1,0 +1,32 @@
+milestone,metric,v2 (before),v3 (after),better,note,improved
+1 instances,"instance F1 (any class, IoU>=0.5)",0.1679,0.3464,higher,,True
+1 instances,instance precision,0.1394,0.4429,higher,,True
+1 instances,instance recall,0.2110,0.2844,higher,,True
+1 instances,mIoU wall/floor/ceiling/furniture,0.5853,0.5891,higher,,True
+1 instances,furniture IoU,0.4644,0.5189,higher,,True
+2 room box,sides detected (of 4),2.5000,3.8500,higher,,True
+2 room box,corner error (m),0.3308,0.2474,lower,,True
+2 room box,area |error|,0.1208,0.1256,lower,,False
+2 room box,"area |error|, camera-height scaled",0.0665,0.0489,lower,,True
+2 room box,wall planarity RMS (cm),7.6162,4.0971,lower,,True
+2 room box,surface outside the true room (scaled),0.1201,0.0861,lower,,True
+2 room box,"flat pixels, dollhouse renders",0.0761,0.1081,lower,,False
+3 furniture,furniture F1 (BEV IoU>=0.25),0.4232,0.4824,higher,,True
+3 furniture,furniture precision,0.3864,0.6721,higher,,True
+3 furniture,furniture recall,0.4679,0.3761,higher,,False
+3 furniture,"centre error (m, median)",0.2436,0.1968,lower,,True
+3 furniture,long-side size error (median),0.2953,0.2500,lower,,True
+3 furniture,"orientation error (deg, median)",5.2624,1.4014,lower,,True
+4 floor plan,walls off the page axes (deg),3.7872,0.0000,lower,,True
+4 floor plan,inferred (hatched) sides,1.5000,0.1500,lower,,True
+4 floor plan,overlapping furniture pairs per plan,2.9000,0.3000,lower,,True
+4 floor plan,furniture area outside the walls,0.1789,0.0012,lower,,True
+4 floor plan,door/window recall (v3 only),,0.0227,higher,not working on the bench,n/a
+5 one room,"boxiness (current template, 1 candidate -> one-room template, best of 4)",0.7978,0.9190,higher,"SD 2.1 panoramas, 10 held-out prompts x 4 seeds",True
+5 one room,walls measured (sides / 4),0.8625,1.0000,higher,"SD 2.1 panoramas, 10 held-out prompts x 4 seeds",True
+5 one room,CLIP,21.8444,23.4487,higher,"SD 2.1 panoramas, 10 held-out prompts x 4 seeds",True
+6 viewers,inside view showing no surface (browser),0.0034,0.0000,lower,"6 demo rooms x 4 directions, headed Chromium",True
+7 layout-first,layout-first depth AbsRel vs layout,0.0597,0.0591,lower,m6 boxes -> sd21_s0.75_e0.6,True
+7 layout-first,layout-first furniture IoU,0.4254,0.4731,higher,m6 boxes -> sd21_s0.75_e0.6,True
+7 layout-first,layout-first CLIP,18.5402,21.6473,higher,m6 boxes -> sd21_s0.75_e0.6,True
+7 layout-first,layout-first KID x1e3 vs MMIS,119.8561,63.3483,lower,m6 boxes -> sd21_s0.75_e0.6,True
