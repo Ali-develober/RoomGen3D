@@ -1,0 +1,9 @@
+id,room,split,method,n_gt,n_pred,tp25,instances,too_few_points,clamped,rejected,merged,shrunk,dropped_outside,solids
+bedroom_L1,bedroom,dev,v2,6,8,3,,,,,,,,
+bedroom_L1,bedroom,dev,v3,6,5,4,5.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,5.0000
+bedroom_L2,bedroom,dev,v2,3,1,1,,,,,,,,
+bedroom_L2,bedroom,dev,v3,3,1,1,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,1.0000
+bedroom_L5,bedroom,test,v2,5,4,2,,,,,,,,
+bedroom_L5,bedroom,test,v3,5,4,1,4.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,4.0000
+bedroom_L6,bedroom,test,v2,3,10,2,,,,,,,,
+bedroom_L6,bedroom,test,v3,3,3,0,3.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,3.0000

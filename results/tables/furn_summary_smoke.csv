@@ -1,0 +1,5 @@
+split,method,gt,pred,precision25,recall25,f1_25,matched,iou,centre_err_m,size_err_long,size_err_short,orient_err_deg,centre_err_m_scaled,size_err_long_scaled,size_err_short_scaled,height_err_m,n_clamped,n_rejected,n_merged,n_shrunk,n_dropped_outside,n_too_few_points,n_instances
+dev,v2,9,9,0.4444,0.4444,0.4444,5,0.4048,0.2935,0.1543,0.2055,3.1062,0.3011,0.1926,0.2668,,,,,,,,
+dev,v3,9,6,0.8333,0.5556,0.6667,6,0.5180,0.1531,0.0980,0.4733,1.2097,0.1543,0.1141,0.4301,0.1711,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,6.0000
+test,v2,8,14,0.2857,0.5000,0.3636,5,0.5170,0.3301,0.2969,0.2201,2.8729,0.3417,0.3318,0.2428,,,,,,,,
+test,v3,8,7,0.1429,0.1250,0.1333,4,0.1748,0.4275,0.1841,0.6166,2.2562,0.4375,0.2078,0.6277,0.0948,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,7.0000

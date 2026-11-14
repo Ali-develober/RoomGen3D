@@ -198,3 +198,13 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 **Failed / limitations**: v3 dollhouse renders are flatter (11.0% vs 7.6% flat pixels) because hidden regions are filled smoothly (pre-declared SSIM rule picked NS; patch fill would be less flat). Global scale error from DAP remains (camera 1.44–1.48 m vs 1.40 m). Bug found and fixed: histogram smoothing with fewer bins than the kernel.
 
 **Next**: Milestone 3 — solid furniture from the v3 instances (footprint cleaning, extrusion to the floor, class size priors, wall-axis snapping, overlap resolution; footprint IoU / centre / size / orientation errors vs. layout boxes).
+
+## 2026-11-14 — V3 Milestone 3: solid furniture — DONE
+
+**Built**: `src/furniture.py` (point cleaning + percentile trimming, wall-axis snapping, class size priors with clamp/reject, back-to-wall snap, overlap merge/shrink/clip, leftover components, textured extruded solids with donor-face texture for hidden faces and seam-safe UVs); `scripts/eval_furniture.py` (64-config dev sweep, v2 vs v3 vs layout boxes, figure).
+
+**Results (held-out)**: F1@0.25 0.42 → 0.48, precision 0.39 → 0.67, recall 0.47 → 0.38; centre error 0.24 → 0.20 m; size error long side 30% → 25%; orientation 5.3° → 1.4°; height error 5 cm. Priors: 35 clamped, 94 rejected of 194 candidates.
+
+**Failed / limitations**: recall below v2; without the leftover components (first try) held-out F1 was 0.36 < v2 — fixed by adding unclaimed furniture pixels as candidates (chosen on dev). Boxes only; hidden faces copy the visible side's texture. Bugs fixed: dict removal with numpy arrays in merging, donor-face fallback when nothing is visible.
+
+**Next**: Milestone 4 — floor plan drawing (axis-aligned, symbols, labels without overlap, dimensions, PNG/SVG/DXF).

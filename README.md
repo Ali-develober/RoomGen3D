@@ -634,6 +634,34 @@ The diffusion methods win the pixel metrics because a smooth guess is closest on
 - **Pretrained layout estimator:** HorizonNet (`sunset1995/HorizonNet`, Matterport3D weights, cuboid mode; 0.33 GB) run on the same panoramas and scaled with the same DAP camera height: area |error| 9.8% vs. 10.6% for our fit, corner error 0.20 vs. 0.23 m on held-out (dev: 15.7% vs. 11.3%, 0.27 vs. 0.21 m) — comparable. With the true camera height our box shape is clearly better (held-out area 5.4% vs. 10.4%, corners 0.17 vs. 0.22 m): **our error is mostly global scale, not shape.** HorizonNet needs no depth; we keep our fit because it also gives which sides are measured.
 - Figure: `results/figures/box_v2_v3.png` (held-out: panorama | v2 dollhouse | v3 dollhouse | v2 inside | v3 inside). Tables: `results/tables/box_summary.csv`, `box_per_room.csv`, `box_inpaint.csv`, `box_inpaint_trials.csv`, `box_horizonnet.csv`, `box_horizonnet_per_room.csv`.
 
+### Solid furniture (milestone 3 of PLAN_V3)
+Code: `src/furniture.py`, `scripts/eval_furniture.py`.
+
+Per v3 instance, in the room-box frame:
+1. **Points:** mask eroded, flying pixels (> 5% depth jump to a neighbour) dropped, only points ≥ 5 cm inside the room kept; then the 2% / 98% percentiles of the distance from the camera, and of each plan coordinate, trim the rest, so footprints are no longer stretched along the viewing ray.
+2. **Footprint:** minimum-area rectangle, orientation **snapped to the wall axes within 20°**, extent re-measured.
+3. **Class size priors** (`furniture.PRIORS`, long side / short side / height for 38 classes, e.g. bed 1.9–2.3 × 0.9–2.0 × 0.4–1.2 m): a dimension within ×1.5 of its range is clamped into it (the hidden back grows away from the camera); further outside, the instance is **rejected**.
+4. **Walls:** a back side within 30 cm of a parallel wall is moved onto the wall.
+5. **Overlaps:** duplicates of one family overlapping ≥ 50% of the smaller are merged, smaller overlaps are shrunk along the axis of least penetration, boxes are clipped to the room.
+6. **Leftovers:** furniture pixels of the class map that no panoptic instance claims become extra candidates (v2-style components); the priors filter them.
+7. **Solid:** the footprint is extruded from the floor to the instance's top (hanging lamps from their lowest point to the ceiling); 5 faces subdivided into 10 cm cells. A vertex the camera sees on this object takes its own panorama colour; a hidden vertex takes the colour of the same face coordinates on the object's most visible side (the top: its nearest visible point). Triangles crossing the panorama seam are mapped onto a texture extended by a quarter width, so there is no seam jump.
+
+The switches were swept on the dev rooms (64 combinations, objective F1 at IoU 0.25; `furn_dev_sweep.csv`). Selected: erosion 1 px, trimming 2%, orientation snap on, wall snap on, priors on, leftovers on (priors only help together with leftovers: without leftovers they reject so much that recall drops).
+
+**Held-out rooms (109 visible GT boxes, class-agnostic matching on bird's-eye IoU):**
+
+| | Pred. | Precision@0.25 | Recall@0.25 | F1@0.25 | Matched IoU | Centre error | Long / short side error | Orientation error | Height error |
+|---|---|---|---|---|---|---|---|---|---|
+| v2 plan rectangles | 132 | 0.39 | **0.47** | 0.42 | 0.42 | 0.24 m | 30% / 20% | 5.3° | – |
+| **v3 solids** | 61 | **0.67** | 0.38 | **0.48** | **0.44** | **0.20 m** | **25% / 19%** | **1.4°** | 5 cm |
+| v3 without priors | 144 | 0.35 | 0.47 | 0.40 | 0.42 | 0.21 m | 22% / 25% | 1.4° | 5 cm |
+
+(medians over matched pairs). Priors: 35 of 194 held-out candidates clamped, 94 rejected (mostly small leftover fragments and thin slivers of partly seen objects); 39 had too few points after cleaning; 5 overlaps shrunk. Dev: F1 0.53 vs. 0.39 for v2.
+
+- Footprints are now **parallel to the walls** (1.4° vs. 5.3°) and no longer smeared along the view ray; the dollhouse shows closed boxes instead of thin shells.
+- **Negative / limits:** recall (0.38) stays below v2's (0.47): v2 scatters many rectangles and some happen to hit; v3 trades this for precision. Everything is a box (no table legs, no sofa back), and hidden faces repeat the texture of the visible side. A counter run with stove and sink often becomes one long solid. Remaining centre error (0.20 m) is partly the generator, which does not put objects exactly where the layout boxes are.
+- Figure: `results/figures/furn_plans.png` (10 held-out rooms: layout vs. v2 vs. v3 footprints from above, and the v3 dollhouse = box shell + solids). Tables: `results/tables/furn_summary.csv`, `furn_per_room.csv`, `furn_pairs.csv`, `furn_dev_sweep.csv`.
+
 ### Demo modes (v2)
 `app/app.py` now has three modes (radio button): **Quick (single view)**, **360° Room** and **Layout-first**. 360° and layout-first show the panorama, the floor plan (360° plan / exact layout plan), an **inside** viewer (camera at the room centre, look around, move up to 1 m) and a **dollhouse** viewer (ceiling removed, orbit from above), with `gr.Model3D` as the offline fallback. Only the active mode's large models sit on the GPU. Measured peaks: Quick 2.9 GB, Layout-first 4.6 GB, 360° 5.5 GB (6.8 GB reserved). One request: Quick 7–9 s, 360° 17.5 s, Layout-first 17.9 s. Tested headlessly in all three modes with switching back and forth; the `<model-viewer>` inside / dollhouse modes have not been checked by hand in a browser yet.
 
