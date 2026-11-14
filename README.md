@@ -892,6 +892,35 @@ Offline (exact ray casting, bilinear lookup, 2× supersampling), renders from th
 - Figures: `room_v4_offcentre.png` (shot | v3 | v4 from the centre | v3 | v4 0.6 m behind), `viewer_v4_inside.png`, `viewer_v4_opening.png`.
 - **Limitations:** the browser numbers are lower than the offline ones (28.4 vs 37.5 dB) because the browser's pinhole and pixel grid are not identical to ours; off-centre, disoccluded areas behind furniture still show inpainted or band texture; furniture is still blocks in the dollhouse (milestone 4).
 
+### Real furniture shapes (milestone 4 of PLAN_V4) — negative result for the shapes, positive for the relief tier
+Code: `src/objects3d.py`, `pipeline_v4.add_objects / relief_mask`, `room_v4.build_meshes(block_solids, relief)`, `textured_mesh.export_glb(extra=)` (vertex-coloured object primitive), app slider, `scripts/eval_objects.py`.
+
+**Model choice:** TripoSR (MIT, 1.56 GB) — 2–4 s per object, **2.36 GB** peak VRAM. Two fixes were needed to run it here: its compiled `torchmcubes` dependency was replaced by scikit-image marching cubes (same vertex convention), and its DINO ViT checkpoint keys were renamed for transformers 5 (weights unchanged). **Stable Fast 3D** was not usable (gated licence, no Hugging Face login on this machine, and compiled C++ extensions with no compiler installed); **Hunyuan3D-2mini** was not tried (23.5 GB repository; its texture stage needs a compiled rasterizer).
+
+**Per instance:** perspective crop centred on the instance from the 4096 panorama (the panorama has one viewpoint, so the "best view" is the centred crop; FOV 1.3× the angular extent) → mask from the panoptic instance, refined by **GrabCut** at crop resolution and holes filled → occluded hull parts **inpainted** (Telea) → feathered cut-out on grey → TripoSR (256³ marching cubes, decimated to 8 k triangles) → mapped into the room facing the camera, **render-and-compare yaw** (every 15° + the 4 wall-aligned directions, +0.02 bonus for wall-aligned) with silhouette IoU against the instance mask (closer occluders ignored), scaled into the v3 solid's box (footprint and height: rests on the floor / hangs like the solid, which v3 already made collision-free) → vertices visible from the centre take the panorama colour. **Relief tier:** instances that v3 rejected (uncertain) are kept in the dollhouse as their observed surface.
+
+**Choices on the 20 development rooms** (`objects_dev_threshold.csv`, `objects_classes_dev.csv`): the generated objects match the panorama silhouette **worse than the v3 blocks in every class** (dev means: cabinet 0.60 vs 0.74, bed 0.54 vs 0.64, counter 0.47 vs 0.68, table 0.57 vs 0.59, desk 0.40 vs 0.83; all objects 0.55 vs ~0.71). Rule-selected IoU threshold **0.7** (mean final IoU 0.71; only 15 % of dev instances keep the object) and block-only classes **bed, cabinet, counter** (`objects_selection.json`).
+
+Held-out bench (20 rooms) and the six demo rooms (`objects_summary.csv`, `objects_per_room.csv`):
+
+| | Held-out bench | Demo rooms |
+|---|---|---|
+| pieces: generated object / block / total | 3 / 58 / 61 | 3 / 34 / 37 |
+| uncertain instances shown as relief (v3: dropped) | 93 | 62 |
+| silhouette IoU from the centre, v3 → v4 | 0.657 → 0.658 | 0.640 → 0.636 |
+| full-room re-render vs panorama: PSNR v3 → v4 (v4 without relief) | 24.40 → **26.17** (24.41) | 18.24 → **19.51** (18.26) |
+| SSIM / LPIPS v3 → v4 | 0.922 → 0.931 / 0.070 → 0.063 | 0.819 → 0.854 / 0.137 → 0.118 |
+| furniture found (layout boxes, IoU ≥ 0.25) per room: v3 → with relief | 2.05 → **2.60** of 5.45 | – |
+| footprint IoU (unchanged: objects fill the v3 box) | 0.44 | – |
+| facing vs layout (wall-adjacent pieces): plan rule / objects | 0.83 (33 pairs) / 0.33 (3 pairs, same pieces: rule 0.67) | – |
+| plan symbol facing = object front | 0 / 3 | 1 / 2 |
+| objects step per room / peak VRAM | 9.6 s / 2.36 GB | 19.0 s / 2.36 GB |
+
+- **Reading:** single-view TripoSR objects from cropped, partly occluded panorama views do not fit the observed silhouettes as well as boxes fitted to the same masks, so the rule keeps almost all blocks; the whole full-room rendering gain comes from the **relief tier** (with relief removed, v4 equals v3). Facing from the generated shapes is not reliable (1 of 3 correct); the plan keeps its back-to-wall rule.
+- **App:** slider "v4 furniture objects" (0–12, default 4, largest first, ~3 s each, objects cached per prompt + seed; the 360° models are parked on the CPU while TripoSR runs); below the threshold or for the block classes the block stays; relief is always on in v4. Measured: 80.6 s cold with 4 objects (13.1 s for the objects), 40.8 s warm (cache: 3.3 s), peak 6.4 GB.
+- Figure: `results/figures/objects_dollhouse.png` (v3 vs v4 dollhouse, TripoSR inputs).
+- **Limitations:** silhouette IoU from the single panorama viewpoint is the only shape check available (no 3D ground truth for generated furniture); relief surfaces are thin shells that can look like floating fragments from above.
+
 ### Demo modes (v4)
 **360° Room** runs **v4** by default (pipeline switch v4 / v3 / v2). The top of the page is a **gallery of design shots** (hero first, then A–D, captions with the plan letters; Quick and the other modes show their single image or panorama there) next to the **floor plan with view cones**; the viewer tabs are Inside, Dollhouse (+ top view), **360° panorama** (new) and Free orbit; the panorama itself is in the Analysis section. New download: the design shots + plan as a zip. Headless test: v4 one candidate 40.7 s including the first model loads, peak 5.9 GB; v3 15.1 s; Quick 13.0 s.
 
@@ -957,6 +986,7 @@ RoomGen3D/
 │   ├── design_shots.py        # v4: level perspective design shots (hero + wall views) from the panorama
 │   ├── pano_refine.py         # v4: 4096 x 2048 panorama from refined perspective views (ESRGAN, img2img, multi-band blend)
 │   ├── room_v4.py             # v4: sharp 3D (hires shell textures, silhouette band, 3D Taubin, packed atlas, mipmaps)
+│   ├── objects3d.py           # v4: TripoSR furniture objects (crop, mask, inpaint, generate, render-and-compare)
 │   ├── pipeline_v4.py         # v4 360° Room stages (default in the demo)
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ

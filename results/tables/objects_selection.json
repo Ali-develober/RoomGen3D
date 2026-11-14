@@ -1,0 +1,9 @@
+{
+ "iou_min": 0.7,
+ "block_classes": [
+  "bed",
+  "cabinet",
+  "counter"
+ ],
+ "rule": "threshold maximising the dev mean final silhouette IoU (ties: higher); block classes: >= 3 dev instances and object IoU > 0.05 below the block on average"
+}

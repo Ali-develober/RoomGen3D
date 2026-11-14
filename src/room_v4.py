@@ -197,8 +197,10 @@ def combine_packed(parts: list[dict], atlas_w: int = 8192, pad: int = 4) -> dict
 # Whole room
 # --------------------------------------------------------------------------- #
 def build_meshes(dist: np.ndarray, hires: np.ndarray, res_v3: dict, ana: dict, id2label: dict,
-                 opts: dict | None = None) -> dict:
-    """Inside and dollhouse meshes of the v4 room from the v3 analysis (box, solids) and the 4096 panorama."""
+                 opts: dict | None = None, block_solids: list | None = None, relief: np.ndarray | None = None) -> dict:
+    """Inside and dollhouse meshes of the v4 room from the v3 analysis (box, solids) and the 4096 panorama.
+    Milestone 4: block_solids = the solids that stay blocks (default: all), relief = mask of uncertain instances
+    shown as their observed surface in the dollhouse."""
     o = {**DEFAULTS, **(opts or {})}
     box = res_v3["box"]
     shell_in = rb.build_shell(box, hires, dist, texel_m=o["texel_m"], max_tex=o["max_tex"], band_m=o["band_m"])
@@ -216,8 +218,14 @@ def build_meshes(dist: np.ndarray, hires: np.ndarray, res_v3: dict, ana: dict, i
     inst_map = ana["inst_map"]
     if fu.DEFAULT_PARAMS.get("leftovers"):
         inst_map, _ = fu.add_leftovers(ana["inst_map"], ana["instances"], ana["class_map"], id2label)
-    furn = fu.solids_part(res_v3["solids"], box, dist, inst_map, hires)
+    blocks = res_v3["solids"] if block_solids is None else block_solids
+    furn = fu.solids_part(blocks, box, dist, inst_map, hires) if blocks else {"faces": []}
     parts = [p for p in shell_d["parts"] if p["kind"] != "ceiling"] + ([furn] if len(furn["faces"]) else [])
+    if relief is not None and relief.any():
+        rp = rb.observed_part(dist, hires, box["R"], relief, stride=2)
+        if len(rp["faces"]):
+            rp["kind"] = "relief"
+            parts.append(rp)
     doll = combine_packed(parts, o["atlas_w"])
     for m in (inside, doll):
         m.update({"box": box, "camera_height": box["camera_height"]})

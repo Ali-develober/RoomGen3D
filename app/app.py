@@ -76,6 +76,7 @@ from src import design_shots as ds  # noqa: E402
 from src import equirect as eq  # noqa: E402
 from src import viewers as vw  # noqa: E402
 from src import pano_refine as pr  # noqa: E402
+from src import objects3d as o3  # noqa: E402
 from src import pipeline_360 as p3  # noqa: E402
 from src import reconstruct_3d as r3  # noqa: E402
 
@@ -90,7 +91,8 @@ BIG = {QUICK: ("sd",), ROOM360: ("alt", "dap", "m2f"), LAYOUT: ("cn",)}     # la
 V4, V3, V2 = "v4: design shots + clean box room (default)", "v3: clean box room (comparison)", "v2: previous mesh (comparison)"
 NEUTRAL_BG = "#e9e8e4"
 V4_TONE = "neutral"           # v4 viewers' tone mapping (PLAN_V4 milestone 3, scripts/viewer_check_v4.py)
-DETAIL_STRENGTH = 0.3         # v4 detail pass (results/tables/pano_refine_decision.json)        # dollhouse background (v3)
+DETAIL_STRENGTH = 0.3
+DEFAULT_OBJECTS = 4           # v4 generated furniture objects per room (PLAN_V4 milestone 4)         # v4 detail pass (results/tables/pano_refine_decision.json)        # dollhouse background (v3)
 LAYOUT_CN_SCALE, LAYOUT_CN_END = 0.75, 0.6   # layout-first: SD 2.1 panorama model + SD 2.1 depth ControlNet (milestone 7)
 VIEWER_EMPTY = ('<div style="height:540px;display:flex;align-items:center;justify-content:center;'
                 'color:#888;border:1px solid #ddd;border-radius:8px">The 3D model appears here.</div>')
@@ -213,8 +215,9 @@ def load_models(mode: str = QUICK) -> dict:
             for k in keys:
                 if k in MODELS:
                     MODELS[k] = MODELS[k].to("cpu")
-    if "i2i" in MODELS:                                  # v4 detail pass: only on the GPU while it runs
-        MODELS["i2i"] = MODELS["i2i"].to("cpu")
+    for kk in ("i2i", "triposr"):                        # v4 detail pass / objects: only on the GPU while they run
+        if kk in MODELS:
+            MODELS[kk] = MODELS[kk].to("cpu")
     torch.cuda.empty_cache()
     loaders = {"sd": lambda: g2.load_pipeline(g2.DEFAULT_LORA if g2.DEFAULT_LORA.exists() else None, DEVICE),
                "alt": lambda: gp.load_alt_pipeline(DEVICE), "dap": lambda: pdp.load_dap(DEVICE)[0],
@@ -229,7 +232,7 @@ def load_models(mode: str = QUICK) -> dict:
 
 
 def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: str = V4, candidates: float = 1,
-        detail: bool = False):
+        detail: bool = False, n_objects: float = 0):
     """One request in the chosen mode. The first output becomes the gallery: v4 returns its design shots
     (hero first), the other modes their single image / panorama. Then: the 360° panorama viewer, the panorama
     for the Analysis section and the design-shot zip (v4)."""
@@ -242,7 +245,7 @@ def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: 
             out = [*run_360(prompt, seed, steps, cfg), None, None]
         else:
             out = list(run_360_v3(prompt, seed, steps, cfg, int(candidates), v4=(version != V3), extra=extra,
-                                       detail=bool(detail)))
+                                       detail=bool(detail), n_objects=int(n_objects)))
     elif mode == LAYOUT:
         out = [*run_layout(prompt, seed, steps, cfg), None, None]
     else:
@@ -353,7 +356,7 @@ def run_360(prompt: str, seed: float, steps: float, cfg: float):
 
 
 def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1, v4: bool = True,
-               extra: dict | None = None, detail: bool = False):
+               extra: dict | None = None, detail: bool = False, n_objects: int = 0):
     """360° Room, v3 (PLAN_V3): k candidate panoramas (one-room prompt), the most box-like one kept ->
     Real-ESRGAN -> panoptic instances -> room box shell + solid furniture -> architectural plan.
     v4 (PLAN_V4): the same room plus design shots (gallery, view cones on the plan, panorama sphere)."""
@@ -388,9 +391,21 @@ def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1, v
             if detail:
                 MODELS["i2i"] = MODELS["i2i"].to("cpu")
                 load_models(ROOM360)
-    with watch.stage("room"):
-        res = P.build(dist, tex, ana, id2label, hires=hires) if v4 else P.build(dist, tex, ana, id2label)
     out_dir = OUT / f"room360{'v4' if v4 else 'v3'}_{pl.slug(prompt, seed)}_k{k}_st{steps}_cfg{cfg:g}"
+    with watch.stage("room"):
+        if v4 and n_objects > 0:     # PLAN_V4 milestone 4: TripoSR objects; park the 360° models meanwhile
+            for kk in BIG[ROOM360]:
+                MODELS[kk] = MODELS[kk].to("cpu")
+            torch.cuda.empty_cache()
+            MODELS["triposr"] = o3.load_triposr(DEVICE) if "triposr" not in MODELS else MODELS["triposr"].to(DEVICE)
+            res = P.build(dist, tex, ana, id2label, hires=hires, triposr=MODELS["triposr"], device=DEVICE,
+                          max_objects=n_objects, cache_dir=out_dir / "objects")      # cached per prompt + seed
+            MODELS["triposr"] = MODELS["triposr"].to("cpu")
+            torch.cuda.empty_cache()
+        elif v4:
+            res = P.build(dist, tex, ana, id2label, hires=hires)
+        else:
+            res = P.build(dist, tex, ana, id2label)
     with watch.stage("export"):
         files = (p4v.save(res, out_dir, title=prompt, pano=tex if hires is None else hires) if v4
                  else p3v.save(res, out_dir, title=prompt))
@@ -420,6 +435,11 @@ def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1, v
     if v4:
         shots_txt += (f" Panorama sharpened to 4096 × 2048 in {s['sharpen']:.1f} s ("
                       + ("img2img detail pass with the MMIS LoRA + " if detail else "") + "Real-ESRGAN per view).")
+        if res.get("objects"):
+            ob = res["objects"]
+            shots_txt += (f"\n\nFurniture in the dollhouse: {len(ob['objects'])} generated 3D object(s) (TripoSR, "
+                          f"{ob['seconds']:.1f} s; " + ", ".join(sorted({x['solid']['label'] for x in ob['objects']}) or ["none"])
+                          + f"), {len(ob['blocks'])} block(s), {ob['n_relief']} uncertain piece(s) shown as relief.")
     info = (f"**360° room ({'v4' if v4 else 'v3'}) done in {sum(s.values()):.1f} s** ({k} candidate(s) {s['candidates']:.1f} s, "
             f"super-resolution {s['super_res']:.1f} s, instances {s['instances']:.1f} s, room {s['room']:.1f} s, "
             f"export {s['export']:.1f} s). Peak VRAM {peak:.1f} GB.\n\n"
@@ -499,6 +519,9 @@ def build() -> gr.Blocks:
                     version = gr.Radio([V4, V3, V2], value=V4, label="Pipeline")
                     candidates = gr.Slider(1, 4, value=1, step=1, label="Candidates (v3): panoramas generated, "
                                            "the most box-like one is kept (1 = fast)")
+                    n_objects = gr.Slider(0, 12, value=DEFAULT_OBJECTS, step=1,
+                                          label="v4 furniture objects: how many pieces (largest first) are generated "
+                                                "as real 3D shapes with TripoSR (~3 s each; 0 = v3 blocks)")
                     detail = gr.Checkbox(value=False, label="v4 detail pass: img2img (SD 1.5 + MMIS LoRA, strength 0.3) "
                                          "on the 26 views before upscaling (+~75 s; selected on the dev rooms, "
                                          "see README)")
@@ -541,7 +564,7 @@ def build() -> gr.Blocks:
                         edges = gr.Image(label="Canny edges", type="numpy", height=260)
                         seg = gr.Image(label="Segmentation", type="numpy", height=260)
                     gr.Markdown("Segmentation colours: blue = wall, orange = floor, green = ceiling, pink = furniture.")
-        btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates, detail],
+        btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates, detail, n_objects],
                   [image, plan, viewer, doll, model3d, depth, edges, seg, dl_image, dl_plan, dl_mesh, dl_cloud, info,
                    dl_dxf, topview, pano_view, pano_img, dl_shots],
                   concurrency_limit=1)

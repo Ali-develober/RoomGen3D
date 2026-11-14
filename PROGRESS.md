@@ -304,3 +304,13 @@ Restart rule: read this section, continue with the first milestone not marked DO
 **Failed / limitations**: depth smoothing / radial Taubin do not change silhouettes (no effect on jaggedness); bilateral / NL-means denoising worsen LPIPS 2-4x (not used); grain was sampling, not image noise; anisotropic filtering not settable in model-viewer; first run stopped by the owner at room 3/16 and rerun from scratch.
 
 **Next**: Milestone 4 — real furniture shapes (TripoSR code + weights downloaded; `src/objects3d.py` drafted: crop / mask / inpaint / generate / render-and-compare yaw / projective colours / block fallback; GLB vertex-colour primitive added).
+
+## 2026-11-14 — V4 Milestone 4: real furniture shapes — DONE (negative result for the shapes)
+
+**Built**: `src/objects3d.py` (TripoSR loader with skimage marching cubes + transformers-5 key remap; instance crop, GrabCut mask refinement, hole fill, occlusion inpainting; render-and-compare yaw; projective colours; decimation; block fallback; cache per instance); `export_glb(extra=)` vertex-coloured object primitive; `pipeline_v4.add_objects`, relief tier (`relief_mask`, always on in v4); `room_v4.build_meshes(block_solids, relief)`; app slider (0-12, default 4, cached per prompt + seed). `scripts/eval_objects.py` (resumable).
+
+**Results**: TripoSR 2-4 s / object, 2.36 GB. Dev: objects worse than blocks in silhouette IoU in every class (0.55 vs ~0.71) → threshold 0.7, block classes bed / cabinet / counter. Held-out: 3 of 61 pieces as objects, silhouette IoU 0.657 → 0.658; full-room render PSNR 24.40 → 26.17, LPIPS 0.070 → 0.063 — all from the relief tier (without relief 24.41); furniture found 2.05 → 2.60 per room with relief; facing from objects 1/3 vs rule 0.83. App: 80.6 s cold / 40.8 s warm with 4 objects, 6.4 GB.
+
+**Failed / limitations**: SF3D not usable (gated + compiled extensions, no compiler, no HF login), Hunyuan3D-2mini not tried (23.5 GB, compiled rasterizer); generated shapes do not beat blocks; run crashed once on a room with no solids (fixed, resumed); first dollhouse figure camera upside down (frame B Y is down; fixed, report rerun). Intermediate object caches in outputs/objects_eval kept for now (bench 4096 panoramas reused by milestone 5).
+
+**Next**: Milestone 5 — remaining v3 weaknesses: texture synthesis for hidden surfaces (`room_box` "tile" / "patch_base" / "tile_base" fills drafted), open sides on the plan + candidate default 3, doors / windows on refined perspective views.
