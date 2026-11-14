@@ -1,0 +1,41 @@
+id,room,layout_seed,style,prompt,gen_seed,split
+bedroom_L1,bedroom,1,coastal,a coastal style bedroom,1010,dev
+bedroom_L2,bedroom,2,rustic,a rustic style bedroom,1020,dev
+bedroom_L3,bedroom,3,mid-century modern,a mid-century modern style bedroom,1030,dev
+bedroom_L4,bedroom,4,art deco,an art deco style bedroom,1040,dev
+bedroom_L5,bedroom,5,mediterranean,a mediterranean style bedroom,1050,test
+bedroom_L6,bedroom,6,scandinavian,a scandinavian style bedroom,1060,test
+bedroom_L7,bedroom,7,industrial,an industrial style bedroom,1070,test
+bedroom_L8,bedroom,8,contemporary,a contemporary style bedroom,1080,test
+living_room_L1,living room,1,art deco,an art deco style living room,1011,dev
+living_room_L2,living room,2,mediterranean,a mediterranean style living room,1021,dev
+living_room_L3,living room,3,scandinavian,a scandinavian style living room,1031,dev
+living_room_L4,living room,4,industrial,an industrial style living room,1041,dev
+living_room_L5,living room,5,contemporary,a contemporary style living room,1051,test
+living_room_L6,living room,6,coastal,a coastal style living room,1061,test
+living_room_L7,living room,7,rustic,a rustic style living room,1071,test
+living_room_L8,living room,8,mid-century modern,a mid-century modern style living room,1081,test
+kitchen_L1,kitchen,1,industrial,an industrial style kitchen,1012,dev
+kitchen_L2,kitchen,2,contemporary,a contemporary style kitchen,1022,dev
+kitchen_L3,kitchen,3,coastal,a coastal style kitchen,1032,dev
+kitchen_L4,kitchen,4,rustic,a rustic style kitchen,1042,dev
+kitchen_L5,kitchen,5,mid-century modern,a mid-century modern style kitchen,1052,test
+kitchen_L6,kitchen,6,art deco,an art deco style kitchen,1062,test
+kitchen_L7,kitchen,7,mediterranean,a mediterranean style kitchen,1072,test
+kitchen_L8,kitchen,8,scandinavian,a scandinavian style kitchen,1082,test
+dining_room_L1,dining room,1,rustic,a rustic style dining room,1013,dev
+dining_room_L2,dining room,2,mid-century modern,a mid-century modern style dining room,1023,dev
+dining_room_L3,dining room,3,art deco,an art deco style dining room,1033,dev
+dining_room_L4,dining room,4,mediterranean,a mediterranean style dining room,1043,dev
+dining_room_L5,dining room,5,scandinavian,a scandinavian style dining room,1053,test
+dining_room_L6,dining room,6,industrial,an industrial style dining room,1063,test
+dining_room_L7,dining room,7,contemporary,a contemporary style dining room,1073,test
+dining_room_L8,dining room,8,coastal,a coastal style dining room,1083,test
+bathroom_L1,bathroom,1,mediterranean,a mediterranean style bathroom,1014,dev
+bathroom_L2,bathroom,2,scandinavian,a scandinavian style bathroom,1024,dev
+bathroom_L3,bathroom,3,industrial,an industrial style bathroom,1034,dev
+bathroom_L4,bathroom,4,contemporary,a contemporary style bathroom,1044,dev
+bathroom_L5,bathroom,5,coastal,a coastal style bathroom,1054,test
+bathroom_L6,bathroom,6,rustic,a rustic style bathroom,1064,test
+bathroom_L7,bathroom,7,mid-century modern,a mid-century modern style bathroom,1074,test
+bathroom_L8,bathroom,8,art deco,an art deco style bathroom,1084,test

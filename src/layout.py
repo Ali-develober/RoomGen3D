@@ -264,6 +264,12 @@ def room_type(prompt: str) -> str:
 # --------------------------------------------------------------------------- #
 def render(layout: dict, w: int = 1024, h: int = 512) -> tuple[np.ndarray, np.ndarray]:
     """Equirectangular distance (m) and ADE20K label map of the layout seen from its camera."""
+    dist, label, _ = render_full(layout, w, h)
+    return dist, label
+
+
+def render_full(layout: dict, w: int = 1024, h: int = 512) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """As render(), plus the instance map: index of the furniture box seen at each pixel (-1 = room shell)."""
     W, D, H = layout["W"], layout["D"], layout["H"]
     C = np.array(layout["camera"])
     dc = eq.pixel_dirs(w, h).reshape(-1, 3)
@@ -283,13 +289,14 @@ def render(layout: dict, w: int = 1024, h: int = 512) -> tuple[np.ndarray, np.nd
         along = P[:, 0] if wall in ("N", "S") else P[:, 2]
         m = on & (np.abs(along - o["c"]) <= o["w"] / 2) & (P[:, 1] >= o["y0"]) & (P[:, 1] <= o["y1"])
         label[m] = ADE["door"] if o["kind"] == "door" else ADE["windowpane"]
-    for b in layout["boxes"]:                                     # furniture: entry distance of each box
+    inst = np.full(len(d), -1, np.int32)
+    for bi, b in enumerate(layout["boxes"]):                      # furniture: entry distance of each box
         blo, bhi = np.array([b["x0"], 0.0, b["z0"]]), np.array([b["x1"], b["h"], b["z1"]])
         t1, t2 = (blo - C) * inv, (bhi - C) * inv
         tn, tf = np.minimum(t1, t2).max(1), np.maximum(t1, t2).min(1)
         hit = (tf >= np.maximum(tn, 0)) & (tn > 0) & (tn < dist)
-        dist[hit], label[hit] = tn[hit], b["ade"]
-    return dist.reshape(h, w).astype(np.float32), label.reshape(h, w)
+        dist[hit], label[hit], inst[hit] = tn[hit], b["ade"], bi
+    return dist.reshape(h, w).astype(np.float32), label.reshape(h, w), inst.reshape(h, w)
 
 
 def control_image(dist: np.ndarray) -> np.ndarray:

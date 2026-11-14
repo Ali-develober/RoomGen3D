@@ -167,3 +167,23 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 - HF cache models from other projects (dated before this project started on 2026-11-10): `FatimahEmadEldin/EXP-001_arabertv02_wojood_flat_baseline` 0.54 GB, `timm/convnext_base.fb_in22k_ft_in1k` 0.35 GB, `timm/vit_base_patch16_224.augreg2_in21k_ft_in1k` 0.35 GB, `timm/convnext_tiny.fb_in22k_ft_in1k` 0.11 GB, `timm/vit_small_patch16_224.augreg_in21k_ft_in1k` 0.09 GB — 1.44 GB total. Remove with `huggingface-cli delete-cache` if no longer needed.
 - `Intel/dpt-hybrid-midas` (0.98 GB) is only used by the old depth-model comparison (`scripts/eval_depth.py`); kept because code still loads it.
 - The ~22 GB drop since project start is fully explained by the items above (project 22.5 GB + HF 5.8 GB + pip 3.9 GB); nothing large outside these locations was scanned.
+
+### PLAN_V3 downloads (budget 8 GB)
+
+| Date | What | Size |
+|---|---|---|
+| 2026-11-14 | `facebook/mask2former-swin-large-ade-panoptic` (config + model.safetensors only) → checkpoints/mask2former_ade_panoptic | 0.87 GB |
+
+## 2026-11-14 — Test bench for PLAN_V3 — DONE
+
+- `scripts/make_bench.py`: 40 layout-first rooms (5 types × layout seeds 1–8), dev = seeds 1–4, held-out = seeds 5–8; per room GT distance / classes / furniture instances (`layout.render_full`, new), ControlNet panorama, Real-ESRGAN texture, DAP distance, v2 SegFormer labels in `outputs/bench/<id>/`. 13 s per room. Index `results/tables/bench_v3_rooms.csv`.
+
+## 2026-11-14 — V3 Milestone 1: instance segmentation on panoramas — DONE
+
+**Built**: `src/instances.py` (Mask2Former panoptic on 13 views, projection to the panorama, cross-view union-find merging within furniture families, v2 baseline, hybrid class map), `scripts/eval_instances.py` (dev sweep, held-out report, figure).
+
+**Results (held-out, 109 GT boxes)**: instance F1 (any class) 0.17 → **0.35**, precision 0.14 → 0.44, recall 0.21 → 0.28; same-family F1 0.05 → 0.12; seam objects found 1/12 → 3/12; mIoU 0.585 → 0.589, furniture IoU 0.46 → 0.52 (hybrid class map). Tables `inst_*.csv`, figure `inst_examples.png`, README "Instance segmentation on panoramas".
+
+**Failed / limitations**: the pure panoptic class map labels the up-view ceiling as floor (dev ceiling IoU 0.16) → hybrid map (SegFormer surfaces + panoptic furniture). Recall stays low (0.28) because the generator often does not draw what the layout says; doors/windows ≈ 0 IoU for both. The sweep was flat (all segment scores > 0.7). Swin final layernorm reported "missing" by transformers 5 (unused by Mask2Former's backbone; outputs are confident and correct).
+
+**Next**: Milestone 2 — room box regularization (`src/room_box.py`, `scripts/eval_room_box.py` already drafted and smoke-tested on 2 rooms).

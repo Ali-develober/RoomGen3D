@@ -582,6 +582,28 @@ Code: `src/layout.py`, `generate_pano.generate_pano_controlled`, `scripts/eval_l
 - **Verdict:** adherence is good, so layout-first works as a mode for exact geometry and exact plans. It does not replace milestone 4 as the default 360° mode, which gives better-looking rooms. Both are in the app.
 - Timing: layout 0.3 s, panorama 13.1 s (4.3 GB peak VRAM), mesh 2.1 s. Tables: `results/tables/layout_adherence.csv`, `layout_mesh.csv`, `layout_plan_check.csv`, `layout_per_room.csv`. Figure: `results/figures/layout_first.png` (layout | depth condition | conditioned panorama | same seed without ControlNet | plan recovered from the panorama | dollhouse on the exact geometry).
 
+### PLAN_V3 test bench (layout-first rooms with ground truth)
+Code: `scripts/make_bench.py`, `layout.render_full`. All PLAN_V3 milestones are measured on the same **40 layout-conditioned panoramas**: 5 room types × layout seeds 1–8, one style per room (8 styles). Each room has its exact layout (room box, furniture boxes, door, windows, camera), the true equirectangular distance, class and **furniture-instance** maps, the generated panorama (ControlNet depth + 360° LoRA, milestone-6 settings), the Real-ESRGAN texture, the DAP distance and the v2 SegFormer labels. **Seeds 1–4 (20 rooms) are the development set** (every choice is tuned there), **seeds 5–8 (20 rooms) the held-out set** (reported). The generated images follow the layout only approximately (milestone 6: furniture IoU 0.45), so all scores against the layout are lower bounds; v2 and v3 always run on identical panoramas. Index: `results/tables/bench_v3_rooms.csv`. Building the bench: 13 s per room.
+
+### Instance segmentation on panoramas (milestone 1 of PLAN_V3)
+Code: `src/instances.py`, `scripts/eval_instances.py`.
+
+- **v2:** SegFormer on 14 views → one class map → connected components per furniture class. Touching objects of one class become one instance, an occluder splits one object in two, and an object crossing the panorama seam is always cut (connected components do not wrap).
+- **v3:** 13 perspective views (100° FOV; 8 around the horizon at −15°, 4 looking down at −55°, 1 up) → **Mask2Former Swin-L ADE20K panoptic** (`facebook/mask2former-swin-large-ade-panoptic`, same 150 class ids as SegFormer, 0.6 GB VRAM, ~1 s per view) → every view's segment map projected back onto the panorama (each pixel from the view that sees it most centrally) → **cross-view merging**: inside the area two views share, the IoU of every pair of furniture segments is read from one contingency table; segments of the same furniture family with IoU ≥ 0.3 are joined (union-find). Score threshold and merge IoU were swept on the dev rooms (results/tables/inst_dev_sweep.csv; nearly flat, all segments score > 0.7).
+- **Class map:** the pure panoptic class map was worse for room surfaces (dev ceiling IoU 0.16 vs. 0.58): Mask2Former calls the ceiling of the upward view "floor". The v3 class map is therefore a **hybrid**: walls / floor / ceiling / openings from SegFormer, furniture from the panoptic instances (`instances.hybrid_class_map`). This was decided on the dev numbers.
+
+**Held-out rooms (20 rooms, 109 visible GT furniture boxes; IoU ≥ 0.5 matching):**
+
+| | Pred. instances | Precision (any class) | Recall (any) | F1 (any) | F1 (same family) | Seam objects found | mIoU (wall/floor/ceiling/furniture) | Furniture IoU |
+|---|---|---|---|---|---|---|---|---|
+| v2 SegFormer + components | 165 | 0.14 | 0.21 | 0.17 | 0.05 | 1 / 12 | 0.585 | 0.46 |
+| **v3 panoptic, merged** | 70 | **0.44** | **0.28** | **0.35** | **0.12** | **3 / 12** | **0.589** | **0.52** |
+| v3 panoptic class map only | 70 | 0.44 | 0.28 | 0.35 | 0.12 | 3 / 12 | 0.452 | 0.36 |
+
+- v3 doubles the instance F1 (dev: 0.37 vs. 0.14) mainly by **precision**: v2 produces 2.4 predictions per GT object (ceiling and floor patches labelled as furniture, objects split into fragments), v3 one clean mask per object. Per class (held-out): chairs 0.35 vs. 0.24 recall, wardrobes 0.50 vs. 0.00, toilets 0.50 vs. 0.00, beds equal (0.75).
+- **What stays low and why:** recall 0.28. The generated rooms often do not contain what the layout says (a kitchen "counter run" becomes one block; armchairs and plants are drawn as something else or not at all), so "same family" scores (0.12) mostly measure the generator, not the segmenter. Doors and windows are almost never recognisable in these plain images (IoU ≈ 0 for both).
+- Figure: `results/figures/inst_examples.png` (held-out: panorama | GT boxes | v2 | v3). Tables: `results/tables/inst_summary.csv`, `inst_by_class_test.csv`, `inst_per_room.csv`, `inst_dev_sweep.csv`.
+
 ### Demo modes (v2)
 `app/app.py` now has three modes (radio button): **Quick (single view)**, **360° Room** and **Layout-first**. 360° and layout-first show the panorama, the floor plan (360° plan / exact layout plan), an **inside** viewer (camera at the room centre, look around, move up to 1 m) and a **dollhouse** viewer (ceiling removed, orbit from above), with `gr.Model3D` as the offline fallback. Only the active mode's large models sit on the GPU. Measured peaks: Quick 2.9 GB, Layout-first 4.6 GB, 360° 5.5 GB (6.8 GB reserved). One request: Quick 7–9 s, 360° 17.5 s, Layout-first 17.9 s. Tested headlessly in all three modes with switching back and forth; the `<model-viewer>` inside / dollhouse modes have not been checked by hand in a browser yet.
 
