@@ -11,7 +11,9 @@ Read this first after a restart. Each entry: what was built, results, what faile
 | 2026-11-14 | DAP code + weights (model.pth) from `Insta360-Research/DAP-weights` → checkpoints/dap | 1.46 GB |
 | 2026-11-14 | SD 2.1-base panorama model (`archerfmy0831/sd-t2i-360panoimage`, sd-base: unet, text encoder, vae, tokenizer; no safety checker, no SR parts) → checkpoints/pano_sd_base | 5.16 GB |
 
-**Total so far: 6.84 GB of 12 GB.** (Local conversion, not a download: fp16 safetensors copy of the SD 2.1 panorama model in checkpoints/pano_sd_base/sd-base-fp16, 2.6 GB.) pip (venv only): einops 0.8.2, termcolor 3.3.0 (needed by the DAP code).
+| 2026-11-14 | ControlNet depth SD 1.5 (`lllyasviel/control_v11f1p_sd15_depth`, config + fp16 safetensors) → checkpoints/controlnet_depth | 0.72 GB |
+
+**Total: 7.56 GB of 12 GB.** (Local conversion, not a download: fp16 safetensors copy of the SD 2.1 panorama model in checkpoints/pano_sd_base/sd-base-fp16, 2.6 GB.) pip (venv only): einops 0.8.2, termcolor 3.3.0 (needed by the DAP code).
 
 ---
 
@@ -103,4 +105,27 @@ Gravity from predicted depth within 1.8° (median) of GT; floor plane found in ~
 
 **Failed / limitations**: only 0–2 sides per room backed by a detected wall line (wardrobes / shelving not labelled as wall); rectangles only; the rule was chosen on the same 6 rooms it is reported on.
 
-**Next:** Milestone 6 — layout-first experiment (`src/layout.py`: parametric layouts, equirectangular layout depth, ControlNet depth for SD 1.5 + pano LoRA, projection onto the known geometry, adherence metrics). Needs the ControlNet depth download (`lllyasviel/control_v11f1p_sd15_depth`, ~0.7 GB fp16).
+**Next:** Milestone 6 (below).
+
+---
+
+## 2026-11-14 — Milestone 6: layout first (research experiment) — DONE
+
+**Built**
+- `src/layout.py`: seeded parametric layouts for bedroom / living room / kitchen / dining room / bathroom (size ranges, door + clearance, windows, furniture boxes by placement rules, no overlaps), camera at the free spot nearest the centre (1.4 m), exact equirectangular distance + ADE20K label rendering, ControlNet condition image, layout → floor-plan dict (drawn with floorplan.py), JSON.
+- `src/generate_pano.py`: `load_controlnet_pipeline` (SD 1.5 + ControlNet depth fp16 + pano LoRA), `generate_pano_controlled` (circular padding in UNet, ControlNet and VAE; scale 0 = baseline).
+- `scripts/eval_layout.py`: 12 rooms (6 demo prompts × 2 layouts); adherence (DAP depth vs. layout, SegFormer vs. layout labels), ground-truth check of the 360° plan pipeline, exact-geometry mesh vs. milestone 4, CLIP.
+- `app/app.py`: third mode "Layout-first" (layout from the room type in the prompt, seed = layout); generalized model parking (only the active mode's large models on the GPU). Headless test of all three modes with switching: peaks Quick 2.9 / Layout-first 4.6 / 360° 5.5 GB.
+
+**Results**: conditioned panoramas follow the layout: depth AbsRel 0.062 as predicted (0.227 without ControlNet), δ<1.25 0.99, mIoU 0.49 (0.28), furniture IoU 0.45 (0.07). 360° plan pipeline vs. true layout: area error median 8%, mean |err| 12%, sides 6%; DAP scale correct (ratio 0.98, camera 1.47 m vs. 1.40 m). Exact-geometry mesh: empty 0.02% inside, 5.9% dollhouse (milestone 4: 0.4% / 27.6%). Cost: CLIP 21.2 → 18.6, box-shaped furniture, plain styles. Kept as a separate mode; 360° stays the default.
+
+**Failed / limitations**: image quality and style; bathrooms (area error 26–42%); SD 1.5 base (no SD 2.1 depth ControlNet tried, to stay within the plan).
+
+---
+
+## 2026-11-14 — Final — DONE
+
+- App modes that work: Quick (single view), 360° Room, Layout-first (`app/app.py`).
+- README: new pipeline diagram (three modes), sections for milestones 1–6 with all tables and figures, objectives 6–8 added with status, limitations updated.
+- Everything committed and pushed. Downloads 7.56 GB of the 12 GB budget.
+- Not done (on purpose / open): the final course notebook (waits for the owner's review, per the plan); the `<model-viewer>` inside / dollhouse modes were tested headlessly but not checked by hand in a browser; the app is not deployed. The older untracked `*_smoke` result files and the modified `ARTI308_Demo.ipynb` in the working tree were left untouched (not mine to commit).

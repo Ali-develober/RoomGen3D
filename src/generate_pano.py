@@ -167,6 +167,50 @@ def generate_pano(pipe, room: str, seed: int, mmis_weight: float = 0.0, circular
 
 
 # --------------------------------------------------------------------------- #
+# Layout-conditioned panoramas (milestone 6): ControlNet depth for SD 1.5 + panorama LoRA
+# --------------------------------------------------------------------------- #
+CONTROLNET_DEPTH = ROOT / "checkpoints" / "controlnet_depth"     # lllyasviel/control_v11f1p_sd15_depth (fp16)
+
+
+def load_controlnet_pipeline(device, mmis_lora: str | Path | None = None):
+    """SD v1.5 + ControlNet depth + the panorama LoRA (and optionally the MMIS LoRA), fp16, DDIM."""
+    from diffusers import ControlNetModel, DDIMScheduler, StableDiffusionControlNetPipeline
+    cn = ControlNetModel.from_pretrained(str(CONTROLNET_DEPTH), dtype=torch.float16, variant="fp16")
+    pipe = StableDiffusionControlNetPipeline.from_pretrained(BASE_MODEL, controlnet=cn, dtype=torch.float16,
+                                                             variant="fp16", safety_checker=None,
+                                                             requires_safety_checker=False)
+    pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
+    pipe.load_lora_weights(str(PANO_LORA.parent), weight_name=PANO_LORA.name, adapter_name="pano")
+    if mmis_lora is not None:
+        pipe.load_lora_weights(str(mmis_lora), adapter_name="mmis")
+    pipe.set_progress_bar_config(disable=True)
+    pipe = pipe.to(device)
+    set_weights(pipe, 0.0)
+    return pipe
+
+
+@torch.inference_mode()
+def generate_pano_controlled(pipe, room: str, seed: int, control: np.ndarray, scale: float = 1.0,
+                             mmis_weight: float = 0.0, steps: int = PANO_STEPS, guidance: float = PANO_GUIDANCE) -> np.ndarray:
+    """Panorama that follows a depth condition (control: H x W x 3 uint8, near = white).
+    scale = 0 gives the unconditioned panorama of the same pipeline and seed (the baseline)."""
+    from PIL import Image
+    install_circular(pipe.unet, pipe.vae, pipe.controlnet)
+    set_weights(pipe, mmis_weight)
+    set_circular(True, pipe.unet, pipe.controlnet)
+    h, w = control.shape[:2]
+    gen = torch.Generator(pipe.device).manual_seed(int(seed))
+    lat = pipe(pano_prompt(room), image=Image.fromarray(control), negative_prompt=PANO_NEGATIVE,
+               num_inference_steps=int(steps), guidance_scale=float(guidance), width=w, height=h,
+               controlnet_conditioning_scale=float(scale), generator=gen, output_type="latent").images
+    set_circular(True, pipe.vae)
+    img = pipe.vae.decode(lat / pipe.vae.config.scaling_factor, return_dict=False)[0]
+    set_circular(False, pipe.unet, pipe.vae, pipe.controlnet)
+    img = (img.float().clamp(-1, 1) + 1) / 2
+    return (img[0].permute(1, 2, 0).cpu().numpy() * 255).round().astype(np.uint8)
+
+
+# --------------------------------------------------------------------------- #
 # Super-resolution
 # --------------------------------------------------------------------------- #
 class _RDB(nn.Module):

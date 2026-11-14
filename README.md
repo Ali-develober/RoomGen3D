@@ -57,6 +57,34 @@ Text Prompt
 [8] Interface ───────── Gradio: 2D image + floor plan + interactive 3D viewer + downloads (.png/.svg/.ply/.glb)
 ```
 
+This is the **Quick mode** (one perspective image: a 3D relief of what the camera saw). Version 2 (PLAN_V2.md) adds two modes that build the **whole room**:
+
+```
+360° Room mode                                         Layout-first mode
+──────────────                                         ─────────────────
+Text prompt                                            Text prompt (room type + style) + seed
+   │                                                      │
+[1] 360° panorama: SD 2.1 panorama model,              [1] Parametric layout: room size, furniture boxes by
+    circular padding (seamless wrap), 1024×512              placement rules → dimensioned floor plan (exact)
+   │                                                      │
+[2] Real-ESRGAN ×2 (wrap-padded tiles) → 2048×1024     [2] Layout rendered from the room centre →
+   │                                                        equirectangular depth + semantic labels
+[3] Depth: DAP + roll-and-blend wrap fix                  │
+    (metric distance map)                              [3] SD 1.5 + ControlNet depth + 360° LoRA,
+   │                                                        circular padding → panorama that follows the layout
+[4] Segmentation: SegFormer on 14 perspective views,      │
+    labels projected back                              [4] Real-ESRGAN ×2
+   │                                                      │
+[5] Full-room mesh: gravity alignment, wrap-around     [5] Mesh on the EXACT layout geometry (same mesh code),
+    grid + pole caps, depth cuts, disocclusion band,        dollhouse; floor plan = the layout
+    room box; dollhouse variant
+   │
+[6] 360° floor plan: closed room, walls, doors,
+    windows, furniture, area
+   │
+[7] App: panorama + plan + inside / dollhouse viewers
+```
+
 ---
 
 ## 4. Image-Processing Techniques (Course Concepts)
@@ -523,9 +551,48 @@ The floor-plan code of milestone 1 runs unchanged on the spherical point cloud o
 - **Only 0–2 sides per room are backed by a detected wall line** (inferred: 2–4). Generated rooms are full of wardrobes, shelving and curtains, which SegFormer does not label as wall, so most sides come from the floor extent. Sizes also carry the depth scale (DAP; no ground truth here).
 - Tables: `results/tables/floorplan_360.csv` (all three rules, all checks). Figures: `results/figures/floorplan_360_overview.png` (panorama | plan | dollhouse for all rooms) and one figure per room, `results/figures/floorplan_360_<room>.png` (plan next to the dollhouse). PNG and SVG plans per room: `outputs/room360/<room>/floorplan.png / .svg`.
 
+### Layout First (milestone 6 of PLAN_V2, research experiment)
+Code: `src/layout.py`, `generate_pano.generate_pano_controlled`, `scripts/eval_layout.py`.
+
+**Idea:** like an architect, decide the plan first, then make the image obey it, so the 3D geometry is exact instead of estimated.
+
+1. **Parametric layout** (`layout.generate_layout`, seeded): room size from realistic ranges per room type (e.g. bedroom 3.2–4.5 × 3.5–5.0 m, bathroom 2.2–3.0 × 2.4–3.5 m, ceiling 2.5–3.1 m), one door with 1 m clearance in front of it, one or two windows. Furniture are boxes placed by rules: bed against a wall with a nightstand on each side, wardrobe on another wall, desk with a chair in front; sofa facing the TV unit with the coffee table between them; a counter run with stove and sink, fridge, island if the room is wide enough; dining table in the middle with chairs around it, sideboard; bathtub, toilet and vanity against walls. Nothing may overlap (8 cm gap) or block the door. The camera is the free spot nearest the room centre, 1.4 m high. Output: JSON and a dimensioned plan.
+2. **Rendering:** exact ray–box intersection from the camera gives an equirectangular distance map and an ADE20K label map (wall, floor, ceiling, door, window, furniture classes).
+3. **Generation:** SD 1.5 + ControlNet depth (`lllyasviel/control_v11f1p_sd15_depth`) + the 360° LoRA, circular padding also in the ControlNet, conditioned on the inverse layout depth. (Our MMIS LoRA is left out: milestone 2 showed it does not help in panorama mode.)
+4. **3D:** the panorama (Real-ESRGAN texture) is projected onto the **known geometry**: the room mesh of milestone 4 built on the layout distance and labels instead of estimated depth.
+5. **Adherence:** DAP depth of the generated panorama vs. the layout depth, and SegFormer labels vs. the layout labels. Baseline: the same pipeline and seed with the ControlNet switched off.
+
+**Evaluation:** the six demo prompts × two layouts = 12 rooms.
+
+| Panorama | Depth AbsRel vs. layout (as predicted / median-scaled) | δ<1.25 (as predicted) | mIoU (wall / floor / ceiling / furniture) | CLIP (crops) |
+|---|---|---|---|---|
+| **Layout-conditioned (ControlNet)** | **0.062 / 0.033** | **0.989** | **0.49** (0.48 / 0.60 / 0.42 / 0.45) | 18.6 |
+| Same seed, no ControlNet | 0.227 / 0.203 | 0.678 | 0.28 (0.28 / 0.40 / 0.37 / 0.07) | 21.2 |
+| *Milestone 2, selected SD 2.1 generator (other prompts)* | – | – | – | *22.4* |
+
+| 3D mesh (empty share) | Inside, centre | Inside, 1 m off-centre | Dollhouse |
+|---|---|---|---|
+| **Layout-first (exact geometry)** | **0.02%** | **0.02%** | **5.9%** |
+| Milestone 4 (estimated geometry, same prompts) | 0.4% | 0.7% | 27.6% |
+
+- **The images follow the layout closely.** The depth that DAP estimates from the generated panorama matches the layout with AbsRel 0.062, without any scale fitting (DAP's scale is right: median ratio 0.98, camera height 1.47 m vs. the true 1.40 m). Without the ControlNet the same seed gives AbsRel 0.227. Furniture lands where the boxes are (furniture IoU 0.45 vs. 0.07).
+- **Ground truth for the plan pipeline.** Because the true room is known, this is the one place where the 360° floor-plan pipeline of milestones 3 + 5 (DAP + SegFormer + floor plan) can be checked: on the layout panoramas it recovers the room area with a median error of 8% (mean |error| 12%) and the side lengths within 6% on average. The bathrooms are the weak case (26% and 42% area error): small rooms where the camera is close to the walls.
+- **The 3D is exact by construction** and has almost no holes: 0.02% empty from inside, 5.9% from the dollhouse views (milestone 4: 27.6%), because walls, floor and furniture are complete boxes.
+- **The cost is image quality and text alignment** (negative side). CLIP falls from 21.2 to 18.6. Box-shaped conditions make box-shaped furniture (beds and tables become plain blocks), and the style words matter less: rooms look plain and similar. The SD 1.5 + 360 LoRA base is also weaker than the SD 2.1 panorama model selected in milestone 2 (no SD 2.1 depth ControlNet was tried, to stay within the plan).
+- **Verdict:** adherence is good, so layout-first works as a mode for exact geometry and exact plans. It does not replace milestone 4 as the default 360° mode, which gives better-looking rooms. Both are in the app.
+- Timing: layout 0.3 s, panorama 13.1 s (4.3 GB peak VRAM), mesh 2.1 s. Tables: `results/tables/layout_adherence.csv`, `layout_mesh.csv`, `layout_plan_check.csv`, `layout_per_room.csv`. Figure: `results/figures/layout_first.png` (layout | depth condition | conditioned panorama | same seed without ControlNet | plan recovered from the panorama | dollhouse on the exact geometry).
+
+### Demo modes (v2)
+`app/app.py` now has three modes (radio button): **Quick (single view)**, **360° Room** and **Layout-first**. 360° and layout-first show the panorama, the floor plan (360° plan / exact layout plan), an **inside** viewer (camera at the room centre, look around, move up to 1 m) and a **dollhouse** viewer (ceiling removed, orbit from above), with `gr.Model3D` as the offline fallback. Only the active mode's large models sit on the GPU. Measured peaks: Quick 2.9 GB, Layout-first 4.6 GB, 360° 5.5 GB (6.8 GB reserved). One request: Quick 7–9 s, 360° 17.5 s, Layout-first 17.9 s. Tested headlessly in all three modes with switching back and forth; the `<model-viewer>` inside / dollhouse modes have not been checked by hand in a browser yet.
+
 ### Visual Results
 - Prompt → 2D image → edges → segmentation → depth → point cloud → mesh: `results/figures/pipeline_3d_results.png`
 - Floor plans of the demo rooms: `results/figures/floorplan_demo.png`; NYU plans from GT vs. predicted depth: `results/figures/floorplan_nyu_examples.png`
+- 360° panoramas (configurations, seam): `results/figures/pano_configs_grid.png`; super-resolution: `pano_sr_compare.png`
+- Panoramic depth, method A vs. DAP: `results/figures/pano_depth_examples.png`
+- Full-room mesh vs. single view (inside views, dollhouse): `results/figures/room3d_views.png`, `room3d_dollhouse.png`
+- 360° floor plans next to the dollhouse: `results/figures/floorplan_360_overview.png`, `floorplan_360_<room>.png`
+- Layout-first: `results/figures/layout_first.png`
 - Poisson mesh vs. textured grid mesh: `results/figures/mesh_old_vs_new.png`, `results/figures/mesh_layers.png`
 - Point cloud without / with refinement and cleaning: `results/figures/pointcloud_refinement.png`
 - Relative vs. metric depth in 3D: `results/figures/depth_relative_vs_metric_3d.png`
@@ -563,6 +630,7 @@ RoomGen3D/
 │   ├── pano_depth.py          # Panoramic depth: multi-view alignment (ours), DAP + wrap fix, wrap-aware filters
 │   ├── room_mesh.py           # Full-room mesh from a panorama: wrap-around grid, poles, room box, dollhouse, ray casting
 │   ├── pipeline_360.py        # 360° Room mode stages (used by the script and the demo)
+│   ├── layout.py              # Layout-first: parametric room layouts, equirectangular depth / label rendering
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures
@@ -608,7 +676,13 @@ RoomGen3D/
 2. Show that preprocessing reduces depth error (AbsRel/RMSE) on NYU Depth V2. *Status: not met. On clean images every preprocessing step is neutral or slightly worse for both models (Depth Anything AbsRel 0.0546 raw vs. 0.0563 full). The noise-gated pipeline leaves clean images unchanged, so it avoids the loss but gives no gain; see section 8.*
 3. Show that preprocessing improves robustness under noise, blur, and low light. *Status: partly met, for strong noise only. The full pipeline (denoise + CLAHE + unsharp) is worse than raw in 12 of 14 degraded cases. The noise-gated pipeline, selected on the NYU train split and evaluated once on the test split, recovers 49% (σ=25) and 59% (σ=50) of the AbsRel damage for Depth Anything and 14% / 16% for MiDaS. It changes nothing under σ=15 noise, motion blur and moderate low light, and is mixed in severe low light (+6% Depth Anything, −3% MiDaS).*
 4. Produce a 3D mesh from any generated design in under ~1 minute on a GPU. *Status: met. 5.4 s per prompt on average (max 6.0 s) over six prompts, 2.7 GB peak VRAM; see section 8.*
-5. Deploy a public demo showing 2D and 3D outputs side by side. *Status: the Gradio demo runs locally (`app/app.py`); not deployed yet.*
+5. Deploy a public demo showing 2D and 3D outputs side by side. *Status: the Gradio demo runs locally (`app/app.py`, three modes); not deployed yet.*
+
+Version 2 (PLAN_V2.md):
+
+6. Replace the depth heat map by a measured floor plan. *Status: met. Plans with walls, doors, windows, furniture and dimensions in all modes; on NYU the plan from predicted depth has walls 16% too long (median) and furniture IoU 0.25 against the plan from ground-truth depth, 0.51 after fixing the global scale.*
+7. Build the whole room, not a relief. *Status: met. 360° mode: 0.4% of the view empty from the room centre (single view 89.7%), 0.7% at 1 m off-centre; 16.8 s per room, 5.5 GB peak VRAM. Every 360° floor plan is closed (6/6). Our MMIS LoRA does not carry over to panoramas (negative result), so the 360° mode uses another generator.*
+8. Make the geometry exact by generating the layout first. *Status: met as an experiment. The generated panoramas follow the layout (depth AbsRel 0.062, furniture IoU 0.45, vs. 0.227 and 0.07 without conditioning) and the 3D is exact, at the cost of image quality (CLIP 21.2 → 18.6). Kept as a separate mode; the 360° mode stays the default.*
 
 ---
 
@@ -617,7 +691,9 @@ RoomGen3D/
 - In Quick mode the 3D comes from a **single view**, so hidden areas (behind furniture, other walls) are not reconstructed. The 360° Room mode builds the whole room, but from one viewpoint: surfaces hidden from the panorama centre are only filled by the background band and the rectangular room box.
 - The **floor plan** of a single view is never a closed room (0 of 654 NYU views); furniture behind the visible face is completed from class priors, and sizes carry the depth model's scale error (wall lengths +16% median on NYU). The 360° plan is always closed, but as a rectangle: open-plan and L-shaped rooms are boxed, and most sides are inferred from the floor extent because walls hidden behind furniture are not detected.
 - An **isometric cutaway mode** (prompting for a corner view from above on a plain white background, so that fewer regions are hidden) was tried with base SD v1.5 and with the LoRA at strength 1.0 and 0.5 on the six demo prompts and dropped: only four of six images got the corner view, five of six had no plain background to remove, and the room style was mostly lost.
-- Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only.
+- Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only; for panoramas only plausibility checks (and the layout-first adherence) are available, since no licensed real RGB-D panorama set was used.
+- The **360° mode does not use our MMIS LoRA** (it did not help on panoramas), and the panorama model sometimes repeats large furniture. **Layout-first** gives exact geometry but box-shaped furniture and weaker styles.
+- The 360° room box and plan are rectangles; open-plan and L-shaped rooms are boxed too large.
 - Training on a subset of MMIS due to compute limits.
 - The 3D stage uses a metric depth model, but its absolute scale is only approximate (AbsRel 0.22 without alignment on NYU), and the camera field of view (60°) is assumed, so sizes in the 3D model are rough.
 - Classical preprocessing did **not** improve depth accuracy on clean NYU Depth V2 images: modern depth networks are already robust to moderate noise, blur and low light. Only noise-gated denoising helps, and only under strong noise (σ ≥ 25); nothing tested helps against blur. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.

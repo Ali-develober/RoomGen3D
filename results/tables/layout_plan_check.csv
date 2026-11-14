@@ -1,0 +1,2 @@
+rooms,area_rel_err_mean,area_abs_rel_err_mean,area_abs_rel_err_median,side_rel_err_mean,inferred_sides_mean,camera_height_pred_median,dap_scale_gt_over_pred_median
+12,0.0521,0.1195,0.0804,0.0637,1.0833,1.4710,0.9827

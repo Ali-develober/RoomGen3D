@@ -13,6 +13,9 @@ Two modes:
   Quick (single view)  the pipeline above; 2D image + floor plan + 3D relief of the view.
   360° Room            src/pipeline_360.py: SD 2.1 panorama model -> Real-ESRGAN -> DAP (wrap fix)
                        -> SegFormer on 14 views -> full-room mesh + dollhouse + 360° floor plan.
+  Layout-first         src/layout.py: rule-based room layout (room type from the prompt, the seed
+                       picks the layout) -> layout depth -> SD 1.5 + ControlNet depth + pano LoRA
+                       -> Real-ESRGAN -> mesh on the EXACT layout geometry + the true floor plan.
 
 3D viewers (tabs):
   "3D viewer"      <model-viewer> web component (script from a CDN, needs internet).
@@ -20,7 +23,7 @@ Two modes:
                    limits the orbit to about +-30 degrees.
                    360°: inside view, camera at the panorama centre; drag to look around, the
                    orbit radius (zoom) is limited to 5 cm - 1 m around the centre.
-  "Dollhouse"      360° only: the room without its ceiling, orbited from outside and above.
+  "Dollhouse"      360° / layout-first: the room without its ceiling, orbited from outside and above.
   "Free orbit"     gr.Model3D, no limits (works offline).
 
 GPU memory (8 GB card): segmenter and depth model stay on the GPU; only the diffusion models of
@@ -36,6 +39,7 @@ import time
 from pathlib import Path
 from urllib.parse import quote
 
+import cv2
 import gradio as gr
 import numpy as np
 import torch
@@ -47,6 +51,9 @@ from src import depth as dp  # noqa: E402
 from src import floorplan as fp  # noqa: E402
 from src import generate_2d as g2  # noqa: E402
 from src import generate_pano as gp  # noqa: E402
+from src import layout as ly  # noqa: E402
+from src import room_mesh as rm  # noqa: E402
+from src import textured_mesh as tm  # noqa: E402
 from src import pano_depth as pdp  # noqa: E402
 from src import pipeline as pl  # noqa: E402
 from src import pipeline_360 as p3  # noqa: E402
@@ -58,7 +65,8 @@ MODELS = {}
 ORBIT_LIMIT_DEG = 30          # left / right; up / down is limited to 20 above and 12 below the camera
 MODEL_VIEWER_JS = "https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"
 HEAD = f'<script type="module" src="{MODEL_VIEWER_JS}"></script>'
-QUICK, ROOM360 = "Quick (single view)", "360° Room"
+QUICK, ROOM360, LAYOUT = "Quick (single view)", "360° Room", "Layout-first"
+BIG = {QUICK: ("sd",), ROOM360: ("alt", "dap"), LAYOUT: ("cn",)}     # large models of each mode
 VIEWER_EMPTY = ('<div style="height:540px;display:flex;align-items:center;justify-content:center;'
                 'color:#888;border:1px solid #ddd;border-radius:8px">The 3D model appears here.</div>')
 
@@ -117,7 +125,7 @@ def dollhouse_html(glb_path: str, camera_height: float) -> str:
 
 
 DOLL_EMPTY = ('<div style="height:300px;display:flex;align-items:center;justify-content:center;'
-              'color:#888;border:1px solid #ddd;border-radius:8px">The dollhouse view needs the 360° Room mode.</div>')
+              'color:#888;border:1px solid #ddd;border-radius:8px">The dollhouse view needs the 360° Room or Layout-first mode.</div>')
 
 
 def free_orbit_camera(mesh: dict) -> tuple[float, float, float]:
@@ -138,33 +146,27 @@ def free_orbit_camera(mesh: dict) -> tuple[float, float, float]:
 def load_models(mode: str = QUICK) -> dict:
     """Make the models of `mode` ready on the GPU (loading them on first use).
 
-    Segmenter + depth model always stay on the GPU. Quick mode: SD 1.5 + LoRA. 360° mode: the
-    panorama SD 2.1 model, Real-ESRGAN and DAP. The diffusion model(s) of the other mode are moved
-    to the CPU first, so both modes never sit on the 8 GB card at the same time.
+    Segmenter, depth model and Real-ESRGAN always stay on the GPU (small). The large models of the
+    other modes (BIG) are moved to the CPU first, so two modes never sit on the 8 GB card together.
+    Quick: SD 1.5 + LoRA. 360°: SD 2.1 panorama model + DAP. Layout-first: SD 1.5 + ControlNet depth.
     """
     t0 = time.perf_counter()
     if "seg" not in MODELS:
         MODELS["seg"] = an.load_segmenter(DEVICE)
         MODELS["depth"] = dp.load_depth_model(pl.DEPTH_MODEL_3D, DEVICE)
-    if mode == QUICK:
-        for k in ("alt", "dap"):
-            if k in MODELS:
-                MODELS[k] = MODELS[k].to("cpu")
-        torch.cuda.empty_cache()
-        if "sd" not in MODELS:
-            MODELS["sd"] = g2.load_pipeline(g2.DEFAULT_LORA if g2.DEFAULT_LORA.exists() else None, DEVICE)
-        else:
-            MODELS["sd"] = MODELS["sd"].to(DEVICE)
-    else:
-        if "sd" in MODELS:
-            MODELS["sd"] = MODELS["sd"].to("cpu")
-        torch.cuda.empty_cache()
-        if "alt" not in MODELS:
-            MODELS["alt"] = gp.load_alt_pipeline(DEVICE)
-            MODELS["dap"] = pdp.load_dap(DEVICE)[0]
-            MODELS["esrgan"] = gp.load_esrgan(DEVICE)
-        else:
-            MODELS["alt"], MODELS["dap"] = MODELS["alt"].to(DEVICE), MODELS["dap"].to(DEVICE)
+    for other, keys in BIG.items():
+        if other != mode:
+            for k in keys:
+                if k in MODELS:
+                    MODELS[k] = MODELS[k].to("cpu")
+    torch.cuda.empty_cache()
+    loaders = {"sd": lambda: g2.load_pipeline(g2.DEFAULT_LORA if g2.DEFAULT_LORA.exists() else None, DEVICE),
+               "alt": lambda: gp.load_alt_pipeline(DEVICE), "dap": lambda: pdp.load_dap(DEVICE)[0],
+               "cn": lambda: gp.load_controlnet_pipeline(DEVICE)}
+    for k in BIG[mode]:
+        MODELS[k] = loaders[k]() if k not in MODELS else MODELS[k].to(DEVICE)
+    if mode != QUICK and "esrgan" not in MODELS:
+        MODELS["esrgan"] = gp.load_esrgan(DEVICE)
     used = torch.cuda.memory_allocated() / 2 ** 30 if DEVICE.type == "cuda" else 0.0
     print(f"{mode}: models ready in {time.perf_counter() - t0:.1f} s, {used:.2f} GB VRAM in use")
     return MODELS
@@ -175,7 +177,60 @@ def run(mode: str, prompt: str, seed: float, steps: float, cfg: float):
     prompt = (prompt or "").strip()
     if not prompt:
         raise gr.Error("Please enter a prompt, e.g. 'a coastal style bedroom'.")
-    return run_360(prompt, seed, steps, cfg) if mode == ROOM360 else run_quick(prompt, seed, steps, cfg)
+    if mode == ROOM360:
+        return run_360(prompt, seed, steps, cfg)
+    if mode == LAYOUT:
+        return run_layout(prompt, seed, steps, cfg)
+    return run_quick(prompt, seed, steps, cfg)
+
+
+def run_layout(prompt: str, seed: float, steps: float, cfg: float):
+    """Layout-first: layout -> depth condition -> ControlNet panorama -> mesh on the exact geometry."""
+    models = load_models(LAYOUT)
+    seed, steps = int(seed), int(steps)
+    try:
+        room = ly.room_type(prompt.lower())
+    except ValueError:
+        raise gr.Error("Layout-first needs a room type in the prompt: " + ", ".join(ly.ROOMS) + ".")
+    if DEVICE.type == "cuda":
+        torch.cuda.reset_peak_memory_stats()
+    watch = pl.Stopwatch()
+    with watch.stage("layout"):
+        lay = ly.generate_layout(room, seed)
+        dist, lab = ly.render(lay)
+    with watch.stage("panorama"):
+        pano = gp.generate_pano_controlled(models["cn"], prompt, seed, ly.control_image(dist), steps=steps, guidance=cfg)
+    with watch.stage("super_res"):
+        tex = gp.esrgan_upscale(models["esrgan"], pano)
+    id2label = models["seg"][0].config.id2label
+    with watch.stage("mesh"):
+        mesh = rm.build_room_mesh(dist, tex, lab, id2label)
+        doll = rm.dollhouse(mesh)
+    out_dir = OUT / f"layout_{pl.slug(prompt, seed)}_st{steps}_cfg{cfg:g}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with watch.stage("export"):
+        files = {"room_glb": str(out_dir / "room.glb"), "dollhouse_glb": str(out_dir / "dollhouse.glb"),
+                 "plan_svg": str(out_dir / "floorplan.svg"), "pano": str(out_dir / "pano.png")}
+        tm.export_glb(mesh, files["room_glb"])
+        tm.export_glb(doll, files["dollhouse_glb"])
+        plan_img = fp.draw_floorplan(ly.plan_dict(lay), out_dir / "floorplan.png", files["plan_svg"],
+                                     title=f"{prompt} (layout {seed})", note="Exact layout dimensions (the image was generated to follow them)")
+        ly.save_json(lay, out_dir / "layout.json")
+        cv2.imwrite(files["pano"], cv2.cvtColor(pano, cv2.COLOR_RGB2BGR))
+    peak = torch.cuda.max_memory_allocated() / 2 ** 30 if DEVICE.type == "cuda" else 0.0
+    s = watch.seconds
+    masks = an.room_masks(lab, id2label)
+    info = (f"**Layout-first room done in {sum(s.values()):.1f} s** (layout {s['layout']:.1f} s, panorama "
+            f"{s['panorama']:.1f} s, super-resolution {s['super_res']:.1f} s, mesh {s['mesh']:.1f} s, export "
+            f"{s['export']:.1f} s). Peak VRAM {peak:.1f} GB.\n\n"
+            f"Layout: {room}, {lay['W']:.2f} × {lay['D']:.2f} m ({lay['W'] * lay['D']:.1f} m²), "
+            f"ceiling {lay['H']:.2f} m; " + ", ".join(b["label"] for b in lay["boxes"]) +
+            f". The 3D geometry is the layout itself; the panorama is projected onto it "
+            f"({mesh['stats']['triangles']:,} triangles). Change the seed for another layout.")
+    return (tex, plan_img, inside_html(files["room_glb"]), dollhouse_html(files["dollhouse_glb"], ly.CAMERA_HEIGHT),
+            gr.Model3D(value=files["room_glb"]), pl.depth_gray(dist), ly.control_image(dist),
+            an.overlay_masks(pano, masks), files["pano"], files["plan_svg"], files["room_glb"],
+            files["dollhouse_glb"], info)
 
 
 def run_360(prompt: str, seed: float, steps: float, cfg: float):
@@ -263,10 +318,12 @@ def build() -> gr.Blocks:
                     "Prompts like *a coastal style bedroom* work best. **Quick** builds a 3D relief from one "
                     "image (looks right from the original viewpoint). **360° Room** generates a full panorama "
                     "and builds the whole room: look around inside, view it as a dollhouse, and get a closed "
-                    "floor plan (about 20 s; the first 360° request loads its models, about a minute).")
+                    "floor plan (about 20 s). **Layout-first** designs the room plan first (bedroom, living room, "
+                    "kitchen, dining room or bathroom; the seed picks the layout), generates the panorama to follow "
+                    "it, and builds exact 3D. The first request of a mode loads its models.")
         with gr.Row():
             with gr.Column(scale=1):
-                mode = gr.Radio([QUICK, ROOM360], value=QUICK, label="Mode")
+                mode = gr.Radio([QUICK, ROOM360, LAYOUT], value=QUICK, label="Mode")
                 prompt = gr.Textbox(label="Prompt", value=pl.DEMO_PROMPTS[1][0], lines=2)
                 seed = gr.Number(label="Seed", value=pl.DEMO_PROMPTS[1][1], precision=0)
                 steps = gr.Slider(10, 50, value=g2.GEN_STEPS, step=1, label="Steps")
