@@ -420,22 +420,36 @@ def build_textured_mesh(depth: np.ndarray, rgb: np.ndarray, edges: np.ndarray | 
 # --------------------------------------------------------------------------- #
 # Export
 # --------------------------------------------------------------------------- #
-def export_glb(mesh: dict, path, double_sided: bool = True) -> None:
+def export_glb(mesh: dict, path, double_sided: bool = True, mipmaps: bool = False,
+               jpeg_quality: int | None = None, extra: dict | None = None) -> None:
     """Write the textured mesh as a binary glTF 2.0 file (.glb), Y up, camera at the origin looking down -Z.
 
     One mesh, one unlit material with the atlas as base-colour texture (JPEG embedded).
     Unlit = the viewer shows the texture colours as they are, without adding its own lighting.
     double_sided=False: back faces are culled by the viewer (v3 meshes: the shell faces inwards, so the
     walls between an outside viewer and the room disappear by themselves - the dollhouse effect).
+    mipmaps=True (PLAN_V4): sampler minFilter LINEAR_MIPMAP_LINEAR, so minified surfaces (floor at grazing
+    angles) are filtered instead of sparkling; jpeg_quality overrides TEXTURE_JPEG_QUALITY.
+    extra (PLAN_V4 milestone 4): {"vertices", "faces", "colors" uint8} - a second, vertex-coloured, unlit,
+    double-sided primitive (the generated furniture objects), same frame as `mesh`.
     """
     pos = (mesh["vertices"] * np.array([1, -1, -1], np.float32)).astype("<f4")
     uv = mesh["uvs"].astype("<f4")                                  # glTF: v = 0 at the top of the image
     idx = mesh["faces"].astype("<u4")
     ok, png = cv2.imencode(".jpg", cv2.cvtColor(mesh["texture"], cv2.COLOR_RGB2BGR),
-                           [cv2.IMWRITE_JPEG_QUALITY, TEXTURE_JPEG_QUALITY])
+                           [cv2.IMWRITE_JPEG_QUALITY, int(jpeg_quality or TEXTURE_JPEG_QUALITY)])
     assert ok
     chunks, views, offset = [], [], 0
-    for data, target in ((pos.tobytes(), 34962), (uv.tobytes(), 34962), (idx.tobytes(), 34963), (png.tobytes(), None)):
+    blobs = [(pos.tobytes(), 34962), (uv.tobytes(), 34962), (idx.tobytes(), 34963), (png.tobytes(), None)]
+    if extra is not None and len(extra["faces"]):
+        epos = (np.asarray(extra["vertices"], np.float32) * np.array([1, -1, -1], np.float32)).astype("<f4")
+        ecol = np.concatenate([np.asarray(extra["colors"], np.uint8)[:, :3],
+                               np.full((len(epos), 1), 255, np.uint8)], 1)
+        eidx = np.asarray(extra["faces"]).astype("<u4")
+        blobs += [(epos.tobytes(), 34962), (ecol.tobytes(), 34962), (eidx.tobytes(), 34963)]
+    else:
+        extra = None
+    for data, target in blobs:
         pad = (-len(data)) % 4
         view = {"buffer": 0, "byteOffset": offset, "byteLength": len(data)}
         if target:
@@ -452,7 +466,7 @@ def export_glb(mesh: dict, path, double_sided: bool = True) -> None:
                                                 "roughnessFactor": 1.0},
                        "doubleSided": bool(double_sided), "extensions": {"KHR_materials_unlit": {}}}],
         "textures": [{"source": 0, "sampler": 0}],
-        "samplers": [{"magFilter": 9729, "minFilter": 9729, "wrapS": 33071, "wrapT": 33071}],
+        "samplers": [{"magFilter": 9729, "minFilter": 9987 if mipmaps else 9729, "wrapS": 33071, "wrapT": 33071}],
         "images": [{"bufferView": 3, "mimeType": "image/jpeg"}],
         "accessors": [
             {"bufferView": 0, "componentType": 5126, "count": len(pos), "type": "VEC3",
@@ -462,6 +476,17 @@ def export_glb(mesh: dict, path, double_sided: bool = True) -> None:
         ],
         "bufferViews": views, "buffers": [{"byteLength": offset}],
     }
+    if extra is not None:
+        gltf["meshes"][0]["primitives"].append({"attributes": {"POSITION": 3, "COLOR_0": 4}, "indices": 5,
+                                                "material": 1})
+        gltf["materials"].append({"pbrMetallicRoughness": {"baseColorFactor": [1, 1, 1, 1], "metallicFactor": 0.0,
+                                                           "roughnessFactor": 1.0},
+                                  "doubleSided": True, "extensions": {"KHR_materials_unlit": {}}})
+        gltf["accessors"] += [
+            {"bufferView": 4, "componentType": 5126, "count": len(epos), "type": "VEC3",
+             "min": epos.min(0).tolist(), "max": epos.max(0).tolist()},
+            {"bufferView": 5, "componentType": 5121, "normalized": True, "count": len(epos), "type": "VEC4"},
+            {"bufferView": 6, "componentType": 5125, "count": int(eidx.size), "type": "SCALAR"}]
     js = json.dumps(gltf, separators=(",", ":")).encode()
     js += b" " * ((-len(js)) % 4)
     body = b"".join(chunks)

@@ -272,6 +272,8 @@ Restart rule: read this section, continue with the first milestone not marked DO
 | Date | What | Size |
 |---|---|---|
 | 2026-11-14 | pip (venv, `--no-deps`): piq 0.8.0 + BRISQUE SVM weights (torch hub cache) | < 1 MB |
+| 2026-11-14 | torchvision SqueezeNet 1.1 weights for LPIPS (torch hub cache) | 5 MB |
+| 2026-11-14 | `stabilityai/TripoSR` config + model.ckpt → checkpoints/triposr; code (git clone VAST-AI-Research/TripoSR) → checkpoints/triposr_code; `facebook/dino-vitb16` config.json; pip: omegaconf 2.4.0, trimesh 5.2.1 | 1.56 GB |
 
 ## 2026-11-14 — V4 Milestone 1: readable 2D design shots — DONE
 
@@ -292,3 +294,13 @@ Restart rule: read this section, continue with the first milestone not marked DO
 **Failed / limitations**: img2img on 1024² views: 16–21 s per view and it smoothed the views (negative, moved before the upscaler). img2img makes shots more photo-like but not sharper than ESRGAN alone and doubles view disagreement; hence opt-in in the app. First edge-F1 definition (fine edges at 2048) penalised new detail even for ESRGAN (0.65) → structural edges at 1024×512 (changed after a one-room smoke test, before the real run). Intermediate panoramas (outputs/pano_refine, 1.4 GB) deleted; demo 4096 panoramas kept in outputs/room360/<room>/v4/.
 
 **Next**: Milestone 3 — sharp, clean 3D view (texture path: shell texel 1.5 cm / 1024 px cap and vertical atlas stacking are the first suspects; grain source; furniture stair-steps; colour; camera facing the hero; render-vs-shot metrics; headed screenshots).
+
+## 2026-11-14 — V4 Milestone 3: sharp, clean 3D view — DONE
+
+**Built**: `src/room_v4.py` (4096 textures, 5 mm shell texels, 6 cm silhouette band, stride-1 furniture surfaces, 3D Taubin with border-chain smoothing and re-projected UVs, shelf-packed atlas, offline renderer, grain / jaggedness measures); `room_box` texel/band parameters, `export_glb(mipmaps, jpeg_quality, extra)` (v3 defaults unchanged); `pipeline_v3.save(export_kw)`; `pipeline_v4.build(hires=)` uses the v4 meshes; app inside viewer opens level facing the hero (`inside_html(yaw_deg)`). Scripts `eval_room_v4.py`, `viewer_check_v4.py` (headed Chromium).
+
+**Results** (held-out offline, centre renders vs design shots): PSNR 28.5 → 37.5, SSIM 0.915 → 0.984, LPIPS 0.124 → 0.027; off-centre jaggedness 1.183 → 1.079. Browser (6 demo rooms): PSNR 25.0 → 28.4, SSIM 0.86 → 0.92, LPIPS 0.152 → 0.048, ΔE 2.77 → 1.77, gaps 0; tone mapping neutral = none; mipmaps PSNR 29.1 → 30.0 vs supersampled. GLB 3–12 MB. App 360° v4 57 s cold / 32 s warm, 6.4 GB. Tables `room_v4_*.csv/json`, `viewer_v4*.csv`; figures `room_v4_offcentre.png`, `viewer_v4_inside.png`, `viewer_v4_opening.png`.
+
+**Failed / limitations**: depth smoothing / radial Taubin do not change silhouettes (no effect on jaggedness); bilateral / NL-means denoising worsen LPIPS 2-4x (not used); grain was sampling, not image noise; anisotropic filtering not settable in model-viewer; first run stopped by the owner at room 3/16 and rerun from scratch.
+
+**Next**: Milestone 4 — real furniture shapes (TripoSR code + weights downloaded; `src/objects3d.py` drafted: crop / mask / inpaint / generate / render-and-compare yaw / projective colours / block fallback; GLB vertex-colour primitive added).

@@ -94,7 +94,8 @@ def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furn
             "shell_stats": shell["stats"]}
 
 
-def save(res: dict, out_dir, title: str | None = None, tag: str = "v3", views: list[dict] | None = None) -> dict:
+def save(res: dict, out_dir, title: str | None = None, tag: str = "v3", views: list[dict] | None = None,
+         export_kw: dict | None = None) -> dict:
     """[6] room_v3.glb, dollhouse_v3.glb (single-sided), floorplan_v3.png / .svg / .dxf, topdown_v3.png,
     summary_v3.json. tag / views: used by pipeline_v4 (file suffix; design-shot cones on the plan)."""
     out = Path(out_dir)
@@ -102,8 +103,8 @@ def save(res: dict, out_dir, title: str | None = None, tag: str = "v3", views: l
     files = {"room_glb": out / f"room_{tag}.glb", "dollhouse_glb": out / f"dollhouse_{tag}.glb",
              "plan_png": out / f"floorplan_{tag}.png", "plan_svg": out / f"floorplan_{tag}.svg",
              "plan_dxf": out / f"floorplan_{tag}.dxf"}
-    tm.export_glb(res["mesh"], files["room_glb"], double_sided=False)
-    tm.export_glb(res["dollhouse"], files["dollhouse_glb"], double_sided=False)
+    tm.export_glb(res["mesh"], files["room_glb"], double_sided=False, **(export_kw or {}))
+    tm.export_glb(res["dollhouse"], files["dollhouse_glb"], double_sided=False, **(export_kw or {}))
     files["topdown"] = out / f"topdown_{tag}.png"
     res["topdown"] = vw.topdown(res["dollhouse"], res["box"])
     cv2.imwrite(str(files["topdown"]), cv2.cvtColor(res["topdown"], cv2.COLOR_RGB2BGR))

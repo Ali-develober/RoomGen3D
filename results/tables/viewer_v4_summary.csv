@@ -1,0 +1,4 @@
+version,tone_mapping,psnr,ssim,lpips,sharpness_ratio,delta_e,gap_share
+v3,neutral,24.9692,0.8595,0.1523,1.3952,2.7710,0.0000
+v4,neutral,28.3862,0.9214,0.0476,1.0204,1.7713,0.0000
+v4,none,28.3207,0.9214,0.0477,1.0253,1.7726,0.0000

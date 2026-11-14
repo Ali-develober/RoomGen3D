@@ -1,0 +1,13 @@
+room,texture_filter,psnr_vs_supersampled,lpips_vs_supersampled
+a contemporary style living room,mipmaps,32.5774,0.0233
+a contemporary style living room,no mipmaps,32.5763,0.0236
+a coastal style bedroom,mipmaps,38.1536,0.0181
+a coastal style bedroom,no mipmaps,33.6207,0.0230
+a rustic style kitchen,mipmaps,29.7998,0.0276
+a rustic style kitchen,no mipmaps,29.7992,0.0278
+a mid-century modern style dining room,mipmaps,22.6592,0.0296
+a mid-century modern style dining room,no mipmaps,22.6559,0.0298
+an art deco style bathroom,mipmaps,30.3090,0.0223
+an art deco style bathroom,no mipmaps,29.3936,0.0321
+a mediterranean style living room,mipmaps,26.5284,0.0348
+a mediterranean style living room,no mipmaps,26.5274,0.0350

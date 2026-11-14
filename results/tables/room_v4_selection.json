@@ -1,0 +1,12 @@
+{
+ "geometry": "s1+full30",
+ "geometry_candidates": [
+  "s1",
+  "s1+inst",
+  "s1+radial10",
+  "s1+full10",
+  "s1+full30"
+ ],
+ "denoise": "none",
+ "rule": "lowest jaggedness within 0.3 dB of the best centre PSNR; denoise only if the mid-band grain drops, the sharpness ratio stays within 5 % and LPIPS within 10 % (LPIPS condition added after a one-room smoke test, before the full run)"
+}

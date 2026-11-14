@@ -1,0 +1,106 @@
+room,version,tone_mapping,shot,psnr,ssim,lpips,sharpness_ratio,delta_e,gap_share,browser
+a contemporary style living room,v3,neutral,H,26.7894,0.8867,0.1179,1.2897,2.2084,0.0000,headed
+a contemporary style living room,v3,neutral,H2,24.1822,0.8679,0.1165,1.8188,2.6449,0.0000,headed
+a contemporary style living room,v3,neutral,A,26.5977,0.8814,0.1130,1.2595,2.2316,0.0000,headed
+a contemporary style living room,v3,neutral,B,25.2994,0.9040,0.1020,1.3555,2.2586,0.0000,headed
+a contemporary style living room,v3,neutral,C,26.0876,0.8714,0.1119,1.7893,2.4457,0.0000,headed
+a contemporary style living room,v3,neutral,D,25.0012,0.8819,0.0959,1.0658,2.4660,0.0000,headed
+a contemporary style living room,v4,neutral,H,30.2416,0.9399,0.0483,1.1651,1.4533,0.0000,headed
+a contemporary style living room,v4,neutral,H2,28.1651,0.9424,0.0464,1.7141,1.5482,0.0000,headed
+a contemporary style living room,v4,neutral,A,30.0829,0.9364,0.0375,1.0739,1.4460,0.0000,headed
+a contemporary style living room,v4,neutral,B,30.3721,0.9616,0.0249,0.8920,1.2963,0.0000,headed
+a contemporary style living room,v4,neutral,C,30.3308,0.9461,0.0325,0.9030,1.4783,0.0000,headed
+a contemporary style living room,v4,neutral,D,28.0746,0.9432,0.0393,1.0880,1.5789,0.0000,headed
+a contemporary style living room,v4,none,H,30.2416,0.9399,0.0483,1.1651,1.4533,0.0000,headed
+a contemporary style living room,v4,none,H2,28.1651,0.9424,0.0464,1.7141,1.5482,0.0000,headed
+a contemporary style living room,v4,none,A,30.0829,0.9364,0.0375,1.0739,1.4460,0.0000,headed
+a contemporary style living room,v4,none,B,30.3721,0.9616,0.0249,0.8920,1.2963,0.0000,headed
+a contemporary style living room,v4,none,C,30.3308,0.9461,0.0325,0.9030,1.4783,0.0000,headed
+a contemporary style living room,v4,none,D,28.0746,0.9432,0.0393,1.0880,1.5789,0.0000,headed
+a coastal style bedroom,v3,neutral,H,28.0821,0.9083,0.1231,1.5336,2.0362,0.0000,headed
+a coastal style bedroom,v3,neutral,H2,24.6842,0.9154,0.1120,2.0954,2.2306,0.0000,headed
+a coastal style bedroom,v3,neutral,A,26.3469,0.9179,0.1189,1.3832,2.0356,0.0000,headed
+a coastal style bedroom,v3,neutral,B,27.2592,0.8999,0.1375,1.0408,2.0417,0.0000,headed
+a coastal style bedroom,v3,neutral,C,29.1290,0.9243,0.1051,1.1581,1.8035,0.0000,headed
+a coastal style bedroom,v3,neutral,D,23.8901,0.8731,0.1226,1.3538,2.6719,0.0000,headed
+a coastal style bedroom,v4,neutral,H,34.9051,0.9645,0.0264,0.7523,1.1353,0.0000,headed
+a coastal style bedroom,v4,neutral,H2,32.0293,0.9677,0.0246,0.6715,1.2150,0.0000,headed
+a coastal style bedroom,v4,neutral,A,33.5639,0.9640,0.0263,0.6483,1.1739,0.0000,headed
+a coastal style bedroom,v4,neutral,B,31.1254,0.9503,0.0308,0.9793,1.2924,0.0000,headed
+a coastal style bedroom,v4,neutral,C,31.9415,0.9621,0.0232,0.7753,1.1522,0.0000,headed
+a coastal style bedroom,v4,neutral,D,25.6663,0.9341,0.0336,1.2657,1.8405,0.0000,headed
+a coastal style bedroom,v4,none,H,32.1776,0.9589,0.0343,0.9698,1.2605,0.0000,headed
+a coastal style bedroom,v4,none,H2,32.0293,0.9677,0.0246,0.6715,1.2150,0.0000,headed
+a coastal style bedroom,v4,none,A,33.5639,0.9640,0.0263,0.6483,1.1739,0.0000,headed
+a coastal style bedroom,v4,none,B,31.1254,0.9503,0.0308,0.9793,1.2924,0.0000,headed
+a coastal style bedroom,v4,none,C,31.9415,0.9621,0.0232,0.7753,1.1522,0.0000,headed
+a coastal style bedroom,v4,none,D,25.6663,0.9341,0.0336,1.2657,1.8405,0.0000,headed
+a rustic style kitchen,v3,neutral,H,24.7215,0.8636,0.1170,1.5467,2.6957,0.0000,headed
+a rustic style kitchen,v3,neutral,H2,26.1702,0.8823,0.1186,1.0627,2.5361,0.0000,headed
+a rustic style kitchen,v3,neutral,A,20.6845,0.7370,0.1572,0.9515,4.1517,0.0000,headed
+a rustic style kitchen,v3,neutral,B,25.0886,0.8581,0.1092,1.2110,2.6719,0.0000,headed
+a rustic style kitchen,v3,neutral,C,25.7345,0.8935,0.0979,1.0521,2.4429,0.0000,headed
+a rustic style kitchen,v3,neutral,D,21.5711,0.7663,0.1393,0.9039,4.1524,0.0000,headed
+a rustic style kitchen,v4,neutral,H,27.8213,0.9355,0.0373,1.3898,1.7309,0.0000,headed
+a rustic style kitchen,v4,neutral,H2,28.6211,0.9444,0.0330,0.9774,1.6082,0.0000,headed
+a rustic style kitchen,v4,neutral,A,24.1681,0.8536,0.0456,0.7656,2.5680,0.0000,headed
+a rustic style kitchen,v4,neutral,B,28.1125,0.9350,0.0350,1.2310,1.6620,0.0000,headed
+a rustic style kitchen,v4,neutral,C,28.2565,0.9421,0.0257,0.8658,1.5535,0.0000,headed
+a rustic style kitchen,v4,neutral,D,22.5407,0.8308,0.0439,0.7639,3.1637,0.0000,headed
+a rustic style kitchen,v4,none,H,28.2573,0.9401,0.0329,1.3419,1.6499,0.0000,headed
+a rustic style kitchen,v4,none,H2,28.6211,0.9444,0.0330,0.9774,1.6082,0.0000,headed
+a rustic style kitchen,v4,none,A,24.1681,0.8536,0.0456,0.7656,2.5680,0.0000,headed
+a rustic style kitchen,v4,none,B,28.1125,0.9350,0.0350,1.2310,1.6620,0.0000,headed
+a rustic style kitchen,v4,none,C,28.2565,0.9421,0.0257,0.8658,1.5535,0.0000,headed
+a rustic style kitchen,v4,none,D,22.5407,0.8308,0.0439,0.7639,3.1637,0.0000,headed
+a mid-century modern style dining room,v3,neutral,H,20.4416,0.8808,0.1303,5.1457,3.1032,0.0000,headed
+a mid-century modern style dining room,v3,neutral,H2,26.0523,0.8819,0.1242,1.0133,2.3292,0.0000,headed
+a mid-century modern style dining room,v3,neutral,A,19.4681,0.8707,0.1372,3.8360,3.4801,0.0000,headed
+a mid-century modern style dining room,v3,neutral,B,25.1021,0.8797,0.1087,0.9833,2.6328,0.0000,headed
+a mid-century modern style dining room,v3,neutral,C,24.6277,0.8699,0.1116,1.0459,2.6728,0.0000,headed
+a mid-century modern style dining room,v3,neutral,D,24.5793,0.9008,0.1052,1.1575,2.2774,0.0000,headed
+a mid-century modern style dining room,v4,neutral,H,25.1703,0.9444,0.0537,2.4958,1.6770,0.0000,headed
+a mid-century modern style dining room,v4,neutral,H2,30.9014,0.9613,0.0287,0.9280,1.2852,0.0000,headed
+a mid-century modern style dining room,v4,neutral,A,24.3542,0.9331,0.0511,1.9002,1.8213,0.0000,headed
+a mid-century modern style dining room,v4,neutral,B,26.5241,0.9336,0.0412,1.1225,1.7155,0.0000,headed
+a mid-century modern style dining room,v4,neutral,C,28.0875,0.9317,0.0363,0.8854,1.6319,0.0000,headed
+a mid-century modern style dining room,v4,neutral,D,27.3003,0.9617,0.0327,1.1140,1.3147,0.0000,headed
+a mid-century modern style dining room,v4,none,H,25.1703,0.9444,0.0537,2.4958,1.6770,0.0000,headed
+a mid-century modern style dining room,v4,none,H2,30.9014,0.9613,0.0287,0.9280,1.2852,0.0000,headed
+a mid-century modern style dining room,v4,none,A,24.3542,0.9331,0.0511,1.9002,1.8213,0.0000,headed
+a mid-century modern style dining room,v4,none,B,26.5241,0.9336,0.0412,1.1225,1.7155,0.0000,headed
+a mid-century modern style dining room,v4,none,C,28.0875,0.9317,0.0363,0.8854,1.6319,0.0000,headed
+a mid-century modern style dining room,v4,none,D,27.3003,0.9617,0.0327,1.1140,1.3147,0.0000,headed
+an art deco style bathroom,v3,neutral,H,26.9792,0.8786,0.1816,1.7161,2.2388,0.0000,headed
+an art deco style bathroom,v3,neutral,A,28.5620,0.8980,0.1708,1.1455,1.8907,0.0000,headed
+an art deco style bathroom,v3,neutral,B,25.4902,0.8901,0.1882,1.8437,2.2334,0.0000,headed
+an art deco style bathroom,v3,neutral,C,26.0162,0.8329,0.1992,1.2890,2.5157,0.0000,headed
+an art deco style bathroom,v3,neutral,D,27.6358,0.9073,0.1783,1.9074,1.8864,0.0000,headed
+an art deco style bathroom,v4,neutral,H,29.5762,0.9239,0.0519,1.2791,1.5445,0.0000,headed
+an art deco style bathroom,v4,neutral,A,31.2785,0.9461,0.0407,0.7589,1.2432,0.0000,headed
+an art deco style bathroom,v4,neutral,B,30.0100,0.9462,0.0459,1.0575,1.3534,0.0000,headed
+an art deco style bathroom,v4,neutral,C,30.1399,0.9066,0.0517,0.7827,1.5952,0.0000,headed
+an art deco style bathroom,v4,neutral,D,32.5443,0.9535,0.0449,1.2558,1.1884,0.0000,headed
+an art deco style bathroom,v4,none,H,29.5766,0.9239,0.0519,1.2790,1.5445,0.0000,headed
+an art deco style bathroom,v4,none,A,31.2785,0.9461,0.0407,0.7589,1.2432,0.0000,headed
+an art deco style bathroom,v4,none,B,30.0100,0.9462,0.0459,1.0575,1.3534,0.0000,headed
+an art deco style bathroom,v4,none,C,30.1399,0.9066,0.0517,0.7827,1.5952,0.0000,headed
+an art deco style bathroom,v4,none,D,32.5443,0.9535,0.0449,1.2558,1.1884,0.0000,headed
+a mediterranean style living room,v3,neutral,H,21.9121,0.7639,0.2151,1.1720,4.3285,0.0000,headed
+a mediterranean style living room,v3,neutral,H2,20.9607,0.7008,0.4217,0.0933,5.4855,0.0000,headed
+a mediterranean style living room,v3,neutral,A,27.7296,0.8562,0.1492,0.6063,2.4489,0.0000,headed
+a mediterranean style living room,v3,neutral,B,27.2071,0.8602,0.1698,0.6398,2.3946,0.0000,headed
+a mediterranean style living room,v3,neutral,C,20.7500,0.6845,0.4518,0.0752,5.6839,0.0000,headed
+a mediterranean style living room,v3,neutral,D,23.0876,0.7933,0.1723,1.2899,3.6584,0.0000,headed
+a mediterranean style living room,v4,neutral,H,23.4918,0.8292,0.0836,1.1689,3.0883,0.0000,headed
+a mediterranean style living room,v4,neutral,H2,22.7372,0.7543,0.1716,0.3354,3.9239,0.0000,headed
+a mediterranean style living room,v4,neutral,A,28.7217,0.9087,0.0440,0.6585,1.7591,0.0000,headed
+a mediterranean style living room,v4,neutral,B,28.2427,0.9202,0.0523,0.7204,1.6350,0.0000,headed
+a mediterranean style living room,v4,neutral,C,22.7637,0.7694,0.1620,0.2997,3.9220,0.0000,headed
+a mediterranean style living room,v4,neutral,D,25.6530,0.8710,0.0607,1.0295,2.4006,0.0000,headed
+a mediterranean style living room,v4,none,H,23.4924,0.8292,0.0835,1.1691,3.0882,0.0000,headed
+a mediterranean style living room,v4,none,H2,22.7372,0.7543,0.1716,0.3354,3.9239,0.0000,headed
+a mediterranean style living room,v4,none,A,28.7217,0.9087,0.0440,0.6585,1.7591,0.0000,headed
+a mediterranean style living room,v4,none,B,28.2427,0.9202,0.0523,0.7204,1.6350,0.0000,headed
+a mediterranean style living room,v4,none,C,22.7637,0.7694,0.1620,0.2997,3.9220,0.0000,headed
+a mediterranean style living room,v4,none,D,25.6530,0.8710,0.0607,1.0295,2.4006,0.0000,headed

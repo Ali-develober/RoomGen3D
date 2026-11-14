@@ -268,11 +268,15 @@ def shell_planes(box: dict) -> list[dict]:
     ]
 
 
-def plane_texture(pl: dict, box: dict, texture: np.ndarray, dist: np.ndarray, method: str = DEFAULT_INPAINT):
+def plane_texture(pl: dict, box: dict, texture: np.ndarray, dist: np.ndarray, method: str = DEFAULT_INPAINT,
+                  texel_m: float = TEXEL, max_tex: int = MAX_TEX, band_m: float = 0.0):
     """Texture of one shell plane from the panorama, hidden texels inpainted.
+    PLAN_V4: texel_m / max_tex set the resolution; band_m > 0 keeps the projected panorama colour (no
+    inpainting) in a band of that width inside the hidden region along its border - from the panorama centre
+    that band is exactly what is seen past a furniture silhouette.
     Returns (rgb, hidden mask, beyond mask)."""
     la, lb = np.linalg.norm(pl["a"]), np.linalg.norm(pl["b"])
-    texel = max(TEXEL, max(la, lb) / MAX_TEX)
+    texel = max(texel_m, max(la, lb) / max_tex)
     tw, th = max(int(np.ceil(la / texel)), 8), max(int(np.ceil(lb / texel)), 8)
     s = (np.arange(tw) + 0.5) / tw
     t = (np.arange(th) + 0.5) / th
@@ -285,15 +289,20 @@ def plane_texture(pl: dict, box: dict, texture: np.ndarray, dist: np.ndarray, me
     beyond = obs > r * (1 + HIDDEN_REL) + HIDDEN_ABS
     hidden = cv2.morphologyEx(hidden.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
     hidden = cv2.dilate(hidden, np.ones((5, 5), np.uint8)) > 0                       # include mixed edge texels
-    return inpaint(rgb, hidden, method), hidden, beyond
+    fill = hidden
+    if band_m > 0:
+        k = 2 * int(round(band_m / texel)) + 1
+        fill = cv2.erode(hidden.astype(np.uint8), np.ones((k, k), np.uint8)) > 0
+    return inpaint(rgb, fill, method), hidden, beyond
 
 
-def build_shell(box: dict, texture: np.ndarray, dist: np.ndarray, method: str = DEFAULT_INPAINT) -> dict:
+def build_shell(box: dict, texture: np.ndarray, dist: np.ndarray, method: str = DEFAULT_INPAINT,
+                texel_m: float = TEXEL, max_tex: int = MAX_TEX, band_m: float = 0.0) -> dict:
     """Textured shell (6 inward-facing quads) in frame A. Returns a part dict for combine()."""
     parts = []
     stats = {}
     for pl in shell_planes(box):
-        img, hid, bey = plane_texture(pl, box, texture, dist, method)
+        img, hid, bey = plane_texture(pl, box, texture, dist, method, texel_m, max_tex, band_m)
         cB = np.stack([pl["o"], pl["o"] + pl["a"], pl["o"] + pl["a"] + pl["b"], pl["o"] + pl["b"]])
         uv = np.array([[0, 0], [1, 0], [1, 1], [0, 1]], float)
         f = np.array([[0, 1, 2], [0, 2, 3]])

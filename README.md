@@ -863,6 +863,35 @@ Development rooms (10 bench rooms; 8 level shots per room, 80° FOV, 1024 × 768
 - **Used:** offline v4 runs use the selected configuration (demo rooms: `outputs/room360/<room>/v4/pano_4096_detail.png`, ESRGAN-only `pano_4096_esrgan.png`). In the **app** the img2img detail pass is an opt-in checkbox (+~75–90 s per room, peak 6.2 GB with the 360° models parked on the CPU); by default v4 sharpens with Real-ESRGAN views only (12.6 s), which gives the sharpest shots. The design shots and the 360° viewer use the 4096 panorama.
 - Limitations: KID is computed at 256 px (MMIS resolution), so it sees content and style, not fine detail; "sharpness" (Laplacian variance) also rewards Real-ESRGAN's crisp but sometimes painted-looking texture; refined panoramas exist for the demo and bench rooms only (intermediate files, 1.4 GB, deleted after the tables were saved).
 
+### A sharp, clean 3D view (milestone 3 of PLAN_V4)
+Code: `src/room_v4.py`, `room_box.plane_texture/build_shell(texel_m, max_tex, band_m)`, `textured_mesh.export_glb(mipmaps, jpeg_quality)`, `pipeline_v4.build(hires=)`, `app.inside_html(yaw_deg)`, `scripts/eval_room_v4.py` (offline), `scripts/viewer_check_v4.py` (headed browser).
+
+**Losses found in the v3 texture path:** (1) the shell textures were sampled at 1.5 cm per texel (cap 1024 px), ~3× coarser than the 4096 panorama gives at 3 m (≈ 5 mm); (2) texels just behind a furniture silhouette were inpainted, but the furniture surface ends on a coarse 0.7° pixel staircase, so from the centre the gaps showed inpainted wall instead of the panorama; (3) the GLB sampler had no mipmaps (minified floors sparkle); (4) one tall stacked atlas. Fixes: 4096 panorama, 5 mm texels (cap 4096), a 6 cm **silhouette band** that keeps the projected panorama colour, shelf-packed atlas (≤ 8192 wide; WebGL max here 16384), `LINEAR_MIPMAP_LINEAR`, JPEG q92.
+
+**Stair-steps** (off-centre views): the furniture surface silhouette follows the depth-map pixel grid. Compared: stride 1 (vs 2), depth smoothing inside instances, Taubin along the camera rays (borders fixed), and **3D Taubin with border vertices smoothed along their border chain and UVs re-projected** from each vertex's direction (from the centre every vertex still shows its own panorama pixel). Only the last one removes the sawtooth; the others cannot move silhouettes.
+
+Offline (exact ray casting, bilinear lookup, 2× supersampling), renders from the panorama centre at the design-shot poses vs the design shots; jaggedness = contour length / smoothed contour length of the furniture silhouettes seen 0.6 m behind the centre (`room_v4_dev.csv`, `room_v4_report.csv`):
+
+| Held-out (5 bench + 6 demo rooms) | PSNR ↑ | SSIM ↑ | LPIPS ↓ | Jaggedness ↓ | GLB MB | Triangles |
+|---|---|---|---|---|---|---|
+| v3 inside mesh | 28.5 | 0.915 | 0.124 | 1.183 | 1.6 | 46 k |
+| 4096 texture + 5 mm texels | 32.9 | 0.975 | 0.039 | 1.183 | 2.3 | 46 k |
+| + silhouette band | 35.2 | 0.981 | 0.032 | 1.183 | 2.3 | 46 k |
+| + stride 1 | 37.4 | 0.984 | 0.028 | 1.180 | 5.3 | 191 k |
+| + depth smoothing in instances | 37.8 | 0.985 | 0.028 | 1.182 | 5.3 | 191 k |
+| + radial Taubin (borders fixed) | 37.4 | 0.984 | 0.028 | 1.180 | 5.3 | 191 k |
+| **+ 3D Taubin, 30 it. (selected)** | **37.5** | **0.984** | **0.027** | **1.079** | 5.3 | 191 k |
+| + bilateral denoise of the shell | 37.2 | 0.980 | 0.049 | 1.085 | 5.3 | 191 k |
+| + NL-means denoise of the shell | 36.3 | 0.974 | 0.080 | 1.085 | 5.3 | 191 k |
+
+- **Selection rule (dev rooms):** lowest jaggedness within 0.3 dB of the best centre PSNR → 3D Taubin 30; denoising only if it lowers grain with sharpness within 5 % and LPIPS within 10 % → **none** (both denoisers double or triple LPIPS; the LPIPS condition was added after a one-room smoke test, before the real run). `room_v4_selection.json`.
+- **Grain:** the fine-noise estimate (Immerkær, flat wall pixels) stays tiny along the whole chain (generator 0.25–0.30, v3 texture 0.27–0.31, 4096 panorama 0.38–0.54, renders 0.18–0.28 grey levels) and the mid-band (DoG 1–4 px) energy is dominated by real texture (`room_v4_grain.csv`): the grain seen in the v3 viewer was not noise baked into the images but **sampling** — un-mipmapped minification and 1.5 cm texels magnified ~3×.
+- **Real browser** (headed Chromium, `<model-viewer>` 3.5, six demo rooms × 5–6 poses, `viewer_v4_summary.csv`): v3 → v4 PSNR 25.0 → **28.4**, SSIM 0.860 → **0.921**, LPIPS 0.152 → **0.048**, colour error ΔE2000 2.77 → **1.77** (below the ~2.3 just-noticeable difference), no gaps in either. Tone mapping "neutral" vs "none": identical (PSNR 28.39 / 28.32, ΔE 1.771 / 1.773), so the viewer keeps the image colours; "neutral" stays. Mipmaps vs none at a floor pose against a 4× supersampled reference: PSNR 29.1 → 30.0, LPIPS 0.029 → 0.026 (`viewer_v4_sampling.csv`). Anisotropic filtering cannot be set through `<model-viewer>`/glTF (limitation).
+- **Camera:** the inside viewer opens level (polar 90°) at the panorama centre (eye height), 5 cm from the centre, facing the hero view; screenshots match the hero shots (`results/figures/viewer_v4_opening.png`).
+- **Size:** inside GLB 3.2–11.7 MB (v3 1.0–3.2), dollhouse 1.6–2.1 MB (`viewer_v4_sizes.csv`); target < 25 MB met. App: 360° v4 57 s cold / 32 s warm (sharpening 13 s, v4 meshes ~7 s), peak 6.4 GB; v3 12.5 s.
+- Figures: `room_v4_offcentre.png` (shot | v3 | v4 from the centre | v3 | v4 0.6 m behind), `viewer_v4_inside.png`, `viewer_v4_opening.png`.
+- **Limitations:** the browser numbers are lower than the offline ones (28.4 vs 37.5 dB) because the browser's pinhole and pixel grid are not identical to ours; off-centre, disoccluded areas behind furniture still show inpainted or band texture; furniture is still blocks in the dollhouse (milestone 4).
+
 ### Demo modes (v4)
 **360° Room** runs **v4** by default (pipeline switch v4 / v3 / v2). The top of the page is a **gallery of design shots** (hero first, then A–D, captions with the plan letters; Quick and the other modes show their single image or panorama there) next to the **floor plan with view cones**; the viewer tabs are Inside, Dollhouse (+ top view), **360° panorama** (new) and Free orbit; the panorama itself is in the Analysis section. New download: the design shots + plan as a zip. Headless test: v4 one candidate 40.7 s including the first model loads, peak 5.9 GB; v3 15.1 s; Quick 13.0 s.
 
@@ -927,6 +956,7 @@ RoomGen3D/
 │   ├── pipeline_v3.py         # v3 360° Room stages (comparison in the demo)
 │   ├── design_shots.py        # v4: level perspective design shots (hero + wall views) from the panorama
 │   ├── pano_refine.py         # v4: 4096 x 2048 panorama from refined perspective views (ESRGAN, img2img, multi-band blend)
+│   ├── room_v4.py             # v4: sharp 3D (hires shell textures, silhouette band, 3D Taubin, packed atlas, mipmaps)
 │   ├── pipeline_v4.py         # v4 360° Room stages (default in the demo)
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ

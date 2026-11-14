@@ -4,6 +4,9 @@ sharper panorama, a sharper 3D view and real furniture shapes).
     [1]-[5]  as v3 (src/pipeline_v3.py): candidates, instances, room box, solid furniture, openings
     [5b]     sharper panorama (src/pano_refine.py, milestone 2): 26 perspective views of the texture, optional
              img2img detail pass, Real-ESRGAN x2 per view, multi-band blend to 4096 x 2048 (`hires`)
+    [5c]     sharp 3D (src/room_v4.py, milestone 3; when the 4096 panorama exists): inside mesh with 5 mm shell
+             texels, silhouette band, stride-1 furniture surfaces with 3D Taubin smoothing; dollhouse with the
+             same textures; packed atlas; mipmapped GLB export
     [6]      design shots (src/design_shots.py): hero view(s) + four wall views, perspective, level,
              1024 x 768, cut from the sharpest panorama available (hires if given, else the texture)
     [7]      outputs: v3 files with suffix _v4, the floor plan with the shots' camera and view cones
@@ -38,9 +41,13 @@ def sharpen(texture: np.ndarray, esrgan, i2i=None, prompt: str = "", strength: f
 
 
 def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furniture_params: dict | None = None,
-          shot_weights: dict | None = None, hires: np.ndarray | None = None) -> dict:
+          shot_weights: dict | None = None, hires: np.ndarray | None = None, mesh_opts: dict | None = None) -> dict:
     res = p3v.build(dist, texture, ana, id2label, furniture_params)
     res["hires"] = hires
+    if hires is not None:
+        from . import room_v4 as r4
+        m = r4.build_meshes(dist, hires, res, ana, id2label, mesh_opts)
+        res["mesh"], res["dollhouse"], res["mesh_opts"] = m["inside"], m["dollhouse"], m["opts"]
     res["shots"] = ds.design_shots(texture if hires is None else hires, res["box"], ana["class_map"], ana["inst_map"], ana["instances"],
                                    id2label, shot_weights, dist=dist)
     return res
@@ -49,7 +56,9 @@ def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furn
 def save(res: dict, out_dir, title: str | None = None, pano: np.ndarray | None = None) -> dict:
     out = Path(out_dir)
     shots = res["shots"]["shots"]
-    files = p3v.save(res, out, title, tag="v4", views=ds.plan_views(shots))
+    o = res.get("mesh_opts")
+    files = p3v.save(res, out, title, tag="v4", views=ds.plan_views(shots),
+                     export_kw={"mipmaps": o["mipmaps"], "jpeg_quality": o["jpeg_q"]} if o else None)
     sd = out / "shots"
     sd.mkdir(parents=True, exist_ok=True)
     meta = []
@@ -70,6 +79,13 @@ def save(res: dict, out_dir, title: str | None = None, pano: np.ndarray | None =
         files["pano_sphere_glb"] = str(out / "pano_sphere.glb")
         vw.pano_sphere_glb(pano, files["pano_sphere_glb"])
     return files
+
+
+def hero_yaw_A(res: dict) -> float:
+    """Longitude (deg) of the hero direction in the mesh frame A (for the inside viewer's opening camera)."""
+    y = np.radians(res["shots"]["shots"][0]["yaw"])
+    d = res["box"]["Q"] @ np.array([np.sin(y), 0.0, np.cos(y)])
+    return float(np.degrees(np.arctan2(d[0], d[2])))
 
 
 def gallery(res: dict) -> list[tuple[np.ndarray, str]]:

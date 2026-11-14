@@ -89,6 +89,7 @@ QUICK, ROOM360, LAYOUT = "Quick (single view)", "360° Room", "Layout-first"
 BIG = {QUICK: ("sd",), ROOM360: ("alt", "dap", "m2f"), LAYOUT: ("cn",)}     # large models of each mode
 V4, V3, V2 = "v4: design shots + clean box room (default)", "v3: clean box room (comparison)", "v2: previous mesh (comparison)"
 NEUTRAL_BG = "#e9e8e4"
+V4_TONE = "neutral"           # v4 viewers' tone mapping (PLAN_V4 milestone 3, scripts/viewer_check_v4.py)
 DETAIL_STRENGTH = 0.3         # v4 detail pass (results/tables/pano_refine_decision.json)        # dollhouse background (v3)
 LAYOUT_CN_SCALE, LAYOUT_CN_END = 0.75, 0.6   # layout-first: SD 2.1 panorama model + SD 2.1 depth ControlNet (milestone 7)
 VIEWER_EMPTY = ('<div style="height:540px;display:flex;align-items:center;justify-content:center;'
@@ -122,22 +123,30 @@ def _src(glb_path: str) -> str:
     return "/gradio_api/file=" + quote(str(Path(glb_path).resolve()).replace("\\", "/"), safe="/:")
 
 
-def _mv(src: str, attrs: str, note: str, bg: str = "#ffffff") -> str:
+def _mv(src: str, attrs: str, note: str, bg: str = "#ffffff", tone: str = "neutral") -> str:
     return (f'<model-viewer src="{src}" camera-controls disable-pan interaction-prompt="none" {attrs} '
-            f'interpolation-decay="100" shadow-intensity="0" exposure="1" tone-mapping="neutral" '
+            f'interpolation-decay="100" shadow-intensity="0" exposure="1" tone-mapping="{tone}" '
             f'style="width:100%;max-width:760px;aspect-ratio:4/3;height:auto;margin:0 auto;display:block;'
             f'background:{bg};border:1px solid #ddd;border-radius:8px"></model-viewer>'
             f'<p style="text-align:center;color:#777;font-size:12px;margin:4px 0 0">{note} '
             f'Needs internet to load the viewer script.</p>')
 
 
-def inside_html(glb_path: str, bg: str = "#ffffff") -> str:
+def inside_html(glb_path: str, bg: str = "#ffffff", yaw_deg: float | None = None) -> str:
     """360° room from the inside: the orbit target is the panorama centre (the origin of the .glb),
-    so dragging turns the view around the room; the radius (zoom) moves the camera 5 cm - 1 m."""
-    return _mv(_src(glb_path), 'camera-target="0m 0m 0m" camera-orbit="0deg 90deg 0.3m" '
+    so dragging turns the view around the room; the radius (zoom) moves the camera 5 cm - 1 m.
+    yaw_deg (v4): longitude in the mesh frame A to face first (the hero view); the viewer then opens LEVEL
+    (polar 90°) at eye height (the panorama centre), 5 cm from the centre, and model-viewer's theta = -yaw."""
+    if yaw_deg is None:
+        return _mv(_src(glb_path), 'camera-target="0m 0m 0m" camera-orbit="0deg 90deg 0.3m" '
+                   'min-camera-orbit="auto 10deg 0.05m" max-camera-orbit="auto 170deg 1m" '
+                   'field-of-view="75deg" min-field-of-view="30deg" max-field-of-view="90deg"',
+                   "Drag to look around the room, scroll to move up to 1 m from the centre.", bg)
+    return _mv(_src(glb_path), f'camera-target="0m 0m 0m" camera-orbit="{-yaw_deg:.1f}deg 90deg 0.05m" '
                'min-camera-orbit="auto 10deg 0.05m" max-camera-orbit="auto 170deg 1m" '
-               'field-of-view="75deg" min-field-of-view="30deg" max-field-of-view="90deg"',
-               "Drag to look around the room, scroll to move up to 1 m from the centre.", bg)
+               'field-of-view="64deg" min-field-of-view="30deg" max-field-of-view="90deg"',
+               "Opens facing the hero view (H). Drag to look around, scroll to move up to 1 m from the centre.",
+               bg, tone=V4_TONE)
 
 
 def dollhouse_html(glb_path: str, camera_height: float, bg: str = "#ffffff") -> str:
@@ -420,7 +429,8 @@ def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1, v
             f"solid(s) ({furn}); {len(res['openings'])} door(s)/window(s). Dimensions are approximate "
             "(monocular depth)." + shots_txt)
     masks = an.room_masks(ana["class_map"], id2label)
-    return (p4v.gallery(res) if v4 else tex, res["plan_image"], inside_html(files["room_glb"], res["bg_color"]),
+    return (p4v.gallery(res) if v4 else tex, res["plan_image"],
+            inside_html(files["room_glb"], res["bg_color"], p4v.hero_yaw_A(res) if v4 else None),
             dollhouse_html(files["dollhouse_glb"], b["camera_height"], NEUTRAL_BG),
             gr.Model3D(value=files["room_glb"]), pl.depth_gray(dist), an.overlay_edges(pano, an.canny_edges(pano)),
             an.overlay_masks(pano, masks), files["pano"], files["plan_svg"], files["room_glb"],
