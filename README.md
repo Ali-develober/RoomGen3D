@@ -473,7 +473,7 @@ Code: `src/room_mesh.py`, `src/pipeline_360.py`, `scripts/run_room360.py`, `scri
 - **Disocclusion band (layer 1):** the background is continued 24 px behind every cut, coloured by inpainting.
 - **Room box (layer 2):** floor plane, ceiling height and the four walls of the closed 360° floor plan (milestone 5). Where the box surface is hidden behind furniture it is added and painted from the visible part of the same plane, so moving away from the centre shows wall and floor behind objects instead of holes.
 - **Dollhouse variant:** every triangle within 25 cm of the ceiling height is removed, so the room can be looked into from above.
-- Exported as `.glb` (unlit, double-sided): 0.31–0.41 M triangles, 8–10 MB.
+- Exported as `.glb` (unlit, double-sided): 0.34–0.41 M triangles, 8–10 MB.
 
 **Viewer (app, 360° Room mode):** "3D viewer" opens **inside** the room: the orbit target is the panorama centre, dragging turns the view around, and the zoom moves the camera 5 cm–1 m from the centre. "Dollhouse" orbits the ceiling-less room from outside and above (polar angle 0–80°). `gr.Model3D` stays as the offline fallback. The app keeps only the active mode's diffusion models on the GPU and moves the other mode's to the CPU when the mode changes (first switch 8.6 s, later about 2 s). Peak VRAM of a 360° request: 5.5 GB. Tested headlessly (both modes, switching back and forth); the two `<model-viewer>` modes have not yet been checked by hand in a browser.
 
@@ -481,16 +481,47 @@ Code: `src/room_mesh.py`, `src/pipeline_360.py`, `scripts/run_room360.py`, `scri
 
 | Empty share | Single view (all directions / front) | 360° room (all directions / front) |
 |---|---|---|
-| Inside, at the centre | 89.7% / 72.4% | **0.5% / 0.3%** |
-| Inside, 0.5 m from the centre | 89.3% / 71.5% | **0.7% / 0.3%** |
-| Inside, 1.0 m from the centre | 88.6% / 69.7% | **1.2% / 0.5%** |
-| Dollhouse (outside, above) | 57.1% / 64.7% | **31.0% / 30.5%** |
+| Inside, at the centre | 89.7% / 72.4% | **0.4% / 0.3%** |
+| Inside, 0.5 m from the centre | 89.3% / 71.5% | **0.5% / 0.4%** |
+| Inside, 1.0 m from the centre | 88.6% / 69.7% | **0.7% / 0.5%** |
+| Dollhouse (outside, above) | 57.2% / 64.7% | **27.6% / 27.1%** |
 
-- **The 360° mesh is a whole room:** from the centre only 0.5% of the view is empty in any direction (the single view: 90%, and still 72% in its own direction because a 90° view is wider than the 60° image). Moving 1 m off-centre raises it only to 1.2%, because the band and the room box fill what the panorama did not see.
-- **Dollhouse:** 31% of the rays through the room's bounding box miss (single view 57%). The misses are ragged room outlines (doors and windows open to outside depth, broken wall pieces at depth cuts, as in the kitchen) and the space between the bounding box and the walls.
-- **Timing** (RTX 5060 Laptop, models loaded): 17.2 s per room on average (panorama 7.5 s, super-resolution 0.8 s, depth 0.9 s, segmentation 1.4 s, mesh + floor plan 6.2 s, export 0.3 s). Peak VRAM per stage: panorama 3.9 GB, DAP 2.3 GB, SegFormer 0.3 GB, Real-ESRGAN 0.2 GB. The SD 2.1 panorama model is converted once to fp16 safetensors (load time 70 s → 17 s, then cached).
+- **The 360° mesh is a whole room:** from the centre only 0.4% of the view is empty in any direction (the single view: 90%, and still 72% in its own direction because a 90° view is wider than the 60° image). Moving 1 m off-centre raises it only to 0.7%, because the band and the room box fill what the panorama did not see.
+- **Dollhouse:** 28% of the rays through the room's bounding box miss (single view 57%). The misses are ragged room outlines (doors and windows open to outside depth, broken wall pieces at depth cuts, as in the kitchen) and the space between the bounding box and the walls.
+- **Timing** (RTX 5060 Laptop, models loaded): 16.8 s per room on average (panorama 7.5 s, super-resolution 0.8 s, depth 0.9 s, segmentation 1.4 s, mesh + floor plan 5.7 s, export 0.3 s). Peak VRAM per stage: panorama 3.9 GB, DAP 2.3 GB, SegFormer 0.3 GB, Real-ESRGAN 0.2 GB. The SD 2.1 panorama model is converted once to fp16 safetensors (load time 70 s → 17 s, then cached).
 - **Where it still fails:** the panorama model sometimes repeats large furniture (two beds in the coastal bedroom); thin objects are torn at depth cuts; the room box is a rectangle, so L-shaped or open-plan rooms are boxed (the mid-century dining room's box is 72 m²).
 - Tables: `results/tables/room3d_empty.csv`, `room3d_empty_per_view.csv`, `room360_timing.csv`. Figures: `results/figures/room3d_views.png` (inside views, single view vs. 360°), `room3d_dollhouse.png`. The 3D files are in `outputs/room360/<room>/` (not in git).
+
+### Floor Plan of the Full Room (milestone 5 of PLAN_V2)
+Code: `src/floorplan.py` (`closed_room_360`, `room_edges`), `scripts/floorplan_360.py`.
+
+The floor-plan code of milestone 1 runs unchanged on the spherical point cloud of the panorama (gravity from the floor plane, walls by RANSAC lines + Manhattan snapping, furniture rectangles, doors and windows). The azimuth tests were made wrap-aware for walls behind the camera. A 360° camera sees every side of the room, so the room is **closed into a rectangle** in the dominant direction, and its four sides become the walls of the plan (dimensions, area, doors and windows on them). A side with no detected wall line (e.g. a wall covered by wardrobes, which SegFormer labels as furniture) is drawn **hatched as inferred**.
+
+**How to close the room: three rules compared.** The check that decides is the **wall agreement**: the share of wall-labelled points (0.3–2.0 m above the floor) within 30 cm of the plan's outline. It is independent of all three rules. The plan-vs-mesh floor check (convex hull of the floor triangles in the mesh ÷ plan area) must stay ≤ 1, because the room cannot be smaller than the floor that was seen. These are the same six rooms the rules were developed on, so this is a selection, not a test.
+
+| Rule | Wall agreement (mean) | Hull ÷ plan (range) | Problem |
+|---|---|---|---|
+| Walls: longest wall line per side; missing side at the 98th percentile of the scene | 0.53 | 0.36–**2.38** | Picks inner lines: two plans are smaller than the floor seen (impossible) |
+| Floor: floor + furniture extent per side, snapped to a wall within 0.5 m | 0.46 | 0.39–0.62 | Floor seen through doorways and open-plan areas inflates the room |
+| **Walls + floor (selected):** the walls rule, but no side may cut through the observed floor (pushed out to its 95th percentile) | **0.55** | 0.36–1.08 | |
+
+**Result on the six demo rooms** (rule "walls + floor"):
+
+| Room | Plan (m) | Area (m²) | Inferred sides | Doors / windows | Furniture | Wall agreement | Mesh floor hull ÷ plan |
+|---|---|---|---|---|---|---|---|
+| Contemporary living room | 7.75 × 5.84 | 45.3 | 3 | 0 / 0 | 15 | 0.31 | 0.50 |
+| Coastal bedroom | 4.56 × 5.20 | 23.7 | 2 | 1 / 1 | 8 | 0.99 | 0.38 |
+| Rustic kitchen | 5.98 × 4.93 | 29.5 | 4 | 0 / 2 | 9 | 0.41 | 0.92 |
+| Mid-century dining room | 9.00 × 8.00 | 72.0 | 3 | 2 / 1 | 16 | 0.40 | 0.36 |
+| Art deco bathroom | 3.77 × 3.91 | 14.7 | 4 | 2 / 3 | 5 | 0.84 | 0.53 |
+| Mediterranean living room | 6.22 × 4.68 | 29.1 | 4 | 1 / 0 | 14 | 0.36 | 1.08 |
+
+- **Every 360° plan is closed** (6 of 6, against 0 of 654 single NYU views and 0 of 6 single demo views), with wall lengths, area, doors, windows and labelled furniture.
+- **The bedroom and the bathroom are good plans:** 99% and 84% of the wall points lie on the outline, and the dollhouse view matches the drawing (`results/figures/floorplan_360_a_coastal_style_bedroom_s22.png`).
+- **Open-plan rooms are boxed:** the dining room and the contemporary living room open into other spaces, so their rectangles (72 and 45 m²) contain more than the room. In those rooms only 31–41% of the wall points are on the outline.
+- **Plan vs. mesh floor:** the convex hull of the floor that the mesh actually shows covers 36–108% of the plan area (median 51%). Below 100% is expected: furniture hides floor near the walls, and the hull of the visible floor misses the corners. The one value above 1 (1.08, Mediterranean living room) means the plan is about 8% smaller than the visible floor: a side is placed at the floor's 95th percentile, not its maximum.
+- **Only 0–2 sides per room are backed by a detected wall line** (inferred: 2–4). Generated rooms are full of wardrobes, shelving and curtains, which SegFormer does not label as wall, so most sides come from the floor extent. Sizes also carry the depth scale (DAP; no ground truth here).
+- Tables: `results/tables/floorplan_360.csv` (all three rules, all checks). Figures: `results/figures/floorplan_360_overview.png` (panorama | plan | dollhouse for all rooms) and one figure per room, `results/figures/floorplan_360_<room>.png` (plan next to the dollhouse). PNG and SVG plans per room: `outputs/room360/<room>/floorplan.png / .svg`.
 
 ### Visual Results
 - Prompt → 2D image → edges → segmentation → depth → point cloud → mesh: `results/figures/pipeline_3d_results.png`
@@ -584,7 +615,7 @@ RoomGen3D/
 ## 14. Limitations
 
 - In Quick mode the 3D comes from a **single view**, so hidden areas (behind furniture, other walls) are not reconstructed. The 360° Room mode builds the whole room, but from one viewpoint: surfaces hidden from the panorama centre are only filled by the background band and the rectangular room box.
-- The **floor plan** of a single view is never a closed room (0 of 654 NYU views); furniture behind the visible face is completed from class priors, and sizes carry the depth model's scale error (wall lengths +16% median on NYU).
+- The **floor plan** of a single view is never a closed room (0 of 654 NYU views); furniture behind the visible face is completed from class priors, and sizes carry the depth model's scale error (wall lengths +16% median on NYU). The 360° plan is always closed, but as a rectangle: open-plan and L-shaped rooms are boxed, and most sides are inferred from the floor extent because walls hidden behind furniture are not detected.
 - An **isometric cutaway mode** (prompting for a corner view from above on a plain white background, so that fewer regions are hidden) was tried with base SD v1.5 and with the LoRA at strength 1.0 and 0.5 on the six demo prompts and dropped: only four of six images got the corner view, five of six had no plain background to remove, and the room style was mostly lost.
 - Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only.
 - Training on a subset of MMIS due to compute limits.

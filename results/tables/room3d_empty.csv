@@ -1,9 +1,9 @@
 mode,view,empty_all_yaws,empty_front_yaws
 single_view,"inside, 0.0 m from centre",0.8965,0.7239
-single_view,"inside, 0.5 m from centre",0.8932,0.7153
+single_view,"inside, 0.5 m from centre",0.8933,0.7153
 single_view,"inside, 1.0 m from centre",0.8859,0.6972
-single_view,"dollhouse (outside, above)",0.5713,0.6469
-room360,"inside, 0.0 m from centre",0.0052,0.0029
-room360,"inside, 0.5 m from centre",0.0071,0.0028
-room360,"inside, 1.0 m from centre",0.0116,0.0049
-room360,"dollhouse (outside, above)",0.3103,0.3046
+single_view,"dollhouse (outside, above)",0.5716,0.6470
+room360,"inside, 0.0 m from centre",0.0040,0.0032
+room360,"inside, 0.5 m from centre",0.0046,0.0035
+room360,"inside, 1.0 m from centre",0.0070,0.0046
+room360,"dollhouse (outside, above)",0.2764,0.2714

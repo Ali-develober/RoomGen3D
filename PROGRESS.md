@@ -84,8 +84,23 @@ Gravity from predicted depth within 1.8° (median) of GT; floor plane found in ~
 - `src/generate_pano.py`: fp16 safetensors cache of the SD 2.1 panorama model (load 70 s → 17 s).
 - `app/app.py`: mode switch Quick / 360° Room; inside viewer (orbit radius 5 cm–1 m around the centre), dollhouse viewer, Model3D fallback; only the active mode's diffusion models on the GPU. Headless test OK (quick → 360 → quick), 360° peak 5.5 GB.
 
-**Results** (6 demo prompts; empty share of ray-cast views): inside at the centre 0.5% (single view 89.7%), 1.0 m off-centre 1.2% (88.6%); dollhouse 31.0% (57.1%). 17.2 s per room. Tables `room3d_empty*.csv`, `room360_timing.csv`; figures `room3d_views.png`, `room3d_dollhouse.png`.
+**Results** (6 demo prompts; empty share of ray-cast views; final numbers after the milestone-5 room rule): inside at the centre 0.4% (single view 89.7%), 1.0 m off-centre 0.7% (88.6%); dollhouse 27.6% (57.2%). 16.8 s per room. Tables `room3d_empty*.csv`, `room360_timing.csv`; figures `room3d_views.png`, `room3d_dollhouse.png`.
 
 **Failed / limitations**: repeated furniture in some panoramas; thin objects torn; rectangular box (dining room box 72 m²); `<model-viewer>` inside/dollhouse modes not yet checked by hand in a browser.
 
-**Next:** Milestone 5 — 360° floor plan figures and the plan-vs-mesh floor-area check (`scripts/floorplan_360.py`, written).
+**Next:** Milestone 5 (below).
+
+---
+
+## 2026-11-14 — Milestone 5: floor plan of the full room — DONE
+
+**Built**
+- `src/floorplan.py`: `closed_room_360` with three rules ("walls", "floor", "walls+floor"); default "walls+floor" (walls rule, but no side may cut through the observed floor: pushed out to the floor's 95th percentile); inferred sides hatched.
+- `scripts/floorplan_360.py`: plans (PNG/SVG) for the 6 demo rooms, plan-vs-mesh floor check (convex hull of the mesh's observed floor triangles ÷ plan area), independent wall agreement (share of wall points within 30 cm of the outline), one figure per room (plan next to the dollhouse from above) + overview.
+- Room meshes rebuilt and milestone 4 evaluation rerun with the final rule (numbers updated above and in the README).
+
+**Results**: 6/6 plans closed (single view: 0/654 NYU, 0/6 demo). Rule comparison on the same 6 rooms (selection, not a test): wall agreement 0.53 (walls) / 0.46 (floor) / **0.55 (walls+floor)**; hull ÷ plan up to 2.38 with the walls rule (impossible), ≤ 1.08 with walls+floor. Bedroom 23.7 m² (wall agreement 0.99) and bathroom 14.7 m² (0.84) are good; open-plan dining (72 m²) and living room (45 m²) are boxed too large. Table `results/tables/floorplan_360.csv`; figures `floorplan_360_overview.png`, `floorplan_360_<room>.png`.
+
+**Failed / limitations**: only 0–2 sides per room backed by a detected wall line (wardrobes / shelving not labelled as wall); rectangles only; the rule was chosen on the same 6 rooms it is reported on.
+
+**Next:** Milestone 6 — layout-first experiment (`src/layout.py`: parametric layouts, equirectangular layout depth, ControlNet depth for SD 1.5 + pano LoRA, projection onto the known geometry, adherence metrics). Needs the ControlNet depth download (`lllyasviel/control_v11f1p_sd15_depth`, ~0.7 GB fp16).

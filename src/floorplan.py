@@ -469,43 +469,72 @@ def closed_room(segs: list[dict], info: dict) -> dict | None:
     return {"corners": corners, "width": u1 - u0, "depth": v1 - v0, "area": (u1 - u0) * (v1 - v0)}
 
 
-def closed_room_360(segs: list[dict], info: dict, evidence: np.ndarray, side_angle: float = 20.0) -> dict:
+def closed_room_360(segs: list[dict], info: dict, evidence: np.ndarray, floor_evidence: np.ndarray | None = None,
+                    rule: str = "walls+floor", side_angle: float = 20.0, snap: float = 0.5,
+                    floor_only: np.ndarray | None = None) -> dict:
     """Closed rectangular room for a 360 degree camera, which sees every side of the room.
 
-    In the dominant frame (u, v) every wall within `side_angle` of an axis is assigned to the side
-    it lies on; the longest wall of a side is its boundary. A side without any wall line (e.g. a
-    wall hidden behind wardrobes, or labelled as furniture) is placed at the 98th percentile of the
-    scene points (floor, wall, ceiling, furniture) on that side and marked as inferred.
-    Returns {"corners", "width", "depth", "area", "inferred" (per edge: v0, u1, v1, u0)}.
+    Sides are found in the dominant frame (u, v); walls within `side_angle` of an axis are assigned
+    to the side they lie on. Two rules (README, milestone 5):
+      "walls"  (first version) the longest wall line of a side is its boundary; a side without a
+               wall line is placed at the 98th percentile of all scene points on that side.
+      "walls+floor"  (default, chosen on the six demo rooms by the share of wall points on the
+               outline, README milestone 5) the "walls" rule, but no side may cut through the observed floor: each side is
+               pushed out to at least the 95th percentile of the floor points on that side.
+      "floor"  a room's floor ends at its walls: every side is placed at the 99th
+               percentile of the floor points and of the furniture standing on it (lower than
+               1.8 m) on that side, and snapped to a detected wall line if one lies within `snap`
+               metres of it. If the walls do not agree on a direction, the direction is taken from
+               the minimum-area rectangle of the floor and furniture points.
+    A side without a wall line is marked inferred (drawn hatched).
+    Returns {"corners", "width", "depth", "area", "inferred" (per edge: v0, u1, v1, u0), "rule"}.
     """
-    t = np.radians(info.get("dominant_deg", 0.0))
+    fe = evidence if floor_evidence is None or not len(floor_evidence) else floor_evidence
+    dom = info.get("dominant_deg", 0.0)
+    if rule == "floor" and info.get("support", 0.0) < MANHATTAN_MIN_SUPPORT and len(fe) >= 5:
+        dom = float(cv2.minAreaRect(fe.astype(np.float32))[2]) % 90.0
+    t = np.radians(dom)
     u, v = np.array([np.cos(t), np.sin(t)]), np.array([-np.sin(t), np.cos(t)])
-    sides = {}
+    cand = {}
     for sg in segs:
         mid = (sg["p0"] + sg["p1"]) / 2
-        for axis, a in (("u", u), ("v", v)):
-            if abs(sg["n"] @ a) >= np.cos(np.radians(side_angle)):
-                key = (axis, float(np.sign(mid @ a)))
-                if key not in sides or sg["length"] > sides[key]["length"]:
-                    sides[key] = sg
+        for axis, ax_ in (("u", u), ("v", v)):
+            if abs(sg["n"] @ ax_) >= np.cos(np.radians(side_angle)):
+                key = (axis, float(np.sign(mid @ ax_)))
+                p = float(np.mean(sg["inliers"] @ ax_)) if sg.get("inliers") is not None else float(mid @ ax_)
+                cand.setdefault(key, []).append((sg["length"], p))
     pos, inferred = {}, {}
-    for axis, a in (("u", u), ("v", v)):
-        proj = evidence @ a
+    for axis, ax_ in (("u", u), ("v", v)):
+        proj, fproj = evidence @ ax_, fe @ ax_
         for sign in (-1.0, 1.0):
             key = (axis, sign)
-            if key in sides:
-                pos[key] = float(np.mean(sides[key]["inliers"] @ a)) if sides[key]["inliers"] is not None \
-                    else float(((sides[key]["p0"] + sides[key]["p1"]) / 2) @ a)
-                inferred[key] = False
+            walls = cand.get(key, [])
+            if rule in ("walls", "walls+floor"):
+                if walls:
+                    pos[key], inferred[key] = max(walls)[1], False
+                else:
+                    side = proj[np.sign(proj) == sign]
+                    pos[key] = float(np.percentile(side, 98 if sign > 0 else 2)) if len(side) else sign * 0.5
+                    inferred[key] = True
+                if rule == "walls+floor" and floor_only is not None and len(floor_only):
+                    fs = (floor_only @ ax_)[np.sign(floor_only @ ax_) == sign]
+                    if len(fs):
+                        f95 = float(np.percentile(fs, 95 if sign > 0 else 5))
+                        if sign * f95 > sign * pos[key]:
+                            pos[key], inferred[key] = f95, True
+                continue
+            side = fproj[np.sign(fproj) == sign]
+            ext = float(np.percentile(side, 99 if sign > 0 else 1)) if len(side) else sign * 0.5
+            near = [(L, p) for L, p in walls if abs(p - ext) <= snap]
+            if near:
+                pos[key], inferred[key] = max(near)[1], False
             else:
-                side = proj[np.sign(proj) == sign]
-                pos[key] = float(np.percentile(side, 98 if sign > 0 else 2)) if len(side) else sign * 0.5
-                inferred[key] = True
+                pos[key], inferred[key] = ext, True
     u0, u1, v0, v1 = pos[("u", -1.0)], pos[("u", 1.0)], pos[("v", -1.0)], pos[("v", 1.0)]
     corners = np.array([u0 * u + v0 * v, u1 * u + v0 * v, u1 * u + v1 * v, u0 * u + v1 * v])
     return {"corners": corners, "width": u1 - u0, "depth": v1 - v0, "area": (u1 - u0) * (v1 - v0),
             "inferred": [inferred[("v", -1.0)], inferred[("u", 1.0)], inferred[("v", 1.0)], inferred[("u", -1.0)]],
-            "n_observed_sides": int(sum(not x for x in inferred.values()))}
+            "n_observed_sides": int(sum(not x for x in inferred.values())), "rule": rule}
 
 
 def room_edges(room: dict) -> list[dict]:
@@ -683,7 +712,7 @@ def extract_openings(pts: np.ndarray, valid: np.ndarray, class_map: np.ndarray, 
 # --------------------------------------------------------------------------- #
 def build_floorplan(depth: np.ndarray, k: tuple | None, class_map: np.ndarray, id2label: dict,
                     valid: np.ndarray | None = None, fov_deg: float | None = None,
-                    points: np.ndarray | None = None) -> dict:
+                    points: np.ndarray | None = None, room_rule: str = "walls+floor") -> dict:
     """Floor plan of one view.
 
     depth: HxW metres; k = (fx, fy, cx, cy); class_map: HxW ADE20K ids at the depth resolution;
@@ -726,7 +755,12 @@ def build_floorplan(depth: np.ndarray, k: tuple | None, class_map: np.ndarray, i
     if fov_deg >= 359 and len(exy):
         # 360 degree camera: every side of the room is in view, so the room is closed from the
         # detected walls (sides without a wall line are inferred) and its sides become the walls
-        room = closed_room_360(walls, info, exy)
+        fur_m = sel(set(FURNITURE)) & valid
+        fur_xy, fur_h = to_plan(pts[fur_m], frame)
+        fl = np.vstack([fxy, fur_xy[(fur_h > 0.02) & (fur_h < 1.8)]])
+        if len(fl) > 60_000:
+            fl = fl[np.random.default_rng(0).choice(len(fl), 60_000, replace=False)]
+        room = closed_room_360(walls, info, exy, fl, rule=room_rule, floor_only=fxy)
         walls = room_edges(room)
     else:
         room = closed_room(walls, info)
