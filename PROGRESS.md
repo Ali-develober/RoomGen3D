@@ -314,3 +314,13 @@ Restart rule: read this section, continue with the first milestone not marked DO
 **Failed / limitations**: SF3D not usable (gated + compiled extensions, no compiler, no HF login), Hunyuan3D-2mini not tried (23.5 GB, compiled rasterizer); generated shapes do not beat blocks; run crashed once on a room with no solids (fixed, resumed); first dollhouse figure camera upside down (frame B Y is down; fixed, report rerun). Intermediate object caches in outputs/objects_eval kept for now (bench 4096 panoramas reused by milestone 5).
 
 **Next**: Milestone 5 — remaining v3 weaknesses: texture synthesis for hidden surfaces (`room_box` "tile" / "patch_base" / "tile_base" fills drafted), open sides on the plan + candidate default 3, doors / windows on refined perspective views.
+
+## 2026-11-14 — V4 Milestone 5: remaining v3 weaknesses — DONE
+
+**Built**: `room_box` fills "tile" (FFT-autocorrelation period + copy), "patch_base", "tile_base", "none"; `side_beyond_shares` / `mark_open_sides` (main-wall refit, beyond share, furniture-safe placement, OPEN_THR 0.15); `pipeline_v3.build(open_sides, opening_map)` (off for v3) and open sides on in v4; plan_v3 dashed "open side"; `instances.run_views/merge_views(fov, size)`; v4 shells use the patch fill; app candidates default 3. `scripts/eval_v4_m5.py --part fill|open|doors`.
+
+**Results**: fill (held-out real holes): NS → patch energy ratio 0.50 → 0.91, darkness 32.5 → 24.5, BRISQUE 51.9 → 45.0 (synthetic SSIM 0.795 → 0.785); tile variants fail the SSIM guard. Open sides: 0 % / 1.25 % false-open on dev / held-out closed rooms, area error unchanged; demo: open sides in 4 of 6 rooms, area 22.7 → 19.6 m² in one. Doors / windows: recall 0.023 for v3, 13×1024 and 26×1024 views (no gain). App: v4 k=3 + 4 objects 97 s cold, 6.4 GB.
+
+**Failed / limitations**: periodic tiling (new) not selected; first open-side rule (beyond share of inferred sides) found nothing — all demo sides were "detected" far walls; second rule cut real furniture out of the plans (rejected); final rule marks open sides but rarely shrinks the area. Doors / windows on refined views: negative result.
+
+**Next**: Final — v4 default with v3 toggle (done), page layout, summary figure per demo room, summary table, README; do not start the course notebook.

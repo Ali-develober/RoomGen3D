@@ -1,0 +1,4 @@
+{
+ "threshold": 0.15,
+ "rule": "lowest threshold with <= 5 % false-open sides on the closed dev rooms"
+}

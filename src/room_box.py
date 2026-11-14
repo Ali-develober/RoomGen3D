@@ -231,12 +231,97 @@ def patch_inpaint(img: np.ndarray, mask: np.ndarray, patch: int = 9, work: int =
     return out
 
 
+def _low_base(img: np.ndarray, mask: np.ndarray, sigma: float = 6.0, work: int = 512) -> np.ndarray:
+    """Smooth shading base inside the hole: NS inpainting of the blurred texture at a working resolution."""
+    h, w = mask.shape
+    s_ = min(1.0, work / max(h, w))
+    sw, sh = max(int(w * s_), 8), max(int(h * s_), 8)
+    small = cv2.resize(cv2.GaussianBlur(img, (0, 0), sigma), (sw, sh), interpolation=cv2.INTER_AREA)
+    hm = cv2.resize(mask.astype(np.uint8), (sw, sh), interpolation=cv2.INTER_NEAREST)
+    hm = cv2.dilate(hm, np.ones((3, 3), np.uint8))
+    base = cv2.inpaint(small, hm, 5, cv2.INPAINT_NS)
+    return cv2.resize(base, (w, h), interpolation=cv2.INTER_CUBIC).astype(np.float32)
+
+
+def with_base(fill: np.ndarray, img: np.ndarray, mask: np.ndarray, sigma: float = 6.0) -> np.ndarray:
+    """PLAN_V4 milestone 5: keep only the detail band of a fill (fill - G*fill) on top of a smooth NS base, so
+    copied texture brings structure but no colour blotches."""
+    f = fill.astype(np.float32)
+    detail = f - cv2.GaussianBlur(f, (0, 0), sigma)
+    out = img.astype(np.float32).copy()
+    out[mask] = (_low_base(img, mask, sigma) + detail)[mask]
+    return np.clip(out, 0, 255).astype(np.uint8)
+
+
+def find_period(img: np.ndarray, valid: np.ndarray, min_shift: int = 6, work: int = 512) -> tuple | None:
+    """Dominant repetition (dy, dx) of a texture from its masked, normalised autocorrelation (FFT) - floor tiles,
+    planks, wallpaper. Returns (dy, dx, correlation) at full resolution or None."""
+    h, w = valid.shape
+    s_ = min(1.0, work / max(h, w))
+    sw, sh = max(int(w * s_), 16), max(int(h * s_), 16)
+    g = cv2.resize(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY), (sw, sh), interpolation=cv2.INTER_AREA).astype(np.float64)
+    v = cv2.resize(valid.astype(np.uint8), (sw, sh), interpolation=cv2.INTER_NEAREST).astype(np.float64)
+    if v.sum() < 0.2 * v.size:
+        return None
+    g = g - cv2.GaussianBlur(g, (0, 0), 8)                           # remove shading, keep the pattern
+    g = (g - (g * v).sum() / v.sum()) * v
+    H2, W2 = 2 * sh, 2 * sw
+    Fg, Fv = np.fft.rfft2(g, (H2, W2)), np.fft.rfft2(v, (H2, W2))
+    num = np.fft.irfft2(Fg * np.conj(Fg), (H2, W2))
+    den = np.fft.irfft2(Fv * np.conj(Fv), (H2, W2))
+    var = (g * g).sum() / v.sum()
+    corr = num / np.maximum(den * var, 1e-9)
+    corr[den < 0.3 * v.sum()] = -1
+    ms = max(2, int(round(min_shift * s_)))
+    yy, xx = np.meshgrid(np.fft.fftfreq(H2) * H2, np.fft.fftfreq(W2) * W2, indexing="ij")
+    corr[(np.abs(yy) < ms) & (np.abs(xx) < ms)] = -1
+    corr[(np.abs(yy) > sh * 0.6) | (np.abs(xx) > sw * 0.6)] = -1
+    k = int(np.argmax(corr))
+    c = float(corr.flat[k])
+    dy, dx = int(round(yy.flat[k] / s_)), int(round(xx.flat[k] / s_))
+    return (dy, dx, c)
+
+
+def tile_inpaint(img: np.ndarray, mask: np.ndarray, thr: float = 0.5, kmax: int = 40) -> np.ndarray:
+    """Periodic fill: every hole pixel is copied from the nearest visible pixel along the texture's dominant
+    period (find_period); falls back to patch_inpaint without a clear period (correlation < thr)."""
+    per = find_period(img, ~mask)
+    if per is None or per[2] < thr:
+        return patch_inpaint(img, mask, work=384)
+    dy, dx, _ = per
+    h, w = mask.shape
+    out = img.copy()
+    todo = mask.copy()
+    ys, xs = np.nonzero(todo)
+    for k in range(1, kmax + 1):
+        if len(ys) == 0:
+            break
+        for sgn in (1, -1):
+            sy, sx = ys + sgn * k * dy, xs + sgn * k * dx
+            ok = (sy >= 0) & (sy < h) & (sx >= 0) & (sx < w)
+            ok[ok] &= ~mask[sy[ok], sx[ok]]
+            out[ys[ok], xs[ok]] = img[sy[ok], sx[ok]]
+            todo[ys[ok], xs[ok]] = False
+            keep = ~ok
+            ys, xs = ys[keep], xs[keep]
+    if todo.any():
+        out = patch_inpaint(out, todo, work=384)
+    return out
+
+
 def inpaint(img: np.ndarray, mask: np.ndarray, method: str = DEFAULT_INPAINT) -> np.ndarray:
-    """Fill `mask` (bool) of an RGB uint8 texture with one of INPAINT_METHODS."""
-    if not mask.any():
+    """Fill `mask` (bool) of an RGB uint8 texture with one of INPAINT_METHODS (+ PLAN_V4: "tile", "patch_base",
+    "tile_base" - the *_base variants keep only the fill's detail band on a smooth NS base)."""
+    if not mask.any() or method == "none":
         return img
     if method == "patch":
         return patch_inpaint(img, mask)
+    if method == "tile":
+        return tile_inpaint(img, mask)
+    if method == "patch_base":
+        return with_base(patch_inpaint(img, mask, work=384), img, mask)
+    if method == "tile_base":
+        return with_base(tile_inpaint(img, mask), img, mask)
     flag = cv2.INPAINT_TELEA if method == "telea" else cv2.INPAINT_NS
     return cv2.inpaint(img, mask.astype(np.uint8), 5, flag)
 
@@ -389,3 +474,67 @@ def build_room_v3(dist: np.ndarray, texture: np.ndarray, class_map: np.ndarray, 
     mesh = combine(parts)
     mesh.update({"box": box, "shell_stats": shell["stats"], "camera_height": box["camera_height"]})
     return mesh
+
+
+# --------------------------------------------------------------------------- #
+# PLAN_V4 milestone 5: open sides
+# --------------------------------------------------------------------------- #
+OPEN_THR = 0.15             # development choice (results/tables/open_sides_selection.json)
+
+
+def side_beyond_shares(box: dict, dist: np.ndarray, rel: float = 0.10, abs_: float = 0.10) -> dict:
+    """For each box side: the share (solid angle) of the rays that leave the box through that side's wall area
+    whose observed distance lies clearly BEYOND it (> exit * (1 + rel) + abs_): an opening into another space."""
+    from .boxiness import box_exit
+    H, W = dist.shape
+    dB = (eq.pixel_dirs(W, H) @ box["R"].T) @ box["Q"]
+    r_exit = box_exit(dB, box)
+    P = dB * r_exit[..., None]
+    (x0, x1), (z0, z1) = box["x"], box["z"]
+    sa = np.cos(np.pi / 2 - np.pi * (np.arange(H) + 0.5) / H)[:, None] * np.ones((1, W))
+    beyond = dist > r_exit * (1 + rel) + abs_
+    out = {}
+    for name, ax, val in (("+x", 0, x1), ("-x", 0, x0), ("+z", 2, z1), ("-z", 2, z0)):
+        on = np.abs(P[..., ax] - val) < 1e-3
+        out[name] = float(sa[on & beyond].sum() / max(sa[on].sum(), 1e-9)) if on.any() else 0.0
+    return out
+
+
+def mark_open_sides(box: dict, dist: np.ndarray, class_map: np.ndarray, id2label: dict, thr: float | None = None,
+                    min_gap: float = 0.5) -> dict:
+    """Open plan / corridor / next room: v3 places each side at the FARTHEST supported wall peak (or, without a
+    measured wall, at the 97th floor percentile), so a wall of the adjoining space can become the room's wall.
+    Here the box is also fitted with the main-wall rule (largest wall peak, PEAK_RULE "max"); a side whose main
+    wall lies >= min_gap closer is OPEN if, through that main wall, a share >= thr of the view goes clearly
+    beyond it (side_beyond_shares): the side is drawn as OPEN and placed at the main wall or, if furniture is seen
+    beyond it (furniture of the adjoining space cannot be told apart), at the furniture extent (99th percentile
+    + 0.2 m) - never cutting furniture and never further than v3.
+    Returns a new box (v3 boxes unchanged)."""
+    global PEAK_RULE
+    thr = OPEN_THR if thr is None else thr
+    old = PEAK_RULE
+    try:
+        PEAK_RULE = "max"
+        bm = fit_box(dist, class_map, id2label)
+    finally:
+        PEAK_RULE = old
+    bm["R"], bm["Q"] = box["R"], box["Q"]
+    sh = side_beyond_shares(bm, dist)
+    from .floorplan import FURNITURE, class_ids
+    P = rm.aligned_points(dist, box["R"]) @ box["Q"]
+    furn = np.isin(class_map, class_ids(id2label, set(FURNITURE))) & (box["camera_height"] - P[..., 1] > 0.02)
+    b = {**box, "sides": {k: dict(v) for k, v in box["sides"].items()}}
+    for name, s_ in b["sides"].items():
+        near = bm["sides"][name]["pos"]
+        ax, sgn = (0 if name[1] == "x" else 2), (1.0 if name[0] == "+" else -1.0)
+        fx = sgn * P[..., ax][furn & (sgn * P[..., ax] > 0)]
+        f_ext = float(np.percentile(fx, 99)) + 0.2 if len(fx) > 50 else 0.0      # guard: keep the furniture inside
+        s_["beyond_share"] = sh[name]
+        s_["open"] = bool(near <= s_["pos"] - min_gap and sh[name] >= thr)
+        if s_["open"]:
+            s_["pos_v3"], s_["pos"] = s_["pos"], float(min(s_["pos"], max(near, f_ext)))
+    x0, x1 = -b["sides"]["-x"]["pos"], b["sides"]["+x"]["pos"]
+    z0, z1 = -b["sides"]["-z"]["pos"], b["sides"]["+z"]["pos"]
+    b.update({"x": (x0, x1), "z": (z0, z1), "width": x1 - x0, "depth": z1 - z0, "area": (x1 - x0) * (z1 - z0),
+              "n_open": int(sum(v["open"] for v in b["sides"].values()))})
+    return b

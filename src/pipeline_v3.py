@@ -71,10 +71,14 @@ def in_front_of_shell(dist: np.ndarray, box: dict, rel: float = 0.04, abs_: floa
     return dist < bx.box_exit(dirs, box) * (1 - rel) - abs_
 
 
-def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furniture_params: dict | None = None) -> dict:
-    """[3]-[5] box, solids, openings, meshes."""
+def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furniture_params: dict | None = None,
+          open_sides: bool = False, opening_map: np.ndarray | None = None) -> dict:
+    """[3]-[5] box, solids, openings, meshes. PLAN_V4 milestone 5 (off for v3): open_sides = mark inferred sides
+    that open into another space (room_box.mark_open_sides); opening_map = class map used for doors / windows."""
     cm = ana["class_map"]
     box = rb.fit_box(dist, cm, id2label)
+    if open_sides:
+        box = rb.mark_open_sides(box, dist, cm, id2label)
     solids, counts = fu.build_solids(dist, ana["inst_map"], ana["instances"], box, id2label, furniture_params, cm)
     inst_map = ana["inst_map"]
     if (furniture_params or fu.DEFAULT_PARAMS).get("leftovers", fu.DEFAULT_PARAMS["leftovers"]):
@@ -89,7 +93,8 @@ def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furn
     parts = shell["parts"] + ([furn] if len(furn["faces"]) else [])
     doll = rb.combine([p for p in parts if p["kind"] != "ceiling"])
     doll.update({"box": box, "camera_height": box["camera_height"]})
-    openings = pv.openings_on_box(dist, cm, id2label, box)
+    openings = pv.openings_on_box(dist, cm if opening_map is None else opening_map, id2label, box)
+    openings = [o for o in openings if not box["sides"][{"x1": "+x", "x0": "-x", "z1": "+z", "z0": "-z"}[o["wall"]]].get("open")]
     return {"box": box, "solids": solids, "counts": counts, "openings": openings, "mesh": mesh, "dollhouse": doll,
             "shell_stats": shell["stats"]}
 

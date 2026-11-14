@@ -354,6 +354,7 @@ def build_drawing(box: dict, solids: list[dict], openings: list[dict], title: st
             "bottom" if abs(q[1] - lo[1]) < 1e-6 else "top"
     det = {"+x": "x1", "-x": "x0", "+z": "z1", "-z": "z0"}
     detected = {side_of[v]: box["sides"][k]["detected"] for k, v in det.items()}
+    is_open = {side_of[v]: bool(box["sides"][k].get("open", False)) for k, v in det.items()}   # PLAN_V4 m5
     t = WALL_T                                       # band per side: (lower corner, upper corner, axis it runs along)
     bands = {"bottom": (np.array([lo[0] - t, lo[1] - t]), np.array([hi[0] + t, lo[1]]), 0),
              "top": (np.array([lo[0] - t, hi[1]]), np.array([hi[0] + t, hi[1] + t]), 0),
@@ -372,8 +373,18 @@ def build_drawing(box: dict, solids: list[dict], openings: list[dict], title: st
             pb = _to_plan(np.array([o["s1"], z0 if o["wall"] == "z0" else z1]), rot)
         g0, g1 = sorted([pa[ax], pb[ax]])
         gaps[side].append((g0, g1, o["kind"]))
-    stats = {"walls_detected": int(sum(detected.values())), "openings": len(openings)}
+    stats = {"walls_detected": int(sum(detected.values())), "openings": len(openings),
+             "open_sides": int(sum(is_open.values()))}
     for side, (blo, bhi, ax) in bands.items():
+        if is_open[side]:                               # open side: dashed line on the inner face, no wall
+            inner = {"bottom": lo[1], "top": hi[1], "left": lo[0], "right": hi[0]}[side]
+            a, b_ = (np.array([lo[0], inner]), np.array([hi[0], inner])) if ax == 0 else \
+                (np.array([inner, lo[1]]), np.array([inner, hi[1]]))
+            Dw.line(a, b_, layer="WALLS", lw=0.8, color=HATCH, ls="--")
+            out_n = {"bottom": [0, -1], "top": [0, 1], "left": [-1, 0], "right": [1, 0]}[side]
+            Dw.text((a + b_) / 2 + 0.18 * np.array(out_n), "open side", pt=7, layer="TEXT", color=HATCH,
+                    rot=90.0 if ax == 1 else 0.0)
+            continue
         segs, cur = [], blo[ax]
         for g0, g1, kind in sorted(gaps[side]):
             segs.append((cur, max(cur, g0)))

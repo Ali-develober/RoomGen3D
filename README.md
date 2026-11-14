@@ -921,6 +921,27 @@ Held-out bench (20 rooms) and the six demo rooms (`objects_summary.csv`, `object
 - Figure: `results/figures/objects_dollhouse.png` (v3 vs v4 dollhouse, TripoSR inputs).
 - **Limitations:** silhouette IoU from the single panorama viewpoint is the only shape check available (no 3D ground truth for generated furniture); relief surfaces are thin shells that can look like floating fragments from above.
 
+### Remaining v3 weaknesses (milestone 5 of PLAN_V4)
+Code: `room_box.inpaint` (new "tile", "patch_base", "tile_base"; "none"), `room_box.side_beyond_shares / mark_open_sides`, `pipeline_v3.build(open_sides=, opening_map=)` (off for v3), `plan_v3` open-side drawing, `instances.run_views / merge_views(fov, size)`, `room_v4.DEFAULTS["fill"]`, `scripts/eval_v4_m5.py`.
+
+**1. Hidden floor / wall areas** (texels behind furniture in the 5 mm v4 shell textures). Compared: NS (v3), exemplar patch fill, **periodic tiling** (dominant repetition from the masked FFT autocorrelation, copy along it; exact on a synthetic tiled floor), and patch / tile detail on a smooth NS base. Synthetic holes in visible walls and floors (truth known) and the real hidden regions (no truth: texture-energy ratio = 1–4 px DoG energy inside the fill / in the visible plane, 1 = same texture; darkness = |fill mean − visible median| grey; BRISQUE). Held-out bench (`fill_summary.csv`):
+
+| Method | Synthetic PSNR / SSIM | Real holes: energy ratio | darkness | BRISQUE |
+|---|---|---|---|---|
+| NS (v3) | 27.8 / 0.795 | 0.50 | 32.5 | 51.9 |
+| **exemplar patch (selected)** | 27.3 / 0.785 | **0.91** | **24.5** | 45.0 |
+| patch on NS base | 27.0 / 0.764 | 0.94 | 30.0 | 37.0 |
+| periodic tile | 25.9 / 0.750 | 1.29 | 31.4 | 38.7 |
+| tile on NS base | 26.4 / 0.735 | 1.23 | 30.0 | **36.7** |
+
+Rule (dev): SSIM within 0.02 of NS on synthetic holes, then mean rank of |energy − 1|, darkness, BRISQUE on the real holes → **patch** (the tiling variants fail the SSIM guard: generated textures are rarely strictly periodic, so copied periods misalign). v4 shells now use it (`room_v4.DEFAULTS["fill"]`); figure `fill_examples.png`.
+
+**2. Open-plan rooms.** v3's box sides sit on the *farthest* supported wall peak, so in open-plan panoramas the wall of the adjoining space became the room's wall (dining 74.7 m², living 56 m²). New: the box is also fitted with the main-wall rule (largest wall peak); a side whose main wall is ≥ 0.5 m closer and through which ≥ 15 % of the view goes clearly beyond it is **open**: drawn dashed with "open side" on the plan (no wall band, no door/window), placed at the main wall or — when furniture is seen beyond it — at the furniture extent (never cutting furniture). Threshold = lowest with ≤ 5 % false-open sides on the closed dev bench rooms (0.15; `open_sides_thresholds.csv`): false-open sides 0 % dev, 1.25 % held-out, area error unchanged (10.1 % median). Demo rooms (`open_sides_demo.csv`, `open_sides_demo.png`): open sides found in the contemporary living room (1), kitchen (2), dining room (1) and Mediterranean living room (2), none in the bedroom and bathroom. **Limitation:** the area only shrinks in one room (22.7 → 19.6 m²): in the others furniture is seen beyond the main wall (furniture of the adjoining space cannot be told apart), and a first version that cut the box at the main wall removed real furniture (kitchen island, dining table) from the plan, so it was rejected. Candidate default is now **3** in the app.
+
+**3. Doors / windows on refined perspective views** — negative. Mask2Former on the 13 v3 view directions cut from the 4096 panorama at 1024 px, or on the 26 milestone-2 views, against v3 (640 px views of the 1024 panorama), held-out 44 layout openings (`doors_v4.csv`): recall 0.023 for all three, precision 0.053 → 0.056 / 0.059. The bench panoramas rarely show the layout's doors and windows at all, so resolution is not the bottleneck; v4 keeps the v3 detection.
+
+App (headless): 360° v4 with 3 candidates and 4 objects 97 s cold, peak 6.4 GB; v3 14 s; Layout-first 20 s.
+
 ### Demo modes (v4)
 **360° Room** runs **v4** by default (pipeline switch v4 / v3 / v2). The top of the page is a **gallery of design shots** (hero first, then A–D, captions with the plan letters; Quick and the other modes show their single image or panorama there) next to the **floor plan with view cones**; the viewer tabs are Inside, Dollhouse (+ top view), **360° panorama** (new) and Free orbit; the panorama itself is in the Analysis section. New download: the design shots + plan as a zip. Headless test: v4 one candidate 40.7 s including the first model loads, peak 5.9 GB; v3 15.1 s; Quick 13.0 s.
 

@@ -30,7 +30,8 @@ from . import room_mesh as rm
 from . import textured_mesh as tm
 
 DEFAULTS = {"texel_m": 0.005, "max_tex": 4096, "band_m": 0.06, "stride": 1, "smooth": "full", "taubin_iters": 30,
-            "atlas_w": 8192, "jpeg_q": 92, "mipmaps": True, "denoise": "none"}
+            "atlas_w": 8192, "jpeg_q": 92, "mipmaps": True, "denoise": "none",
+            "fill": "patch"}                  # milestone 5: hidden-texel fill (results/tables/fill_selection.json)
 
 
 def denoise_texture(img: np.ndarray, method: str) -> np.ndarray:
@@ -203,14 +204,14 @@ def build_meshes(dist: np.ndarray, hires: np.ndarray, res_v3: dict, ana: dict, i
     shown as their observed surface in the dollhouse."""
     o = {**DEFAULTS, **(opts or {})}
     box = res_v3["box"]
-    shell_in = rb.build_shell(box, hires, dist, texel_m=o["texel_m"], max_tex=o["max_tex"], band_m=o["band_m"])
+    shell_in = rb.build_shell(box, hires, dist, o["fill"], texel_m=o["texel_m"], max_tex=o["max_tex"], band_m=o["band_m"])
     if o["denoise"] != "none":
         for p in shell_in["parts"]:
             p["texture"] = denoise_texture(p["texture"], o["denoise"])
     keep = p3v.in_front_of_shell(dist, box)
     seen = observed_part(dist, hires, box["R"], keep, ana["inst_map"], o["stride"], o["smooth"], o["taubin_iters"])
     inside = combine_packed(shell_in["parts"] + ([seen] if len(seen["faces"]) else []), o["atlas_w"])
-    shell_d = rb.build_shell(box, hires, dist, texel_m=o["texel_m"], max_tex=o["max_tex"], band_m=0.0) \
+    shell_d = rb.build_shell(box, hires, dist, o["fill"], texel_m=o["texel_m"], max_tex=o["max_tex"], band_m=0.0) \
         if o["band_m"] > 0 else shell_in
     if o["denoise"] != "none" and shell_d is not shell_in:
         for p in shell_d["parts"]:

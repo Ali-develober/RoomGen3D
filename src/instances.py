@@ -119,9 +119,10 @@ def view_maps(w: int, h: int, views: tuple = tuple(VIEWS), fov: float = FOV, siz
     return out
 
 
-def run_views(model, proc, pano: np.ndarray, device, views=VIEWS) -> list[tuple[np.ndarray, list[dict]]]:
+def run_views(model, proc, pano: np.ndarray, device, views=VIEWS, fov: float = FOV,
+              size: int = SIZE) -> list[tuple[np.ndarray, list[dict]]]:
     """Panoptic segmentation of every perspective view of the panorama (raw, low score threshold)."""
-    return [panoptic_view(model, proc, eq.e2p(pano, FOV, y, p, SIZE), device) for y, p in views]
+    return [panoptic_view(model, proc, eq.e2p(pano, fov, y, p, size), device) for y, p in views]
 
 
 # --------------------------------------------------------------------------- #
@@ -142,10 +143,11 @@ class _UF:
 
 
 def merge_views(view_out: list, id2label: dict, w: int = 1024, h: int = 512, views=VIEWS,
-                score_min: float = SCORE_MIN, merge_iou: float = MERGE_IOU, min_share: float = MIN_SHARE) -> dict:
+                score_min: float = SCORE_MIN, merge_iou: float = MERGE_IOU, min_share: float = MIN_SHARE,
+                fov: float = FOV, size: int = SIZE) -> dict:
     """Per-view panoptic results -> panorama class map, instance map and instance list."""
     fam = family_of(id2label)
-    maps = view_maps(w, h, tuple(views))
+    maps = view_maps(w, h, tuple(views), fov, size)
     segs = []                                       # global segment table
     proj = np.full((len(views), h, w), -1, np.int32)
     weight = np.stack([m[2] for m in maps])

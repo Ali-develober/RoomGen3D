@@ -517,7 +517,7 @@ def build() -> gr.Blocks:
                 cfg = gr.Slider(1.0, 15.0, value=g2.GEN_GUIDANCE, step=0.5, label="CFG (guidance scale)")
                 with gr.Accordion("360° Room options", open=False):
                     version = gr.Radio([V4, V3, V2], value=V4, label="Pipeline")
-                    candidates = gr.Slider(1, 4, value=1, step=1, label="Candidates (v3): panoramas generated, "
+                    candidates = gr.Slider(1, 4, value=3, step=1, label="Candidates (v3 / v4): panoramas generated, "
                                            "the most box-like one is kept (1 = fast)")
                     n_objects = gr.Slider(0, 12, value=DEFAULT_OBJECTS, step=1,
                                           label="v4 furniture objects: how many pieces (largest first) are generated "

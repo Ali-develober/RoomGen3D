@@ -1,0 +1,12 @@
+{
+ "method": "patch",
+ "passed_ssim_guard": [
+  "ns",
+  "patch"
+ ],
+ "mean_rank": {
+  "ns": 2.0,
+  "patch": 1.0
+ },
+ "rule": "SSIM >= NS - 0.02 on synthetic holes, then mean rank of |energy ratio - 1|, darkness, BRISQUE on the real holes (dev)"
+}

@@ -11,6 +11,8 @@ sharper panorama, a sharper 3D view and real furniture shapes).
              TripoSR per instance, largest first, render-and-compare yaw; below the development IoU threshold
              or for block classes the v3 block stays; uncertain (rejected) instances become RELIEF in the
              dollhouse; the objects are a vertex-coloured primitive of dollhouse_v4.glb
+    [5e]     milestone 5: inferred / far sides that open into another space are drawn as OPEN on the plan and not
+             pushed out to the far wall (room_box.mark_open_sides)
     [6]      design shots (src/design_shots.py): hero view(s) + four wall views, perspective, level,
              1024 x 768, cut from the sharpest panorama available (hires if given, else the texture)
     [7]      outputs: v3 files with suffix _v4, the floor plan with the shots' camera and view cones
@@ -46,8 +48,8 @@ def sharpen(texture: np.ndarray, esrgan, i2i=None, prompt: str = "", strength: f
 
 def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furniture_params: dict | None = None,
           shot_weights: dict | None = None, hires: np.ndarray | None = None, mesh_opts: dict | None = None,
-          triposr=None, device=None, max_objects: int = 0, cache_dir=None) -> dict:
-    res = p3v.build(dist, texture, ana, id2label, furniture_params)
+          triposr=None, device=None, max_objects: int = 0, cache_dir=None, open_sides: bool = True) -> dict:
+    res = p3v.build(dist, texture, ana, id2label, furniture_params, open_sides=open_sides)
     res["hires"] = hires
     if hires is not None:
         from . import room_v4 as r4
