@@ -35,6 +35,8 @@ DETECT_AREA = 0.6           # m^2 of wall surface within +-PEAK_BAND of the peak
 DETECT_SPAN = 0.8           # m: the supporting wall points must span at least this along the wall
 PEAK_BAND = 0.08            # m
 BIN = 0.02                  # m, histogram bin of the side fit
+PEAK_RULE = "farthest"      # "max" or "farthest" (see _side_peak); chosen on the dev rooms (README, milestone 4)
+FAR_SHARE = 0.3
 NORMAL_FACING = 0.8         # |n . axis| above this: the pixel's surface faces that axis
 TEXEL = 0.015               # m per texel of the shell textures (capped at MAX_TEX px per side)
 MAX_TEX = 1024
@@ -96,15 +98,26 @@ def yaw_matrix(yaw: float) -> np.ndarray:
 # --------------------------------------------------------------------------- #
 # Box fit
 # --------------------------------------------------------------------------- #
-def _side_peak(coord: np.ndarray, w: np.ndarray, along: np.ndarray):
-    """Peak of an area-weighted histogram of wall positions. Returns (position, area, span)."""
+def _side_peak(coord: np.ndarray, w: np.ndarray, along: np.ndarray, rule: str = None):
+    """Peak of an area-weighted histogram of wall positions. Returns (position, area, span).
+    rule "max": the strongest peak; "farthest": the farthest peak holding at least FAR_SHARE of the
+    strongest one's area (and DETECT_AREA) - a large furniture front labelled "wall" is nearer than the wall."""
+    rule = rule or PEAK_RULE
     if len(coord) < 50:
         return None
     lo, hi = coord.min(), coord.max()
     nb = max(int((hi - lo) / BIN) + 1, 16)
     hist, edges = np.histogram(coord, bins=nb, range=(lo, lo + nb * BIN), weights=w)
     sm = np.convolve(hist, np.exp(-0.5 * (np.arange(-4, 5) / 1.5) ** 2), "same")
-    pk = (edges[np.argmax(sm)] + edges[np.argmax(sm) + 1]) / 2
+    centres = (edges[:-1] + edges[1:]) / 2
+    pk = centres[np.argmax(sm)]
+    if rule == "farthest":
+        k = int(round(PEAK_BAND / BIN))
+        is_max = np.array([sm[i] > 0 and sm[i] == sm[max(0, i - k):i + k + 1].max() for i in range(nb)])
+        area = np.array([w[np.abs(coord - c) < PEAK_BAND].sum() for c in centres[is_max]])
+        cand = centres[is_max][area >= max(DETECT_AREA, FAR_SHARE * area.max())] if len(area) else []
+        if len(cand):
+            pk = float(np.max(cand))
     band = np.abs(coord - pk) < PEAK_BAND
     pos = float(np.average(coord[band], weights=w[band])) if band.any() else float(pk)
     span = float(np.subtract(*np.percentile(along[band], [97, 3]))) if band.sum() > 20 else 0.0

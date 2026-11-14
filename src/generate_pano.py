@@ -32,6 +32,11 @@ ROOT = Path(__file__).resolve().parents[1]
 PANO_LORA = ROOT / "checkpoints" / "pano_lora" / "360Diffusion_v1.safetensors"
 ALT_MODEL = ROOT / "checkpoints" / "pano_sd_base" / "sd-base"     # archerfmy0831/sd-t2i-360panoimage (SD 2.1 base fine-tune)
 ALT_TEMPLATE = "360 panorama, interior, {room}, photo, high quality"
+# PLAN_V3 milestone 5: a single enclosed room seen from its centre
+ONE_ROOM_TEMPLATE = ("360 panorama, interior of a single enclosed {room}, four walls around the camera, "
+                     "view from the centre of the room, photo, high quality")
+ONE_ROOM_NEGATIVE = ("blurry, distorted, text, watermark, people, frame, border, corridor, hallway, open plan, "
+                     "open-plan space, multiple rooms, adjoining room, archway, open doorway, staircase, balcony")
 ESRGAN_X2 = ROOT / "checkpoints" / "realesrgan" / "RealESRGAN_x2plus.pth"
 PANO_W, PANO_H = 1024, 512
 PANO_STEPS, PANO_GUIDANCE = 30, 7.5
@@ -139,7 +144,8 @@ def set_circular(enabled: bool, *modules) -> None:
 @torch.inference_mode()
 def generate_pano(pipe, room: str, seed: int, mmis_weight: float = 0.0, circular: bool = True,
                   circular_from: float = 0.0, steps: int = PANO_STEPS, guidance: float = PANO_GUIDANCE,
-                  width: int = PANO_W, height: int = PANO_H, prompt: str | None = None) -> np.ndarray:
+                  width: int = PANO_W, height: int = PANO_H, prompt: str | None = None,
+                  negative: str | None = None) -> np.ndarray:
     """One equirectangular panorama (RGB uint8, height x width).
 
     circular_from: fraction of the denoising steps after which circular padding is switched on
@@ -156,7 +162,7 @@ def generate_pano(pipe, room: str, seed: int, mmis_weight: float = 0.0, circular
         return kw
 
     gen = torch.Generator(pipe.device).manual_seed(int(seed))
-    lat = pipe(prompt or pano_prompt(room), negative_prompt=PANO_NEGATIVE, num_inference_steps=int(steps),
+    lat = pipe(prompt or pano_prompt(room), negative_prompt=negative or PANO_NEGATIVE, num_inference_steps=int(steps),
                guidance_scale=float(guidance), width=width, height=height, generator=gen,
                output_type="latent", callback_on_step_end=on_step).images
     set_circular(circular, pipe.vae)

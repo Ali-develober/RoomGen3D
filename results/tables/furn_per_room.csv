@@ -1,7 +1,7 @@
 id,room,split,method,n_gt,n_pred,tp25,instances,too_few_points,clamped,rejected,merged,shrunk,dropped_outside,solids
 bedroom_L1,bedroom,dev,v2,6,8,3,,,,,,,,
-bedroom_L1,bedroom,dev,v3,6,3,3,16.0000,6.0000,3.0000,7.0000,0.0000,0.0000,0.0000,3.0000
-bedroom_L1,bedroom,dev,v3 priors off,6,8,4,16.0000,6.0000,0.0000,0.0000,2.0000,1.0000,0.0000,8.0000
+bedroom_L1,bedroom,dev,v3,6,3,3,16.0000,4.0000,3.0000,9.0000,0.0000,0.0000,0.0000,3.0000
+bedroom_L1,bedroom,dev,v3 priors off,6,9,4,16.0000,4.0000,0.0000,0.0000,3.0000,1.0000,0.0000,9.0000
 bedroom_L2,bedroom,dev,v2,3,1,1,,,,,,,,
 bedroom_L2,bedroom,dev,v3,3,1,1,2.0000,0.0000,1.0000,1.0000,0.0000,0.0000,0.0000,1.0000
 bedroom_L2,bedroom,dev,v3 priors off,3,1,1,2.0000,0.0000,0.0000,0.0000,1.0000,0.0000,0.0000,1.0000
@@ -9,8 +9,8 @@ bedroom_L3,bedroom,dev,v2,4,7,2,,,,,,,,
 bedroom_L3,bedroom,dev,v3,4,1,1,7.0000,1.0000,1.0000,5.0000,0.0000,0.0000,0.0000,1.0000
 bedroom_L3,bedroom,dev,v3 priors off,4,6,2,7.0000,1.0000,0.0000,0.0000,0.0000,1.0000,0.0000,6.0000
 bedroom_L4,bedroom,dev,v2,3,8,2,,,,,,,,
-bedroom_L4,bedroom,dev,v3,3,1,1,12.0000,8.0000,1.0000,3.0000,0.0000,0.0000,0.0000,1.0000
-bedroom_L4,bedroom,dev,v3 priors off,3,4,1,12.0000,8.0000,0.0000,0.0000,0.0000,0.0000,0.0000,4.0000
+bedroom_L4,bedroom,dev,v3,3,1,1,12.0000,4.0000,1.0000,7.0000,0.0000,0.0000,0.0000,1.0000
+bedroom_L4,bedroom,dev,v3 priors off,3,8,1,12.0000,4.0000,0.0000,0.0000,0.0000,1.0000,0.0000,8.0000
 bedroom_L5,bedroom,test,v2,5,4,2,,,,,,,,
 bedroom_L5,bedroom,test,v3,5,3,2,10.0000,3.0000,2.0000,4.0000,0.0000,0.0000,0.0000,3.0000
 bedroom_L5,bedroom,test,v3 priors off,5,7,1,10.0000,3.0000,0.0000,0.0000,0.0000,2.0000,0.0000,7.0000
@@ -18,8 +18,8 @@ bedroom_L6,bedroom,test,v2,3,10,2,,,,,,,,
 bedroom_L6,bedroom,test,v3,3,1,0,14.0000,5.0000,1.0000,8.0000,0.0000,0.0000,0.0000,1.0000
 bedroom_L6,bedroom,test,v3 priors off,3,8,1,14.0000,5.0000,0.0000,0.0000,1.0000,1.0000,0.0000,8.0000
 bedroom_L7,bedroom,test,v2,3,6,1,,,,,,,,
-bedroom_L7,bedroom,test,v3,3,1,1,10.0000,5.0000,1.0000,4.0000,0.0000,0.0000,0.0000,1.0000
-bedroom_L7,bedroom,test,v3 priors off,3,4,1,10.0000,5.0000,0.0000,0.0000,1.0000,0.0000,0.0000,4.0000
+bedroom_L7,bedroom,test,v3,3,1,1,10.0000,3.0000,1.0000,6.0000,0.0000,0.0000,0.0000,1.0000
+bedroom_L7,bedroom,test,v3 priors off,3,6,1,10.0000,3.0000,0.0000,0.0000,1.0000,0.0000,0.0000,6.0000
 bedroom_L8,bedroom,test,v2,5,3,2,,,,,,,,
 bedroom_L8,bedroom,test,v3,5,2,2,8.0000,2.0000,1.0000,4.0000,0.0000,0.0000,0.0000,2.0000
 bedroom_L8,bedroom,test,v3 priors off,5,6,4,8.0000,2.0000,0.0000,0.0000,0.0000,0.0000,0.0000,6.0000
@@ -27,20 +27,20 @@ living_room_L1,living room,dev,v2,6,9,2,,,,,,,,
 living_room_L1,living room,dev,v3,6,5,3,8.0000,0.0000,5.0000,3.0000,0.0000,1.0000,0.0000,5.0000
 living_room_L1,living room,dev,v3 priors off,6,8,3,8.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,8.0000
 living_room_L2,living room,dev,v2,7,9,5,,,,,,,,
-living_room_L2,living room,dev,v3,7,6,3,10.0000,0.0000,4.0000,4.0000,0.0000,0.0000,0.0000,6.0000
+living_room_L2,living room,dev,v3,7,6,3,10.0000,0.0000,3.0000,4.0000,0.0000,0.0000,0.0000,6.0000
 living_room_L2,living room,dev,v3 priors off,7,10,5,10.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,10.0000
 living_room_L3,living room,dev,v2,6,8,3,,,,,,,,
 living_room_L3,living room,dev,v3,6,3,3,5.0000,0.0000,2.0000,2.0000,0.0000,1.0000,0.0000,3.0000
 living_room_L3,living room,dev,v3 priors off,6,5,4,5.0000,0.0000,0.0000,0.0000,0.0000,1.0000,0.0000,5.0000
 living_room_L4,living room,dev,v2,7,2,2,,,,,,,,
-living_room_L4,living room,dev,v3,7,2,2,5.0000,1.0000,0.0000,2.0000,0.0000,0.0000,0.0000,2.0000
+living_room_L4,living room,dev,v3,7,3,3,5.0000,1.0000,2.0000,1.0000,0.0000,0.0000,0.0000,3.0000
 living_room_L4,living room,dev,v3 priors off,7,4,3,5.0000,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,4.0000
 living_room_L5,living room,test,v2,7,5,3,,,,,,,,
 living_room_L5,living room,test,v3,7,1,1,6.0000,1.0000,0.0000,4.0000,0.0000,0.0000,0.0000,1.0000
 living_room_L5,living room,test,v3 priors off,7,5,3,6.0000,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,5.0000
 living_room_L6,living room,test,v2,6,8,4,,,,,,,,
-living_room_L6,living room,test,v3,6,5,4,12.0000,1.0000,3.0000,6.0000,0.0000,0.0000,0.0000,5.0000
-living_room_L6,living room,test,v3 priors off,6,11,5,12.0000,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,11.0000
+living_room_L6,living room,test,v3,6,5,4,12.0000,0.0000,3.0000,7.0000,0.0000,0.0000,0.0000,5.0000
+living_room_L6,living room,test,v3 priors off,6,12,5,12.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,12.0000
 living_room_L7,living room,test,v2,7,3,2,,,,,,,,
 living_room_L7,living room,test,v3,7,2,2,5.0000,1.0000,1.0000,2.0000,0.0000,0.0000,0.0000,2.0000
 living_room_L7,living room,test,v3 priors off,7,4,2,5.0000,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,4.0000
@@ -60,8 +60,8 @@ kitchen_L4,kitchen,dev,v2,7,3,2,,,,,,,,
 kitchen_L4,kitchen,dev,v3,7,2,2,5.0000,0.0000,1.0000,3.0000,0.0000,0.0000,0.0000,2.0000
 kitchen_L4,kitchen,dev,v3 priors off,7,5,3,5.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,5.0000
 kitchen_L5,kitchen,test,v2,7,10,2,,,,,,,,
-kitchen_L5,kitchen,test,v3,7,3,1,19.0000,8.0000,3.0000,8.0000,0.0000,1.0000,0.0000,3.0000
-kitchen_L5,kitchen,test,v3 priors off,7,8,1,19.0000,8.0000,0.0000,0.0000,3.0000,2.0000,0.0000,8.0000
+kitchen_L5,kitchen,test,v3,7,3,1,19.0000,7.0000,3.0000,9.0000,0.0000,1.0000,0.0000,3.0000
+kitchen_L5,kitchen,test,v3 priors off,7,9,1,19.0000,7.0000,0.0000,0.0000,3.0000,2.0000,0.0000,9.0000
 kitchen_L6,kitchen,test,v2,7,10,4,,,,,,,,
 kitchen_L6,kitchen,test,v3,7,4,3,16.0000,4.0000,2.0000,8.0000,0.0000,1.0000,0.0000,4.0000
 kitchen_L6,kitchen,test,v3 priors off,7,10,3,16.0000,4.0000,0.0000,0.0000,2.0000,2.0000,0.0000,10.0000

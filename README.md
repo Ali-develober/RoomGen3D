@@ -608,30 +608,30 @@ Code: `src/instances.py`, `scripts/eval_instances.py`.
 Code: `src/room_box.py`, `scripts/eval_room_box.py`, `scripts/eval_horizonnet.py`.
 
 1. **Dominant directions:** surface normals of the gravity-aligned point map (wrap-aware central differences); the horizontal angle of the wall normals modulo 90° (a rectangular room is 4-fold symmetric) is histogrammed with true surface-area weights; peak + local circular mean = room yaw. Everything is rotated so the walls are axis-aligned.
-2. **Box fit per side:** wall pixels whose normal faces the side; their position along the axis is histogrammed (2 cm bins, area-weighted) and the **peak** is the wall. A side counts as **detected** if the peak holds ≥ 0.6 m² of wall spanning ≥ 0.8 m; otherwise it is **inferred** from the floor extent (97th percentile) and the furniture (99th). Floor = fitted floor plane, ceiling = median height of ceiling pixels.
-3. **Shell:** walls, floor and ceiling are exact planes (inward-facing quads), each with its own texture: every texel is projected into the panorama and coloured from it. What is seen **beyond** a wall (doorway, window, opening) is therefore **flattened onto the wall** as texture instead of sticking out as geometry. Texels **hidden** behind furniture (observed distance clearly shorter than the plane's) are inpainted in the plane's own texture space. Furniture keeps its observed surface for now (milestone 3 makes solids).
-4. **Inpainting** of hidden texels: OpenCV Telea and Navier–Stokes, and our own exemplar-based patch fill (`room_box.patch_inpaint`, Criminisi-style: fill from the boundary inwards, copy the best of 800 known 9×9 patches by SSD on the known pixels). Scored on synthetic furniture-shaped holes in the visible part of each wall texture (dev 67 holes, held-out 58):
+2. **Box fit per side:** wall pixels whose normal faces the side; their position along the axis is histogrammed (2 cm bins, area-weighted). Among the peaks holding ≥ 30% of the strongest peak's area (and ≥ 0.6 m²), the **farthest** is the wall: a large furniture front labelled "wall" (kitchen units, wardrobes) is always nearer than the wall behind it. A side counts as **detected** if its peak holds ≥ 0.6 m² of wall spanning ≥ 0.8 m; otherwise it is **inferred** from the floor extent (97th percentile) and the furniture (99th). Floor = fitted floor plane, ceiling = median height of ceiling pixels. *(The first version took the strongest peak; on two demo rooms it put a wall at the front of the kitchen units, see milestone 4. On the dev rooms "farthest" lowered the area error from 11.3% to 10.4% and removed all rooms that came out > 20% too small (5% → 0%); on the held-out rooms it is worse on average (12.6% vs. 10.6%). It was selected on dev; all numbers below are with it.)*
+3. **Shell:** walls, floor and ceiling are exact planes (inward-facing quads), each with its own texture: every texel is projected into the panorama and coloured from it. What is seen **beyond** a wall (doorway, window, opening) is therefore **flattened onto the wall** as texture instead of sticking out as geometry. Texels **hidden** behind furniture (observed distance clearly shorter than the plane's) are inpainted in the plane's own texture space.
+4. **Inpainting** of hidden texels: OpenCV Telea and Navier–Stokes, and our own exemplar-based patch fill (`room_box.patch_inpaint`, Criminisi-style: fill from the boundary inwards, copy the best of 800 known 9×9 patches by SSD on the known pixels). Scored on synthetic furniture-shaped holes in the visible part of each wall texture (dev 65 holes, held-out 54):
 
 | Inpainting | PSNR dev / test | SSIM dev / test | Flat texels in the hole (test) | Time per hole |
 |---|---|---|---|---|
-| Telea | 27.1 / 23.2 | 0.718 / 0.674 | 0.52 | 7 ms |
-| **Navier–Stokes (selected on dev, SSIM)** | **27.2** / 23.0 | **0.720** / 0.667 | 0.50 | 8 ms |
-| Patch-based (ours) | 25.8 / 23.0 | 0.670 / 0.640 | **0.32** | 68 ms |
+| Telea | 27.0 / 23.3 | 0.722 / 0.674 | 0.53 | 6 ms |
+| **Navier–Stokes (selected on dev, SSIM)** | **27.1** / 23.0 | **0.724** / 0.668 | 0.51 | 8 ms |
+| Patch-based (ours) | 25.9 / 22.9 | 0.675 / 0.644 | **0.34** | 67 ms |
 
-The diffusion methods win the pixel metrics because a smooth guess is closest on average; the patch fill keeps texture (a third fewer flat texels) but is penalised by PSNR/SSIM for misplaced detail. The pre-declared dev rule (SSIM) picked Navier–Stokes, so the shell is still smoother than the photo where it was hidden (see "flat" below).
+The diffusion methods win the pixel metrics because a smooth guess is closest on average; the patch fill keeps texture (a third fewer flat texels) but is penalised by PSNR/SSIM for misplaced detail. The pre-declared dev rule (SSIM) picked Navier–Stokes, so the shell is smoother than the photo where it was hidden (see "flat" below).
 
 **v2 vs v3 on the held-out rooms (same DAP depth and textures):**
 
-| | Sides detected (of 4) | Corner error (m) | Area \|error\| | Wall planarity (RMS, cm) | Wall normal error | Surface outside the true room* | Added flat area, inside views | Flat area, dollhouse | Build time |
+| | Sides detected (of 4) | Corner error (m) | Area \|error\| (as predicted / camera-height scaled*) | Wall planarity (RMS, cm) | Wall normal error | Surface outside the true room* | Added flat area, inside views | Flat area, dollhouse | Build time |
 |---|---|---|---|---|---|---|---|---|---|
-| v2 (room_mesh) | 2.5 | 0.33 | 12.1% | 7.6 | 1.7° | 12.0% | −1.2% | **7.6%** | 3.6 s |
-| **v3 box shell** | **3.85** | **0.23** | **10.6%** | **3.7** | **1.5°** | **6.1%** | +0.3% | 11.0% | **0.5 s** |
+| v2 (room_mesh) | 2.5 | 0.33 | **12.1%** / 6.6% | 7.6 | 1.7° | 12.0% | −1.2% | **7.6%** | 3.6 s |
+| **v3 box shell** | **3.85** | **0.25** | 12.6% / **4.9%** | **4.1** | **1.5°** | **8.6%** | +0.5% | 10.8% | **0.5 s** |
 
-\*after scaling each mesh so that its camera is 1.4 m above its floor (removes DAP's global scale error; with that scaling the v3 area error is 5.4% vs. 6.6% for v2). The dev rooms give the same picture (sides 4.0 vs. 2.4, corners 0.21 vs. 0.31 m, planarity 3.1 vs. 6.7 cm, outside 2.1% vs. 12.9%).
+\*after scaling each mesh so that its camera is 1.4 m above its floor (removes DAP's global scale error). Dev rooms: sides 3.9 vs. 2.4, corners 0.20 vs. 0.31 m, area 10.4% vs. 14.2%, planarity 3.3 vs. 6.7 cm, outside 4.2% vs. 12.9%.
 
-- The room is now a **box with straight walls**: almost every side is backed by a measured wall (3.85 of 4 instead of 2.5), walls are twice as planar, and the share of geometry sticking out of the true room halves. Remaining planarity (3.7 cm) and outside share come from furniture surfaces that cover pixels the layout calls "wall" (the generator drew furniture where the layout has none) and from the box being slightly too large.
-- **Negative:** v3 renders are a little flatter (dollhouse 11.0% vs. 7.6% flat pixels) — the inpainted hidden wall and floor regions are smooth (Navier–Stokes), where v2 showed the (stretched) furniture texture or holes.
-- **Pretrained layout estimator:** HorizonNet (`sunset1995/HorizonNet`, Matterport3D weights, cuboid mode; 0.33 GB) run on the same panoramas and scaled with the same DAP camera height: area |error| 9.8% vs. 10.6% for our fit, corner error 0.20 vs. 0.23 m on held-out (dev: 15.7% vs. 11.3%, 0.27 vs. 0.21 m) — comparable. With the true camera height our box shape is clearly better (held-out area 5.4% vs. 10.4%, corners 0.17 vs. 0.22 m): **our error is mostly global scale, not shape.** HorizonNet needs no depth; we keep our fit because it also gives which sides are measured.
+- The room is now a **box with straight walls**: almost every side is backed by a measured wall (3.85 of 4 instead of 2.5), walls are almost twice as planar, corners are 8 cm closer to the truth, and less geometry sticks out of the true room. Remaining planarity error and outside share come from furniture surfaces that cover pixels the layout calls "wall" (the generator drew furniture where the layout has none).
+- **Negative:** the area error as predicted is not better than v2 on the held-out rooms (12.6% vs. 12.1%): it is dominated by DAP's global scale (with the true camera height v3 is clearly better, 4.9% vs. 6.6%). v3 renders are flatter (dollhouse 10.8% vs. 7.6% flat pixels): the inpainted hidden wall and floor regions are smooth (Navier–Stokes), where v2 showed stretched furniture texture or holes.
+- **Pretrained layout estimator:** HorizonNet (`sunset1995/HorizonNet`, Matterport3D weights, cuboid mode; 0.33 GB) run on the same panoramas and scaled with the same DAP camera height: held-out area |error| 9.8% vs. 12.6% for our fit, corner error 0.20 vs. 0.25 m (dev: 15.7% vs. 10.4%, 0.27 vs. 0.20 m) — no clear winner. With the true camera height our box is clearly better (held-out area 4.9% vs. 10.4%, corners 0.16 vs. 0.21 m): **our error is mostly global scale, not shape.** HorizonNet needs no depth; we keep our fit because it also tells which sides are measured and shares the frame of the furniture.
 - Figure: `results/figures/box_v2_v3.png` (held-out: panorama | v2 dollhouse | v3 dollhouse | v2 inside | v3 inside). Tables: `results/tables/box_summary.csv`, `box_per_room.csv`, `box_inpaint.csv`, `box_inpaint_trials.csv`, `box_horizonnet.csv`, `box_horizonnet_per_room.csv`.
 
 ### Solid furniture (milestone 3 of PLAN_V3)
@@ -656,11 +656,35 @@ The switches were swept on the dev rooms (64 combinations, objective F1 at IoU 0
 | **v3 solids** | 61 | **0.67** | 0.38 | **0.48** | **0.44** | **0.20 m** | **25% / 19%** | **1.4°** | 5 cm |
 | v3 without priors | 144 | 0.35 | 0.47 | 0.40 | 0.42 | 0.21 m | 22% / 25% | 1.4° | 5 cm |
 
-(medians over matched pairs). Priors: 35 of 194 held-out candidates clamped, 94 rejected (mostly small leftover fragments and thin slivers of partly seen objects); 39 had too few points after cleaning; 5 overlaps shrunk. Dev: F1 0.53 vs. 0.39 for v2.
+(medians over matched pairs). Priors: 35 of 194 held-out candidates clamped, 98 rejected (mostly small leftover fragments and thin slivers of partly seen objects); 39 had too few points after cleaning; 5 overlaps shrunk. Dev: F1 0.54 vs. 0.39 for v2.
 
 - Footprints are now **parallel to the walls** (1.4° vs. 5.3°) and no longer smeared along the view ray; the dollhouse shows closed boxes instead of thin shells.
 - **Negative / limits:** recall (0.38) stays below v2's (0.47): v2 scatters many rectangles and some happen to hit; v3 trades this for precision. Everything is a box (no table legs, no sofa back), and hidden faces repeat the texture of the visible side. A counter run with stove and sink often becomes one long solid. Remaining centre error (0.20 m) is partly the generator, which does not put objects exactly where the layout boxes are.
 - Figure: `results/figures/furn_plans.png` (10 held-out rooms: layout vs. v2 vs. v3 footprints from above, and the v3 dollhouse = box shell + solids). Tables: `results/tables/furn_summary.csv`, `furn_per_room.csv`, `furn_pairs.csv`, `furn_dev_sweep.csv`.
+
+### Floor plan drawing (milestone 4 of PLAN_V3)
+Code: `src/plan_v3.py`, `src/pipeline_v3.py`, `scripts/plan_v3_eval.py`.
+
+The plan is built once as a list of primitives (lines, polygons, circles, arcs, texts, in metres) and rendered to **PNG and SVG** (matplotlib) and written to **DXF** (R12 ASCII, own writer; layers WALLS, OPENINGS, FURNITURE, TEXT, DIMS; hatching as plain lines), so the three files always agree.
+
+- **Orientation:** axis-aligned (the room box frame), the longer side horizontal.
+- **Walls:** a 10 cm band outside the measured inner face; **solid** where the side was detected, **hatched** only where it was inferred.
+- **Doors and windows:** door / window pixels are cast onto the box walls (pixels in front of a wall, e.g. wardrobe doors, are ignored); per wall, runs of 5 cm bins become openings. Doors get a leaf and a 90° swing (double door above 1.1 m), windows three parallel lines; a door must reach the floor.
+- **Furniture symbols** (back = side closest to a wall): bed with headboard, pillows and turned-down blanket; sofa / armchair with back, arms and seat divisions; chair; round or rectangular table; wardrobe with dashed door swings; cabinet / drawers (crossed box); shelf; lamp; plant; TV unit with screen; bathtub with drain; toilet; sink; hob with four rings; counter; fridge / washer; other classes a labelled rectangle. Items below 0.05 m² are hidden.
+- **Labels:** inside the symbol when the text fits, otherwise at the first free position around it (16 directions × 3 distances) with a leader line; every candidate is checked against all labels and symbols already placed.
+- **Dimensions:** room width and depth outside the walls, the clearance in front of the main items (bed, sofa, table) to the facing wall, a 2 m scale bar, the area and the "approximate" note.
+
+**Held-out bench rooms (20), plan quality:**
+
+| | Walls off the page axes | Inferred (hatched) sides | Furniture items | Overlapping furniture pairs | Furniture area outside the walls | Labels without a place |
+|---|---|---|---|---|---|---|
+| v2 plan | 3.8° | 1.5 | 6.6 | 2.9 | 17.9% | (no check) |
+| **v3 plan** | **0°** | **0.15** | 3.1 | **0.3** | **0.1%** | **0** |
+
+- **Doors and windows (negative):** against the layout's true openings (same wall, same kind, centre within 0.5 m) the v3 detector finds almost nothing on the bench: precision 0.05, recall 0.02 (19 predicted, 44 true). The layout-conditioned bench images rarely show a recognisable door or window (milestone 1: door / window IoU ≈ 0 for both segmenters), so the openings on the plans come mostly from the SegFormer labels of the demo panoramas and are not verified.
+- **Demo rooms:** `results/figures/plan_v2_v3.png` shows the v2 plan next to the v3 plan for the six demo panoramas (`outputs/room360/<room>/v3/floorplan_v3.png/.svg/.dxf`). Bedroom (23.7 m², 2 beds, cabinets, double door), bathroom (12.3 m², bathtub, chair, cabinet) and kitchen (28.9 m²) read like architect plans. Failures: the open-plan dining room (74.7 m²) and contemporary living room (56 m²) are boxed around the neighbouring spaces too; the Mediterranean living room comes out as an 8.6 × 2.65 m strip. Milestone 5 targets these.
+- **Change made here:** the first v3 plans of the demo rooms showed a kitchen of 2.15 × 5.3 m with no furniture: the box fit had taken the front of the kitchen units (labelled "wall") as the wall. The side fit now takes the farthest strong peak (milestone 2, step 2); milestones 2–4 were re-evaluated with it.
+- Tables: `results/tables/plan_quality.csv`, `plan_quality_per_room.csv`, `plan_demo_v3.csv`.
 
 ### Demo modes (v2)
 `app/app.py` now has three modes (radio button): **Quick (single view)**, **360° Room** and **Layout-first**. 360° and layout-first show the panorama, the floor plan (360° plan / exact layout plan), an **inside** viewer (camera at the room centre, look around, move up to 1 m) and a **dollhouse** viewer (ceiling removed, orbit from above), with `gr.Model3D` as the offline fallback. Only the active mode's large models sit on the GPU. Measured peaks: Quick 2.9 GB, Layout-first 4.6 GB, 360° 5.5 GB (6.8 GB reserved). One request: Quick 7–9 s, 360° 17.5 s, Layout-first 17.9 s. Tested headlessly in all three modes with switching back and forth; the `<model-viewer>` inside / dollhouse modes have not been checked by hand in a browser yet.

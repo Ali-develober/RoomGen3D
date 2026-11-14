@@ -32,8 +32,8 @@ import numpy as np
 from . import equirect as eq
 from . import room_mesh as rm
 
-ERODE = 2
-TRIM = 3.0
+ERODE = 1                  # } defaults = the dev-set choice of scripts/eval_furniture.py
+TRIM = 2.0                 # }
 SNAP_DEG = 20.0
 WALL_SNAP = 0.30
 CELL = 0.10
@@ -245,7 +245,7 @@ def resolve(solids: list[dict], box: dict, family: dict) -> tuple[list[dict], di
 
 
 DEFAULT_PARAMS = {"erode": ERODE, "trim": TRIM, "snap_deg": SNAP_DEG, "wall_snap": WALL_SNAP, "priors": True,
-                  "leftovers": False}
+                  "leftovers": True}
 
 
 def add_leftovers(inst_map: np.ndarray, instances: list[dict], class_map: np.ndarray, id2label: dict):

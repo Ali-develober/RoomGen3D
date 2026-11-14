@@ -203,8 +203,18 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 
 **Built**: `src/furniture.py` (point cleaning + percentile trimming, wall-axis snapping, class size priors with clamp/reject, back-to-wall snap, overlap merge/shrink/clip, leftover components, textured extruded solids with donor-face texture for hidden faces and seam-safe UVs); `scripts/eval_furniture.py` (64-config dev sweep, v2 vs v3 vs layout boxes, figure).
 
-**Results (held-out)**: F1@0.25 0.42 → 0.48, precision 0.39 → 0.67, recall 0.47 → 0.38; centre error 0.24 → 0.20 m; size error long side 30% → 25%; orientation 5.3° → 1.4°; height error 5 cm. Priors: 35 clamped, 94 rejected of 194 candidates.
+**Results (held-out)**: F1@0.25 0.42 → 0.48, precision 0.39 → 0.67, recall 0.47 → 0.38; centre error 0.24 → 0.20 m; size error long side 30% → 25%; orientation 5.3° → 1.4°; height error 5 cm. Priors: 35 clamped, 98 rejected of 194 candidates (after the milestone-4 box rule change).
 
 **Failed / limitations**: recall below v2; without the leftover components (first try) held-out F1 was 0.36 < v2 — fixed by adding unclaimed furniture pixels as candidates (chosen on dev). Boxes only; hidden faces copy the visible side's texture. Bugs fixed: dict removal with numpy arrays in merging, donor-face fallback when nothing is visible.
 
 **Next**: Milestone 4 — floor plan drawing (axis-aligned, symbols, labels without overlap, dimensions, PNG/SVG/DXF).
+
+## 2026-11-14 — V3 Milestone 4: floor plan drawing — DONE
+
+**Built**: `src/plan_v3.py` (openings cast onto box walls; primitive-list drawing: solid/hatched walls, door leaves + swings incl. double doors, windows, 20+ furniture symbols, collision-checked labels with leader lines, room and clearance dimensions, scale bar, area, note; PNG/SVG via matplotlib, DXF R12 own writer); `src/pipeline_v3.py` (analyse → build → save; candidate generation for milestone 5); `scripts/plan_v3_eval.py` (six demo rooms v2 vs v3 figure, held-out plan quality).
+
+**Results (held-out)**: walls off-axis 3.8° → 0°; hatched sides 1.5 → 0.15; overlapping furniture pairs 2.9 → 0.3; furniture outside walls 17.9% → 0.1%; label failures 0. Figure `plan_v2_v3.png`.
+
+**Failed / limitations**: door/window detection on the bench: precision 0.05, recall 0.02 (images rarely show them). Box fit change triggered here (kitchen 2.15 m deep, no furniture): side peak rule "max" → "farthest" (chosen on dev: area err 11.3% → 10.4%, under-size rooms 5% → 0%; held-out worse 10.6% → 12.6%); milestones 2–4 re-evaluated, README/tables updated. Open-plan demo rooms are boxed too large (dining 74.7 m², living 56 m²), Mediterranean living room 8.6 × 2.65 m.
+
+**Next**: Milestone 5 — one-room prompt template + boxiness-based candidate selection (`src/boxiness.py`, `scripts/eval_one_room.py` written), app slider.

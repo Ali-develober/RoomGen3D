@@ -1,0 +1,3 @@
+method,rooms,rotation_deg,inferred_sides,furniture,furniture_overlaps,outside_share,openings_pred,label_failures,openings_precision,openings_recall
+v2,20,3.7872,1.5000,6.6000,2.9000,0.1789,11,,,
+v3,20,0.0000,0.1500,3.0500,0.3000,0.0012,19,0.0000,0.0526,0.0227
