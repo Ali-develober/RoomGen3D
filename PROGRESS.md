@@ -218,3 +218,13 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 **Failed / limitations**: door/window detection on the bench: precision 0.05, recall 0.02 (images rarely show them). Box fit change triggered here (kitchen 2.15 m deep, no furniture): side peak rule "max" → "farthest" (chosen on dev: area err 11.3% → 10.4%, under-size rooms 5% → 0%; held-out worse 10.6% → 12.6%); milestones 2–4 re-evaluated, README/tables updated. Open-plan demo rooms are boxed too large (dining 74.7 m², living 56 m²), Mediterranean living room 8.6 × 2.65 m.
 
 **Next**: Milestone 5 — one-room prompt template + boxiness-based candidate selection (`src/boxiness.py`, `scripts/eval_one_room.py` written), app slider.
+
+## 2026-11-14 — V3 Milestone 5: panoramas that are one room — DONE
+
+**Built**: one-room prompt template + negative (`generate_pano.ONE_ROOM_*`, new `negative` argument), `src/boxiness.py` (wall fit, enclosed share, detected sides), `pipeline_v3.generate_candidates` (best of k), `scripts/eval_one_room.py` (80 SD 2.1 panoramas: 5 rooms × 2 styles × 4 seeds × 2 templates). App: 360° mode runs v3 by default, v2 selectable, "Candidates" slider 1–4, DXF download, top view (milestone 6) — tested headlessly in all modes (v3 k=1 13.7 s, k=2 29.6 s, peak 5.9 GB).
+
+**Results**: template selected on dev (boxiness 0.856 vs 0.844, CLIP equal); held-out 0.830 vs 0.798, but the paired difference is within noise (+0.032 ± 0.033); rooms more compact (median 18 vs 26 m²). Best-of-k (held-out): boxiness 0.83 → 0.89 → 0.92 for k = 1/2/4, four measured walls from k = 2, CLIP 22.1 → 23.4, +9.6 s per extra candidate.
+
+**Failed / limitations**: template effect not significant; the score favours one look (same seed kept in 5 of 6 held-out rows), reducing variety. Intermediate panoramas (outputs/one_room) and app test outputs deleted after the tables/figures were saved.
+
+**Next**: Milestone 6 — viewers (single-sided dollhouse, background colour, top view) + headed browser screenshots (`scripts/viewer_check.py` written; Playwright 1.65 + Chromium installed in the venv / %LOCALAPPDATA%\ms-playwright).

@@ -686,6 +686,32 @@ The plan is built once as a list of primitives (lines, polygons, circles, arcs, 
 - **Change made here:** the first v3 plans of the demo rooms showed a kitchen of 2.15 × 5.3 m with no furniture: the box fit had taken the front of the kitchen units (labelled "wall") as the wall. The side fit now takes the farthest strong peak (milestone 2, step 2); milestones 2–4 were re-evaluated with it.
 - Tables: `results/tables/plan_quality.csv`, `plan_quality_per_room.csv`, `plan_demo_v3.csv`.
 
+### Panoramas that are one room (milestone 5 of PLAN_V3)
+Code: `src/boxiness.py`, `generate_pano.ONE_ROOM_TEMPLATE / ONE_ROOM_NEGATIVE`, `pipeline_v3.generate_candidates`, `scripts/eval_one_room.py`.
+
+1. **One-room prompt:** "360 panorama, interior of a single enclosed {room}, four walls around the camera, view from the centre of the room, photo, high quality"; the negative prompt adds corridor, hallway, open plan, multiple rooms, adjoining room, archway, open doorway, staircase, balcony.
+2. **Boxiness score** of a candidate (DAP + SegFormer + box fit, 2.3 s): mean of the wall fit (share of the wall surface within 10 cm of a box wall), the enclosed share (1 − share of the view whose depth lies clearly beyond the box: openings into other spaces) and the detected sides / 4.
+3. **Selection:** k candidates (seeds s … s + k − 1), the highest score is kept. In the app: slider "Candidates" (1–4, default 1) in the 360° options.
+
+**Experiment:** SD 2.1 panorama model, 5 room types × 2 styles (scandinavian = dev, industrial = held-out) × 4 seeds, each with the current and the one-room template (same seeds): 80 panoramas. Decision rule fixed before running: one-room template if its dev score is higher and its dev CLIP is not lower by more than 0.5.
+
+| Template | Boxiness dev / held-out | Wall fit (held-out) | View beyond the box (held-out) | Sides (held-out) | Median room area (held-out) | CLIP dev / held-out |
+|---|---|---|---|---|---|---|
+| Current | 0.844 / 0.798 | 0.56 | 3.0% | 3.45 | 25.9 m² | 23.3 / 21.8 |
+| **One room (selected)** | **0.856 / 0.830** | **0.61** | 3.9% | **3.70** | **18.4 m²** | 23.3 / 22.1 |
+
+| Best of k (one-room template, held-out) | Boxiness | Enclosed | Wall fit | Sides | CLIP | Extra time |
+|---|---|---|---|---|---|---|
+| k = 1 | 0.830 | 0.961 | 0.61 | 3.70 | 22.1 | – |
+| k = 2 | 0.894 | 0.995 | 0.69 | 4.00 | 22.7 | +9.6 s |
+| k = 4 | **0.919** | **0.998** | **0.76** | **4.00** | 23.4 | +28.7 s |
+
+- **The template alone is a small effect, within noise:** paired over the same seeds, boxiness +0.012 ± 0.024 (dev) and +0.032 ± 0.033 (held-out), CLIP unchanged (+0.03 ± 0.41, +0.27 ± 0.46). The rooms do come out more compact (median area 18 vs. 26 m², −5.8 ± 3.0 m² paired), i.e. fewer open-plan spaces boxed together. Kept because it was chosen on dev and costs nothing.
+- **Selection is the real lever:** best of 2 already gives four measured walls in every held-out room and lifts the wall fit from 0.61 to 0.69 (best of 4: 0.76) without lowering CLIP (22.1 → 23.4). Cost: 9.6 s per extra candidate (7.3 s generation + 2.3 s scoring).
+- **Caveat:** the score prefers a certain "look": in the held-out figure the same seed (504, wooden ceiling, plain rectangular room) wins in 5 of 6 rows, so selection reduces variety. Dining rooms with several tables are still often open-plan.
+- **App:** 360° Room now runs the v3 pipeline by default (v2 selectable for comparison) with the candidate slider; tested headlessly in all modes: v3 with 1 candidate 13.7 s, with 2 candidates 29.6 s, peak VRAM 5.9 GB; v2 15.2 s; Quick 6.2 s (2.9 GB); Layout-first 18.0 s (4.6 GB).
+- Figure: `results/figures/oneroom_candidates.png` (held-out: 4 candidates per template, the kept one framed). Tables: `results/tables/oneroom_templates.csv`, `oneroom_selection.csv`, `oneroom_per_pano.csv`, `oneroom_decision.json`.
+
 ### Demo modes (v2)
 `app/app.py` now has three modes (radio button): **Quick (single view)**, **360° Room** and **Layout-first**. 360° and layout-first show the panorama, the floor plan (360° plan / exact layout plan), an **inside** viewer (camera at the room centre, look around, move up to 1 m) and a **dollhouse** viewer (ceiling removed, orbit from above), with `gr.Model3D` as the offline fallback. Only the active mode's large models sit on the GPU. Measured peaks: Quick 2.9 GB, Layout-first 4.6 GB, 360° 5.5 GB (6.8 GB reserved). One request: Quick 7–9 s, 360° 17.5 s, Layout-first 17.9 s. Tested headlessly in all three modes with switching back and forth; the `<model-viewer>` inside / dollhouse modes have not been checked by hand in a browser yet.
 

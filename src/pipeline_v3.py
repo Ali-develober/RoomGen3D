@@ -26,6 +26,7 @@ from . import pano_depth as pdp
 from . import plan_v3 as pv
 from . import room_box as rb
 from . import textured_mesh as tm
+from . import viewers as vw
 
 
 ONE_ROOM = True          # one-room prompt template (milestone 5; see results/tables/oneroom_decision.json)
@@ -80,13 +81,18 @@ def build(dist: np.ndarray, texture: np.ndarray, ana: dict, id2label: dict, furn
 
 
 def save(res: dict, out_dir, title: str | None = None) -> dict:
-    """[6] room_v3.glb, dollhouse_v3.glb, floorplan_v3.png / .svg / .dxf, summary_v3.json."""
+    """[6] room_v3.glb, dollhouse_v3.glb (single-sided), floorplan_v3.png / .svg / .dxf, topdown_v3.png,
+    summary_v3.json."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     files = {"room_glb": out / "room_v3.glb", "dollhouse_glb": out / "dollhouse_v3.glb",
              "plan_png": out / "floorplan_v3.png", "plan_svg": out / "floorplan_v3.svg", "plan_dxf": out / "floorplan_v3.dxf"}
-    tm.export_glb(res["mesh"], files["room_glb"])
-    tm.export_glb(res["dollhouse"], files["dollhouse_glb"])
+    tm.export_glb(res["mesh"], files["room_glb"], double_sided=False)
+    tm.export_glb(res["dollhouse"], files["dollhouse_glb"], double_sided=False)
+    files["topdown"] = out / "topdown_v3.png"
+    res["topdown"] = vw.topdown(res["dollhouse"], res["box"])
+    cv2.imwrite(str(files["topdown"]), cv2.cvtColor(res["topdown"], cv2.COLOR_RGB2BGR))
+    res["bg_color"] = vw.mean_color(res["mesh"])
     img, st = pv.draw_plan(res["box"], res["solids"], res["openings"], files["plan_png"], files["plan_svg"],
                            files["plan_dxf"], title=title)
     res["plan_image"], res["plan_stats"] = img, st
@@ -94,6 +100,6 @@ def save(res: dict, out_dir, title: str | None = None) -> dict:
     summary = {"width_m": b["width"], "depth_m": b["depth"], "area_m2": b["area"], "ceiling_m": b["ceiling_height"],
                "sides_detected": b["n_detected"], "furniture": [s["label"] for s in res["solids"]],
                "openings": [{k: o[k] for k in ("kind", "wall", "width")} for o in res["openings"]],
-               "counts": res["counts"], "plan": st}
+               "counts": res["counts"], "plan": st, "background": res["bg_color"]}
     (out / "summary_v3.json").write_text(json.dumps(summary, indent=1, default=float))
     return {k: str(v) for k, v in files.items()}

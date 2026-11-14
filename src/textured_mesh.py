@@ -420,11 +420,13 @@ def build_textured_mesh(depth: np.ndarray, rgb: np.ndarray, edges: np.ndarray | 
 # --------------------------------------------------------------------------- #
 # Export
 # --------------------------------------------------------------------------- #
-def export_glb(mesh: dict, path) -> None:
+def export_glb(mesh: dict, path, double_sided: bool = True) -> None:
     """Write the textured mesh as a binary glTF 2.0 file (.glb), Y up, camera at the origin looking down -Z.
 
-    One mesh, one unlit double-sided material with the atlas as base-colour texture (JPEG embedded).
+    One mesh, one unlit material with the atlas as base-colour texture (JPEG embedded).
     Unlit = the viewer shows the texture colours as they are, without adding its own lighting.
+    double_sided=False: back faces are culled by the viewer (v3 meshes: the shell faces inwards, so the
+    walls between an outside viewer and the room disappear by themselves - the dollhouse effect).
     """
     pos = (mesh["vertices"] * np.array([1, -1, -1], np.float32)).astype("<f4")
     uv = mesh["uvs"].astype("<f4")                                  # glTF: v = 0 at the top of the image
@@ -448,7 +450,7 @@ def export_glb(mesh: dict, path) -> None:
         "meshes": [{"primitives": [{"attributes": {"POSITION": 0, "TEXCOORD_0": 1}, "indices": 2, "material": 0}]}],
         "materials": [{"pbrMetallicRoughness": {"baseColorTexture": {"index": 0}, "metallicFactor": 0.0,
                                                 "roughnessFactor": 1.0},
-                       "doubleSided": True, "extensions": {"KHR_materials_unlit": {}}}],
+                       "doubleSided": bool(double_sided), "extensions": {"KHR_materials_unlit": {}}}],
         "textures": [{"source": 0, "sampler": 0}],
         "samplers": [{"magFilter": 9729, "minFilter": 9729, "wrapS": 33071, "wrapT": 33071}],
         "images": [{"bufferView": 3, "mimeType": "image/jpeg"}],
