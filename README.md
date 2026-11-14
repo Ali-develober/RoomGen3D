@@ -604,6 +604,36 @@ Code: `src/instances.py`, `scripts/eval_instances.py`.
 - **What stays low and why:** recall 0.28. The generated rooms often do not contain what the layout says (a kitchen "counter run" becomes one block; armchairs and plants are drawn as something else or not at all), so "same family" scores (0.12) mostly measure the generator, not the segmenter. Doors and windows are almost never recognisable in these plain images (IoU ≈ 0 for both).
 - Figure: `results/figures/inst_examples.png` (held-out: panorama | GT boxes | v2 | v3). Tables: `results/tables/inst_summary.csv`, `inst_by_class_test.csv`, `inst_per_room.csv`, `inst_dev_sweep.csv`.
 
+### Room box regularization (milestone 2 of PLAN_V3)
+Code: `src/room_box.py`, `scripts/eval_room_box.py`, `scripts/eval_horizonnet.py`.
+
+1. **Dominant directions:** surface normals of the gravity-aligned point map (wrap-aware central differences); the horizontal angle of the wall normals modulo 90° (a rectangular room is 4-fold symmetric) is histogrammed with true surface-area weights; peak + local circular mean = room yaw. Everything is rotated so the walls are axis-aligned.
+2. **Box fit per side:** wall pixels whose normal faces the side; their position along the axis is histogrammed (2 cm bins, area-weighted) and the **peak** is the wall. A side counts as **detected** if the peak holds ≥ 0.6 m² of wall spanning ≥ 0.8 m; otherwise it is **inferred** from the floor extent (97th percentile) and the furniture (99th). Floor = fitted floor plane, ceiling = median height of ceiling pixels.
+3. **Shell:** walls, floor and ceiling are exact planes (inward-facing quads), each with its own texture: every texel is projected into the panorama and coloured from it. What is seen **beyond** a wall (doorway, window, opening) is therefore **flattened onto the wall** as texture instead of sticking out as geometry. Texels **hidden** behind furniture (observed distance clearly shorter than the plane's) are inpainted in the plane's own texture space. Furniture keeps its observed surface for now (milestone 3 makes solids).
+4. **Inpainting** of hidden texels: OpenCV Telea and Navier–Stokes, and our own exemplar-based patch fill (`room_box.patch_inpaint`, Criminisi-style: fill from the boundary inwards, copy the best of 800 known 9×9 patches by SSD on the known pixels). Scored on synthetic furniture-shaped holes in the visible part of each wall texture (dev 67 holes, held-out 58):
+
+| Inpainting | PSNR dev / test | SSIM dev / test | Flat texels in the hole (test) | Time per hole |
+|---|---|---|---|---|
+| Telea | 27.1 / 23.2 | 0.718 / 0.674 | 0.52 | 7 ms |
+| **Navier–Stokes (selected on dev, SSIM)** | **27.2** / 23.0 | **0.720** / 0.667 | 0.50 | 8 ms |
+| Patch-based (ours) | 25.8 / 23.0 | 0.670 / 0.640 | **0.32** | 68 ms |
+
+The diffusion methods win the pixel metrics because a smooth guess is closest on average; the patch fill keeps texture (a third fewer flat texels) but is penalised by PSNR/SSIM for misplaced detail. The pre-declared dev rule (SSIM) picked Navier–Stokes, so the shell is still smoother than the photo where it was hidden (see "flat" below).
+
+**v2 vs v3 on the held-out rooms (same DAP depth and textures):**
+
+| | Sides detected (of 4) | Corner error (m) | Area \|error\| | Wall planarity (RMS, cm) | Wall normal error | Surface outside the true room* | Added flat area, inside views | Flat area, dollhouse | Build time |
+|---|---|---|---|---|---|---|---|---|---|
+| v2 (room_mesh) | 2.5 | 0.33 | 12.1% | 7.6 | 1.7° | 12.0% | −1.2% | **7.6%** | 3.6 s |
+| **v3 box shell** | **3.85** | **0.23** | **10.6%** | **3.7** | **1.5°** | **6.1%** | +0.3% | 11.0% | **0.5 s** |
+
+\*after scaling each mesh so that its camera is 1.4 m above its floor (removes DAP's global scale error; with that scaling the v3 area error is 5.4% vs. 6.6% for v2). The dev rooms give the same picture (sides 4.0 vs. 2.4, corners 0.21 vs. 0.31 m, planarity 3.1 vs. 6.7 cm, outside 2.1% vs. 12.9%).
+
+- The room is now a **box with straight walls**: almost every side is backed by a measured wall (3.85 of 4 instead of 2.5), walls are twice as planar, and the share of geometry sticking out of the true room halves. Remaining planarity (3.7 cm) and outside share come from furniture surfaces that cover pixels the layout calls "wall" (the generator drew furniture where the layout has none) and from the box being slightly too large.
+- **Negative:** v3 renders are a little flatter (dollhouse 11.0% vs. 7.6% flat pixels) — the inpainted hidden wall and floor regions are smooth (Navier–Stokes), where v2 showed the (stretched) furniture texture or holes.
+- **Pretrained layout estimator:** HorizonNet (`sunset1995/HorizonNet`, Matterport3D weights, cuboid mode; 0.33 GB) run on the same panoramas and scaled with the same DAP camera height: area |error| 9.8% vs. 10.6% for our fit, corner error 0.20 vs. 0.23 m on held-out (dev: 15.7% vs. 11.3%, 0.27 vs. 0.21 m) — comparable. With the true camera height our box shape is clearly better (held-out area 5.4% vs. 10.4%, corners 0.17 vs. 0.22 m): **our error is mostly global scale, not shape.** HorizonNet needs no depth; we keep our fit because it also gives which sides are measured.
+- Figure: `results/figures/box_v2_v3.png` (held-out: panorama | v2 dollhouse | v3 dollhouse | v2 inside | v3 inside). Tables: `results/tables/box_summary.csv`, `box_per_room.csv`, `box_inpaint.csv`, `box_inpaint_trials.csv`, `box_horizonnet.csv`, `box_horizonnet_per_room.csv`.
+
 ### Demo modes (v2)
 `app/app.py` now has three modes (radio button): **Quick (single view)**, **360° Room** and **Layout-first**. 360° and layout-first show the panorama, the floor plan (360° plan / exact layout plan), an **inside** viewer (camera at the room centre, look around, move up to 1 m) and a **dollhouse** viewer (ceiling removed, orbit from above), with `gr.Model3D` as the offline fallback. Only the active mode's large models sit on the GPU. Measured peaks: Quick 2.9 GB, Layout-first 4.6 GB, 360° 5.5 GB (6.8 GB reserved). One request: Quick 7–9 s, 360° 17.5 s, Layout-first 17.9 s. Tested headlessly in all three modes with switching back and forth; the `<model-viewer>` inside / dollhouse modes have not been checked by hand in a browser yet.
 

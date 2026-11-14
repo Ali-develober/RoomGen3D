@@ -1,0 +1,5 @@
+split,method,area_m2,area_rel_err,side_rel_err,corner_err_m,sides_detected,wall_hit_share,wall_abs_err_m,planarity_rms_cm,wall_normal_err_deg,area_rel_err_scaled,side_rel_err_scaled,corner_err_m_scaled,camera_height_pred,outside_share_scaled,build_s,flat_added_inside,empty_inside,flat_dollhouse,area_abs_rel_err,area_abs_rel_err_scaled
+dev,v2,20.1323,0.0552,0.0272,0.1258,3.0000,0.9883,0.1281,7.0604,2.1893,-0.1288,0.0666,0.2278,1.5408,0.0043,3.0719,-0.0039,0.0004,0.0311,0.0552,0.1288
+dev,v3,20.5514,0.0772,0.0379,0.1556,4.0000,1.0000,0.1109,3.2724,1.3317,-0.1107,0.0570,0.2116,1.5408,0.0000,0.4850,-0.0005,0.0000,0.0300,0.0772,0.1107
+test,v2,21.6295,0.0805,0.0396,0.3812,3.0000,0.9911,0.1209,7.0346,1.3852,0.0185,0.0138,0.3565,1.4420,0.2536,4.0689,-0.0247,0.0018,0.1262,0.0805,0.0185
+test,v3,22.0027,0.0992,0.0484,0.2049,4.0000,1.0000,0.1154,3.0711,1.9964,0.0363,0.0180,0.1424,1.4418,0.0594,0.4975,0.0185,0.0000,0.2352,0.0992,0.0363

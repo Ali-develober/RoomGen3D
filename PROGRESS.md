@@ -173,6 +173,7 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 | Date | What | Size |
 |---|---|---|
 | 2026-11-14 | `facebook/mask2former-swin-large-ade-panoptic` (config + model.safetensors only) → checkpoints/mask2former_ade_panoptic | 0.87 GB |
+| 2026-11-14 | HorizonNet code (git clone, github.com/sunset1995/HorizonNet) + `sunset1995/HorizonNet` resnet50_rnn__mp3d.pth → checkpoints/horizonnet | 0.33 GB |
 
 ## 2026-11-14 — Test bench for PLAN_V3 — DONE
 
@@ -187,3 +188,13 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 **Failed / limitations**: the pure panoptic class map labels the up-view ceiling as floor (dev ceiling IoU 0.16) → hybrid map (SegFormer surfaces + panoptic furniture). Recall stays low (0.28) because the generator often does not draw what the layout says; doors/windows ≈ 0 IoU for both. The sweep was flat (all segment scores > 0.7). Swin final layernorm reported "missing" by transformers 5 (unused by Mask2Former's backbone; outputs are confident and correct).
 
 **Next**: Milestone 2 — room box regularization (`src/room_box.py`, `scripts/eval_room_box.py` already drafted and smoke-tested on 2 rooms).
+
+## 2026-11-14 — V3 Milestone 2: room box regularization — DONE
+
+**Built**: `src/room_box.py` (normals, dominant yaw from a mod-90° normal histogram, per-side density-peak wall fit with detected/inferred sides, exact textured shell with openings flattened onto walls, hidden texels inpainted in plane texture space: Telea / Navier–Stokes / own exemplar patch fill, observed furniture surfaces, texture-atlas mesh assembly); `scripts/eval_room_box.py` (v2 vs v3 vs layout GT); `scripts/eval_horizonnet.py` (pretrained HorizonNet, with a numpy PCA shim instead of installing scikit-learn). pip (venv): shapely 2.2.0 (HorizonNet import).
+
+**Results (held-out)**: sides detected 2.5 → 3.85 of 4; corner error 0.33 → 0.23 m; area |err| 12.1% → 10.6%; wall planarity 7.6 → 3.7 cm RMS; surface outside the true room (camera-height scaled) 12.0% → 6.1%; build 3.6 → 0.5 s. Inpainting: NS selected on dev (SSIM 0.720 vs Telea 0.718, patch 0.670); patch fill leaves 0.32 flat texels vs 0.50. HorizonNet comparable with DAP scale (area 9.8% vs 10.6%), worse in shape with true scale (10.4% vs 5.4%).
+
+**Failed / limitations**: v3 dollhouse renders are flatter (11.0% vs 7.6% flat pixels) because hidden regions are filled smoothly (pre-declared SSIM rule picked NS; patch fill would be less flat). Global scale error from DAP remains (camera 1.44–1.48 m vs 1.40 m). Bug found and fixed: histogram smoothing with fewer bins than the kernel.
+
+**Next**: Milestone 3 — solid furniture from the v3 instances (footprint cleaning, extrusion to the floor, class size priors, wall-axis snapping, overlap resolution; footprint IoU / centre / size / orientation errors vs. layout boxes).
