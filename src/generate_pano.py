@@ -69,10 +69,19 @@ def load_pano_pipeline(device, mmis_lora: str | Path | None = DEFAULT_LORA):
 def load_alt_pipeline(device, path: Path = ALT_MODEL):
     """Alternative generator: the SD 2.1-base panorama fine-tune of SD-T2I-360PanoImage, fp16, DDIM.
     Used as a plain text-to-panorama model (with our circular padding); the MMIS LoRA (SD 1.5) does
-    not apply to it."""
+    not apply to it.
+
+    The downloaded weights are fp32 .bin files (slow to load, ~70 s); on first use an fp16
+    safetensors copy is written next to them (sd-base-fp16, ~2.6 GB) and used from then on."""
     from diffusers import DDIMScheduler, StableDiffusionPipeline
-    pipe = StableDiffusionPipeline.from_pretrained(str(path), dtype=torch.float16, safety_checker=None,
-                                                   requires_safety_checker=False)
+    cache = path.parent / (path.name + "-fp16")
+    if (cache / "model_index.json").exists():
+        pipe = StableDiffusionPipeline.from_pretrained(str(cache), dtype=torch.float16, safety_checker=None,
+                                                       requires_safety_checker=False)
+    else:
+        pipe = StableDiffusionPipeline.from_pretrained(str(path), dtype=torch.float16, safety_checker=None,
+                                                       requires_safety_checker=False)
+        pipe.save_pretrained(str(cache), safe_serialization=True)
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
     pipe.set_progress_bar_config(disable=True)
     return pipe.to(device)

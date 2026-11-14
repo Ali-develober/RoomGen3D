@@ -391,7 +391,7 @@ def behind_share(seg: dict, evidence: np.ndarray) -> float:
     """
     a0, a1 = _azimuth_interval(seg)
     az = np.degrees(np.arctan2(evidence[:, 0], evidence[:, 1]))
-    e = evidence[(az >= a0) & (az <= a1)]
+    e = evidence[(az - a0) % 360.0 <= a1 - a0]               # wrap-aware (walls behind a 360° camera)
     if len(e) < 30:
         return 0.0
     r = np.linalg.norm(e, axis=1)
@@ -417,7 +417,7 @@ def drop_shadowed(segs: list[dict], max_angle: float = 15.0, min_cover: float = 
         sa = _azimuth_interval(s)
         dup = False
         for o in out:
-            oa = _azimuth_interval(o)
+            oa = _align_interval(sa, _azimuth_interval(o))
             inter = min(sa[1], oa[1]) - max(sa[0], oa[0])
             dang = abs((_angle(s) - _angle(o) + 90.0) % 180.0 - 90.0)
             if dang <= max_angle and inter > min_cover * min(sa[1] - sa[0], oa[1] - oa[0]):
@@ -467,6 +467,62 @@ def closed_room(segs: list[dict], info: dict) -> dict | None:
     u0, u1, v0, v1 = pos[("u", -1.0)], pos[("u", 1.0)], pos[("v", -1.0)], pos[("v", 1.0)]
     corners = np.array([u0 * u + v0 * v, u1 * u + v0 * v, u1 * u + v1 * v, u0 * u + v1 * v])
     return {"corners": corners, "width": u1 - u0, "depth": v1 - v0, "area": (u1 - u0) * (v1 - v0)}
+
+
+def closed_room_360(segs: list[dict], info: dict, evidence: np.ndarray, side_angle: float = 20.0) -> dict:
+    """Closed rectangular room for a 360 degree camera, which sees every side of the room.
+
+    In the dominant frame (u, v) every wall within `side_angle` of an axis is assigned to the side
+    it lies on; the longest wall of a side is its boundary. A side without any wall line (e.g. a
+    wall hidden behind wardrobes, or labelled as furniture) is placed at the 98th percentile of the
+    scene points (floor, wall, ceiling, furniture) on that side and marked as inferred.
+    Returns {"corners", "width", "depth", "area", "inferred" (per edge: v0, u1, v1, u0)}.
+    """
+    t = np.radians(info.get("dominant_deg", 0.0))
+    u, v = np.array([np.cos(t), np.sin(t)]), np.array([-np.sin(t), np.cos(t)])
+    sides = {}
+    for sg in segs:
+        mid = (sg["p0"] + sg["p1"]) / 2
+        for axis, a in (("u", u), ("v", v)):
+            if abs(sg["n"] @ a) >= np.cos(np.radians(side_angle)):
+                key = (axis, float(np.sign(mid @ a)))
+                if key not in sides or sg["length"] > sides[key]["length"]:
+                    sides[key] = sg
+    pos, inferred = {}, {}
+    for axis, a in (("u", u), ("v", v)):
+        proj = evidence @ a
+        for sign in (-1.0, 1.0):
+            key = (axis, sign)
+            if key in sides:
+                pos[key] = float(np.mean(sides[key]["inliers"] @ a)) if sides[key]["inliers"] is not None \
+                    else float(((sides[key]["p0"] + sides[key]["p1"]) / 2) @ a)
+                inferred[key] = False
+            else:
+                side = proj[np.sign(proj) == sign]
+                pos[key] = float(np.percentile(side, 98 if sign > 0 else 2)) if len(side) else sign * 0.5
+                inferred[key] = True
+    u0, u1, v0, v1 = pos[("u", -1.0)], pos[("u", 1.0)], pos[("v", -1.0)], pos[("v", 1.0)]
+    corners = np.array([u0 * u + v0 * v, u1 * u + v0 * v, u1 * u + v1 * v, u0 * u + v1 * v])
+    return {"corners": corners, "width": u1 - u0, "depth": v1 - v0, "area": (u1 - u0) * (v1 - v0),
+            "inferred": [inferred[("v", -1.0)], inferred[("u", 1.0)], inferred[("v", 1.0)], inferred[("u", -1.0)]],
+            "n_observed_sides": int(sum(not x for x in inferred.values()))}
+
+
+def room_edges(room: dict) -> list[dict]:
+    """The four sides of a closed room as wall segments (camera inside, normals pointing out)."""
+    cs = room["corners"]
+    c = cs.mean(0)
+    out = []
+    for i in range(4):
+        p0, p1 = cs[i], cs[(i + 1) % 4]
+        d = (p1 - p0) / np.linalg.norm(p1 - p0)
+        n = np.array([d[1], -d[0]])
+        if n @ ((p0 + p1) / 2 - c) < 0:
+            n = -n
+        out.append({"dir": d, "n": n, "offset": float(n @ p0), "p0": p0.copy(), "p1": p1.copy(),
+                    "length": float(np.linalg.norm(p1 - p0)), "cells": 0, "inliers": None, "snapped": True,
+                    "inferred": bool(room["inferred"][i])})
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -625,16 +681,19 @@ def extract_openings(pts: np.ndarray, valid: np.ndarray, class_map: np.ndarray, 
 # --------------------------------------------------------------------------- #
 # Whole plan
 # --------------------------------------------------------------------------- #
-def build_floorplan(depth: np.ndarray, k: tuple, class_map: np.ndarray, id2label: dict,
-                    valid: np.ndarray | None = None, fov_deg: float | None = None) -> dict:
+def build_floorplan(depth: np.ndarray, k: tuple | None, class_map: np.ndarray, id2label: dict,
+                    valid: np.ndarray | None = None, fov_deg: float | None = None,
+                    points: np.ndarray | None = None) -> dict:
     """Floor plan of one view.
 
     depth: HxW metres; k = (fx, fy, cx, cy); class_map: HxW ADE20K ids at the depth resolution;
     valid: optional HxW bool mask of usable depth pixels.
+    points: optional HxWx3 camera-space points that replace the pinhole back-projection (used for
+    360 deg panoramas: spherical back-projection; then k may be None and fov_deg should be 360).
     Returns walls, furniture, openings, room (closed polygon or None), floor occupancy, frame and stats.
     """
     valid = np.isfinite(depth) & (depth > 0.05) if valid is None else valid & np.isfinite(depth) & (depth > 0.05)
-    pts = backproject(depth, k)
+    pts = backproject(depth, k) if points is None else points.astype(np.float64)
     sel = lambda names: np.isin(class_map, class_ids(id2label, names))  # noqa: E731
     floor_m, wall_m, ceil_m = sel(FLOOR_CLASSES), sel(WALL_CLASSES), sel(CEILING_CLASSES)
     frame = gravity_frame(pts, valid, floor_m, ceil_m)
@@ -661,11 +720,19 @@ def build_floorplan(depth: np.ndarray, k: tuple, class_map: np.ndarray, id2label
         ceiling_h = float(np.median(to_plan(pts[cm], frame)[1]))
 
     furniture = extract_furniture(pts, valid, class_map, id2label, frame)
-    openings = extract_openings(pts, valid, class_map, id2label, frame, walls)
-    room = closed_room(walls, info)
     if fov_deg is None:
         fov_deg = float(np.degrees(2 * np.arctan(class_map.shape[1] / 2 / k[0])))
-    return {"walls": walls, "furniture": furniture, "openings": openings, "room": room, "manhattan": info,
+    detected = walls
+    if fov_deg >= 359 and len(exy):
+        # 360 degree camera: every side of the room is in view, so the room is closed from the
+        # detected walls (sides without a wall line are inferred) and its sides become the walls
+        room = closed_room_360(walls, info, exy)
+        walls = room_edges(room)
+    else:
+        room = closed_room(walls, info)
+    openings = extract_openings(pts, valid, class_map, id2label, frame, walls)
+    return {"walls": walls, "detected_walls": detected, "furniture": furniture, "openings": openings, "room": room,
+            "manhattan": info,
             "frame": frame, "grid": grid, "floor_occ": floor_occ, "wall_occ": wall_occ,
             "visible_floor_m2": float(floor_occ.sum() * grid.cell ** 2), "camera_height": frame["d"],
             "ceiling_height": ceiling_h, "fov_deg": fov_deg,
@@ -772,7 +839,10 @@ def draw_floorplan(plan: dict, png_path=None, svg_path=None, title: str | None =
     # walls (filled, thickness drawn outwards) with openings cut out
     for wi, w in enumerate(walls):
         poly = np.array([w["p0"], w["p1"], w["p1"] + w["n"] * WALL_THICKNESS, w["p0"] + w["n"] * WALL_THICKNESS])
-        ax.add_patch(Polygon(poly, closed=True, fc=INK, ec=INK, lw=0.5, zorder=5))
+        if w.get("inferred"):                                       # side closed without a detected wall
+            ax.add_patch(Polygon(poly, closed=True, fc="#bdbdbd", ec=INK, lw=0.5, hatch="////", zorder=5))
+        else:
+            ax.add_patch(Polygon(poly, closed=True, fc=INK, ec=INK, lw=0.5, zorder=5))
     for o in plan["openings"]:
         w = walls[o["wall"]]
         a, b = w["p0"] + w["dir"] * o["t0"], w["p0"] + w["dir"] * o["t1"]
@@ -812,11 +882,15 @@ def draw_floorplan(plan: dict, png_path=None, svg_path=None, title: str | None =
             if w["length"] >= 0.5:
                 _dimension(ax, w["p0"], w["p1"], w["n"], WALL_THICKNESS + 0.28, f"≈{w['length']:.2f} m", fs)
 
-    # camera marker with its field of view
+    # camera marker with its field of view (a 360 deg camera gets a circle)
     half = np.radians(plan["fov_deg"] / 2)
     r = 0.9
-    for s in (-1, 1):
-        ax.plot([0, r * np.sin(s * half)], [0, r * np.cos(half)], color="#c0392b", lw=0.6, ls=(0, (3, 2)), zorder=8)
+    if plan["fov_deg"] >= 359:
+        from matplotlib.patches import Circle
+        ax.add_patch(Circle((0, 0), 0.22, fill=False, ec="#c0392b", lw=0.8, ls=(0, (3, 2)), zorder=8))
+    else:
+        for s in (-1, 1):
+            ax.plot([0, r * np.sin(s * half)], [0, r * np.cos(half)], color="#c0392b", lw=0.6, ls=(0, (3, 2)), zorder=8)
     tri = np.array([[0, 0.16], [-0.1, -0.08], [0.1, -0.08]])
     ax.add_patch(Polygon(tri, closed=True, fc="#c0392b", ec="none", zorder=9))
     ax.text(0, -0.22, "camera", fontsize=fs - 1, ha="center", va="top", color="#c0392b", zorder=9)
@@ -831,6 +905,8 @@ def draw_floorplan(plan: dict, png_path=None, svg_path=None, title: str | None =
     # header
     if room is not None:
         area = f"Floor area ≈ {room['area']:.1f} m²  ({room['width']:.2f} × {room['depth']:.2f} m)"
+        if any(room.get("inferred", [])):
+            area += f"  ·  hatched: {sum(room['inferred'])} side(s) inferred, no wall line detected"
     else:
         area = f"Visible floor ≈ {plan['visible_floor_m2']:.1f} m²  (room not closed in this view)"
     head = (title + "\n" if title else "") + area
@@ -854,9 +930,19 @@ def draw_floorplan(plan: dict, png_path=None, svg_path=None, title: str | None =
 # Comparison of two plans of the same view (validation against ground truth)
 # --------------------------------------------------------------------------- #
 def _azimuth_interval(w: dict) -> tuple[float, float]:
-    """Angular extent (deg) of a wall as seen from the camera; angle 0 = straight ahead."""
-    a = [np.degrees(np.arctan2(p[0], p[1])) for p in (w["p0"], w["p1"])]
-    return min(a), max(a)
+    """Angular extent (deg) of a wall as seen from the camera; angle 0 = straight ahead.
+
+    Returned as (start, end) with end - start = the angle the wall subtends (< 180 deg); `end` may
+    exceed 180 when the wall crosses the direction straight behind a 360 deg camera."""
+    a, b = (float(np.degrees(np.arctan2(p[0], p[1]))) for p in (w["p0"], w["p1"]))
+    d = (b - a + 180.0) % 360.0 - 180.0
+    return (a, a + d) if d >= 0 else (b, b - d)
+
+
+def _align_interval(ref: tuple[float, float], other: tuple[float, float]) -> tuple[float, float]:
+    """Shift `other` by a multiple of 360 deg so that it starts within 180 deg of `ref`."""
+    k = np.round((ref[0] - other[0]) / 360.0) * 360.0
+    return other[0] + k, other[1] + k
 
 
 def match_walls(gt: list[dict], pred: list[dict], min_iou: float = 0.3, max_angle: float = 20.0) -> list[tuple]:
@@ -870,7 +956,7 @@ def match_walls(gt: list[dict], pred: list[dict], min_iou: float = 0.3, max_angl
     for i, g in enumerate(gt):
         ga = _azimuth_interval(g)
         for j, p in enumerate(pred):
-            pa = _azimuth_interval(p)
+            pa = _align_interval(ga, _azimuth_interval(p))
             inter = min(ga[1], pa[1]) - max(ga[0], pa[0])
             union = max(ga[1], pa[1]) - min(ga[0], pa[0])
             iou = inter / union if union > 0 else 0.0

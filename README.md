@@ -461,6 +461,37 @@ Two ways to get a metric **distance map** for an equirectangular panorama were c
 - **No ground truth.** No real RGB-D panorama set could be used within the plan's rules: the official Stanford2D3D, Matterport3D and Structured3D releases require a signed licence agreement, and the copies found on the Hugging Face Hub are third-party redistributions of that data, which were not used. The numbers above are geometric plausibility checks, not accuracy.
 - Tables: `results/tables/pano_depth.csv` (summary), `pano_depth_per_image.csv`, `pano_depth_timing.csv`. Figure: `results/figures/pano_depth_examples.png`.
 
+### Full-Room 3D (milestone 4 of PLAN_V2)
+Code: `src/room_mesh.py`, `src/pipeline_360.py`, `scripts/run_room360.py`, `scripts/eval_room3d.py`.
+
+**360° Room pipeline:** prompt → SD 2.1 panorama model with circular padding (1024×512) → Real-ESRGAN ×2 texture (2048×1024) → DAP + wrap fix (distance map) → SegFormer on 14 views (class map) → mesh + dollhouse + floor plan.
+
+**Mesh** (`room_mesh.build_room_mesh`), reusing the Quick-mode mesh logic on a sphere:
+- **Gravity alignment:** RANSAC floor plane → the mesh is rotated so that "up" is exact; the panorama centre is the origin.
+- **Spherical back-projection** on a grid with one vertex every 2 pixels. The grid **wraps around**: the last column is joined to the first through a duplicate column that carries texture u = 1, so there is no seam in the mesh. **Pole caps** close the top and bottom with a fan of triangles (one pole vertex per column, so the texture is not smeared).
+- **Observed surface (layer 0):** depth edges are sharpened and the foreground grown, then triangles are cut at depth discontinuities (8%, or 4.5% next to a Canny edge). Every 2D filter runs on a wrap-padded copy.
+- **Disocclusion band (layer 1):** the background is continued 24 px behind every cut, coloured by inpainting.
+- **Room box (layer 2):** floor plane, ceiling height and the four walls of the closed 360° floor plan (milestone 5). Where the box surface is hidden behind furniture it is added and painted from the visible part of the same plane, so moving away from the centre shows wall and floor behind objects instead of holes.
+- **Dollhouse variant:** every triangle within 25 cm of the ceiling height is removed, so the room can be looked into from above.
+- Exported as `.glb` (unlit, double-sided): 0.31–0.41 M triangles, 8–10 MB.
+
+**Viewer (app, 360° Room mode):** "3D viewer" opens **inside** the room: the orbit target is the panorama centre, dragging turns the view around, and the zoom moves the camera 5 cm–1 m from the centre. "Dollhouse" orbits the ceiling-less room from outside and above (polar angle 0–80°). `gr.Model3D` stays as the offline fallback. The app keeps only the active mode's diffusion models on the GPU and moves the other mode's to the CPU when the mode changes (first switch 8.6 s, later about 2 s). Peak VRAM of a 360° request: 5.5 GB. Tested headlessly (both modes, switching back and forth); the two `<model-viewer>` modes have not yet been checked by hand in a browser.
+
+**Evaluation** on the six demo prompts and seeds (the Quick mode's single-view meshes vs. the 360° meshes). Both are gravity-aligned and rendered by exact ray casting (Open3D); "empty" = share of rays that hit no surface. Inside: camera at the centre and moved 0.5 m / 1.0 m in four horizontal directions, eight 90° views around (yaw 0, 45, …, 315). "Front" = the three yaws within ±45° of the single view's own direction. Dollhouse: eight views from outside, 55° above the horizon, counting only rays that pass through the room's bounding box.
+
+| Empty share | Single view (all directions / front) | 360° room (all directions / front) |
+|---|---|---|
+| Inside, at the centre | 89.7% / 72.4% | **0.5% / 0.3%** |
+| Inside, 0.5 m from the centre | 89.3% / 71.5% | **0.7% / 0.3%** |
+| Inside, 1.0 m from the centre | 88.6% / 69.7% | **1.2% / 0.5%** |
+| Dollhouse (outside, above) | 57.1% / 64.7% | **31.0% / 30.5%** |
+
+- **The 360° mesh is a whole room:** from the centre only 0.5% of the view is empty in any direction (the single view: 90%, and still 72% in its own direction because a 90° view is wider than the 60° image). Moving 1 m off-centre raises it only to 1.2%, because the band and the room box fill what the panorama did not see.
+- **Dollhouse:** 31% of the rays through the room's bounding box miss (single view 57%). The misses are ragged room outlines (doors and windows open to outside depth, broken wall pieces at depth cuts, as in the kitchen) and the space between the bounding box and the walls.
+- **Timing** (RTX 5060 Laptop, models loaded): 17.2 s per room on average (panorama 7.5 s, super-resolution 0.8 s, depth 0.9 s, segmentation 1.4 s, mesh + floor plan 6.2 s, export 0.3 s). Peak VRAM per stage: panorama 3.9 GB, DAP 2.3 GB, SegFormer 0.3 GB, Real-ESRGAN 0.2 GB. The SD 2.1 panorama model is converted once to fp16 safetensors (load time 70 s → 17 s, then cached).
+- **Where it still fails:** the panorama model sometimes repeats large furniture (two beds in the coastal bedroom); thin objects are torn at depth cuts; the room box is a rectangle, so L-shaped or open-plan rooms are boxed (the mid-century dining room's box is 72 m²).
+- Tables: `results/tables/room3d_empty.csv`, `room3d_empty_per_view.csv`, `room360_timing.csv`. Figures: `results/figures/room3d_views.png` (inside views, single view vs. 360°), `room3d_dollhouse.png`. The 3D files are in `outputs/room360/<room>/` (not in git).
+
 ### Visual Results
 - Prompt → 2D image → edges → segmentation → depth → point cloud → mesh: `results/figures/pipeline_3d_results.png`
 - Floor plans of the demo rooms: `results/figures/floorplan_demo.png`; NYU plans from GT vs. predicted depth: `results/figures/floorplan_nyu_examples.png`
@@ -499,6 +530,8 @@ RoomGen3D/
 │   ├── equirect.py            # Equirectangular geometry, perspective crops, seam ratio
 │   ├── generate_pano.py       # 360° panoramas: circular padding, LoRAs / SD 2.1 panorama model, Real-ESRGAN
 │   ├── pano_depth.py          # Panoramic depth: multi-view alignment (ours), DAP + wrap fix, wrap-aware filters
+│   ├── room_mesh.py           # Full-room mesh from a panorama: wrap-around grid, poles, room box, dollhouse, ray casting
+│   ├── pipeline_360.py        # 360° Room mode stages (used by the script and the demo)
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures
@@ -550,7 +583,7 @@ RoomGen3D/
 
 ## 14. Limitations
 
-- 3D comes from a **single view**, so hidden areas (behind furniture, other walls) are not reconstructed. It is not a full 360° room.
+- In Quick mode the 3D comes from a **single view**, so hidden areas (behind furniture, other walls) are not reconstructed. The 360° Room mode builds the whole room, but from one viewpoint: surfaces hidden from the panorama centre are only filled by the background band and the rectangular room box.
 - The **floor plan** of a single view is never a closed room (0 of 654 NYU views); furniture behind the visible face is completed from class priors, and sizes carry the depth model's scale error (wall lengths +16% median on NYU).
 - An **isometric cutaway mode** (prompting for a corner view from above on a plain white background, so that fewer regions are hidden) was tried with base SD v1.5 and with the LoRA at strength 1.0 and 0.5 on the six demo prompts and dropped: only four of six images got the corner view, five of six had no plain background to remove, and the room style was mostly lost.
 - Depth from generated images has **no ground truth**, so depth accuracy is measured on NYU Depth V2 only.

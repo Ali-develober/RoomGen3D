@@ -11,7 +11,7 @@ Read this first after a restart. Each entry: what was built, results, what faile
 | 2026-11-14 | DAP code + weights (model.pth) from `Insta360-Research/DAP-weights` → checkpoints/dap | 1.46 GB |
 | 2026-11-14 | SD 2.1-base panorama model (`archerfmy0831/sd-t2i-360panoimage`, sd-base: unet, text encoder, vae, tokenizer; no safety checker, no SR parts) → checkpoints/pano_sd_base | 5.16 GB |
 
-**Total so far: 6.84 GB of 12 GB.** pip (venv only): einops 0.8.2, termcolor 3.3.0 (needed by the DAP code).
+**Total so far: 6.84 GB of 12 GB.** (Local conversion, not a download: fp16 safetensors copy of the SD 2.1 panorama model in checkpoints/pano_sd_base/sd-base-fp16, 2.6 GB.) pip (venv only): einops 0.8.2, termcolor 3.3.0 (needed by the DAP code).
 
 ---
 
@@ -72,3 +72,20 @@ Gravity from predicted depth within 1.8° (median) of GT; floor plane found in ~
 **Failed / limitations**: no real panorama ground truth (official sets need signed licences; HF mirrors are third-party redistributions, not used) → only plausibility checks; walls only ~28% planar (curved generated walls, SegFormer labels cupboards as wall); method A's absolute scale is wrong.
 
 **Next:** Milestone 4 — full-room 3D (`src/room_mesh.py`): spherical back-projection of the DAP distance map, textured mesh with discontinuity cuts, seam stitching and poles, RANSAC room box, dollhouse variant, two-mode viewer, empty-share metrics vs. the single-view mesh.
+
+---
+
+## 2026-11-14 — Milestone 4: full-room 3D — DONE
+
+**Built**
+- `src/room_mesh.py`: gravity rotation from the floor plane; spherical back-projection on a wrap-around grid (duplicate column with u = 1) + pole caps; layer 0 with sharpened depth edges and cuts, layer 1 disocclusion band, layer 2 room box from the closed 360° plan, all 2D filters wrap-padded; dollhouse (ceiling −25 cm removed); Open3D ray caster with texture lookup.
+- `src/pipeline_360.py` (stages), `scripts/run_room360.py` (6 demo prompts, resumable, per-room timing.json), `scripts/eval_room3d.py`.
+- `src/floorplan.py`: accepts a point cloud (spherical back-projection), wrap-aware azimuth intervals, 360° camera marker, `closed_room_360` (sides without a wall line inferred from the 98th percentile of the scene, drawn hatched), `room_edges` (closed sides become the walls).
+- `src/generate_pano.py`: fp16 safetensors cache of the SD 2.1 panorama model (load 70 s → 17 s).
+- `app/app.py`: mode switch Quick / 360° Room; inside viewer (orbit radius 5 cm–1 m around the centre), dollhouse viewer, Model3D fallback; only the active mode's diffusion models on the GPU. Headless test OK (quick → 360 → quick), 360° peak 5.5 GB.
+
+**Results** (6 demo prompts; empty share of ray-cast views): inside at the centre 0.5% (single view 89.7%), 1.0 m off-centre 1.2% (88.6%); dollhouse 31.0% (57.1%). 17.2 s per room. Tables `room3d_empty*.csv`, `room360_timing.csv`; figures `room3d_views.png`, `room3d_dollhouse.png`.
+
+**Failed / limitations**: repeated furniture in some panoramas; thin objects torn; rectangular box (dining room box 72 m²); `<model-viewer>` inside/dollhouse modes not yet checked by hand in a browser.
+
+**Next:** Milestone 5 — 360° floor plan figures and the plan-vs-mesh floor-area check (`scripts/floorplan_360.py`, written).
