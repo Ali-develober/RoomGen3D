@@ -99,6 +99,7 @@ We use a **subset of MMIS** (e.g., 5–10K images after cleaning) to fit local G
 | Text-to-image | Stable Diffusion v1.5 | Base generator |
 | 360° panorama | SD 2.1-base panorama fine-tune (SD-T2I-360PanoImage); compared with SD v1.5 + 360 LoRA | Equirectangular room |
 | Super-resolution | Real-ESRGAN ×2 | Panorama to 2048×1024 |
+| Panoramic depth | DAP (Depth Any Panoramas) + our wrap fix; compared with our multi-view Depth Anything alignment | Metric 360° distance map |
 | Domain adaptation | LoRA (trained by us on MMIS) | Specialize generation for interiors |
 | Depth estimation | Depth Anything (best on NYU), MiDaS (baseline), Depth Anything V2 Metric Indoor (3D stage) | Monocular depth from a single image |
 | Segmentation | SegFormer-B2 (ADE20K) | Room-element masks |
@@ -431,6 +432,35 @@ A single 60° view can only give a relief of what the camera saw. The 360° mode
 
 Real-ESRGAN (own minimal RRDBNet implementation, x2plus weights, 256-px tiles; the panorama is padded by 16 columns copied from the opposite border so the network sees continuous content across the seam) is 3.3 times sharper and stays seamless, so it is the default. It is less faithful to the input: downscaled back, it differs from it by 33.8 dB PSNR against 51.6 dB for bicubic, because it smooths fine texture into clean, painterly regions (`results/figures/pano_sr_compare.png`). Tables: `pano_sr.csv`, `pano_sr_per_image.csv`.
 
+### Panoramic Depth (milestone 3 of PLAN_V2)
+Code: `src/pano_depth.py`, `scripts/eval_pano_depth.py`.
+
+Two ways to get a metric **distance map** for an equirectangular panorama were compared:
+
+- **Method A (ours, image processing).** The panorama is cut into 14 overlapping 100° perspective views (6 cube faces + 8 views at ±35° pitch between them). Depth Anything V2 Metric Indoor predicts z-depth per view; z is converted to the distance along each ray (r = z·|ray|). Every view is resampled onto the equirectangular grid with a feather weight (cos⁴ of the angle to the view axis × a border ramp). Per-view **scales** are found by a global least-squares fit over all overlapping pixels in log space (log sᵢ − log sⱼ = log Dⱼ − log Dᵢ, mean log s = 0, robust Cauchy re-weighting), optionally followed by per-view **shifts** with the scales fixed (a joint scale + shift fit is ill-posed: all views can shrink and take the same shift, which makes them agree on a constant map). The aligned views are blended with the feather weights.
+- **Method B: DAP** ("Depth Any Panoramas", Insta360, ViT-L/DINOv3), a metric panoramic depth network run on the whole 1024×512 image. It must run in fp32 (fp16 overflows to NaN); 2.3 GB VRAM.
+- **Wrap fix for DAP (ours).** DAP does not treat the left and right borders as neighbours and its prediction jumps at ±180° (seam ratio 9.8). It is run a second time on the panorama rolled by half a width, the result is rolled back, and the two are cross-faded with weights cos²(lon/2) and sin²(lon/2), so each prediction is used far from its own border.
+- **Post-processing:** the noise-gated denoising and the depth refinement of the Quick mode, applied with horizontal wrap padding (the filters see the opposite border).
+
+**Evaluation** on the 30 panoramas of the selected generator (first seed of every prompt). Segmentation for the checks: SegFormer on the 14 perspective views, labels projected back (segmenting the equirectangular image directly labels most of the distorted ceiling as wall). Medians over the 30 panoramas:
+
+| Method | View disagreement before → after | Floor: inliers / RMS (% of camera height) / tilt | Walls: points on a plane / RMS (% of distance) / angle error | Room height (share in 2.2–3.5 m) | Depth seam ratio | s / VRAM |
+|---|---|---|---|---|---|---|
+| A, views blended without alignment | 33% | 43% / 9.5% / 7.9° | 17% / 8.4% / 9.5° | 5.11 m (3%) | 0.67 | – |
+| A, scale alignment | 33% → 10.3% | 62% / 6.6% / 4.3° | 17% / 8.5% / 6.6° | 6.13 m (0%) | 0.65 | 1.7 s / 0.3 GB |
+| A, scale + shift | 33% → 10.7% | 61% / 6.5% / 4.8° | 21% / 7.9% / 4.2° | 6.05 m (0%) | 0.64 | 1.8 s / 0.3 GB |
+| B, DAP | – | 95% / 2.6% / 0.4° | 28% / 8.3% / 4.5° | 2.88 m (100%) | 9.75 | 0.4 s / 2.3 GB |
+| **B, DAP + wrap fix (selected)** | – | **95% / 2.7% / 0.5°** | **28% / 8.3% / 3.7°** | **2.88 m (100%)** | **0.62** | 0.9 s / 2.3 GB |
+| B, DAP + wrap fix + gated denoise + refinement | – | 94% / 3.1% / 0.4° | 28% / 8.3% / 4.8° | 2.91 m (100%) | 0.74 | |
+
+- **Our alignment works on its own terms:** the overlapping views disagree by 33% before and 10% after the scale fit, and the floor becomes much flatter (inliers 43% → 62%, tilt 7.9° → 4.3°). The shift step adds nothing (shifts come out near zero).
+- **But DAP gives far better room geometry:** a flat, level floor (95% of the floor points on one plane, 0.4° tilt), and every room height between 2.2 and 3.5 m (median 2.88 m, camera 1.19 m above the floor). Method A puts the rooms twice as far away (median distance 3.9 m vs. 1.8 m) and makes them 6 m tall: the per-view metric model is given perspective crops of a generated room without scale cues (a crop of the ceiling is predicted 0.7 m away), and the alignment can only make the views agree with each other, not fix the common scale. The same overestimate showed up in the single-view floor plans (milestone 1: ceilings 3.7–5.2 m).
+- **The wrap fix removes DAP's seam** (seam ratio 9.75 → 0.62) for 0.4 s more and changes none of the geometry numbers. Wrap-aware refinement alone also reduces the seam (to 1.31) but less.
+- **Gated denoising + refinement do not improve the geometry** (floor RMS 2.7% → 3.1%), the same finding as on NYU (it cleans boundaries but does not lower the error), so the selected depth for the 3D stage is DAP + wrap fix without refinement.
+- **Walls are only partly planar for every method** (28% of the wall points on one of up to 6 vertical planes within 2% of the distance): generated rooms contain curved and bulging walls, and SegFormer labels some cupboards and curtains as wall.
+- **No ground truth.** No real RGB-D panorama set could be used within the plan's rules: the official Stanford2D3D, Matterport3D and Structured3D releases require a signed licence agreement, and the copies found on the Hugging Face Hub are third-party redistributions of that data, which were not used. The numbers above are geometric plausibility checks, not accuracy.
+- Tables: `results/tables/pano_depth.csv` (summary), `pano_depth_per_image.csv`, `pano_depth_timing.csv`. Figure: `results/figures/pano_depth_examples.png`.
+
 ### Visual Results
 - Prompt → 2D image → edges → segmentation → depth → point cloud → mesh: `results/figures/pipeline_3d_results.png`
 - Floor plans of the demo rooms: `results/figures/floorplan_demo.png`; NYU plans from GT vs. predicted depth: `results/figures/floorplan_nyu_examples.png`
@@ -468,6 +498,7 @@ RoomGen3D/
 │   ├── floorplan.py           # Floor plan: gravity alignment, walls, furniture, doors/windows, drawing
 │   ├── equirect.py            # Equirectangular geometry, perspective crops, seam ratio
 │   ├── generate_pano.py       # 360° panoramas: circular padding, LoRAs / SD 2.1 panorama model, Real-ESRGAN
+│   ├── pano_depth.py          # Panoramic depth: multi-view alignment (ours), DAP + wrap fix, wrap-aware filters
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures

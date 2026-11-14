@@ -57,4 +57,18 @@ Gravity from predicted depth within 1.8° (median) of GT; floor plane found in ~
 
 **Failed / limitations**: pano-LoRA rooms repeat objects and have bulging walls; our LoRA does not transfer to panoramas; Real-ESRGAN smooths fine texture.
 
-**Next:** Milestone 3 — panoramic depth. Code is written (`src/pano_depth.py`, `scripts/eval_pano_depth.py`); a first run on the pano-LoRA panoramas showed DAP far better than method A on geometry (floor inliers 93% vs. 33%, plausible room height 97% vs. 0%) but with a wrap seam (seam ratio 11) → added `dap_depth_wrap` (roll + cross-fade). Rerunning on the selected SD 2.1 panoramas.
+**Next:** Milestone 3 (done below).
+
+---
+
+## 2026-11-14 — Milestone 3: panoramic depth — DONE
+
+**Built**
+- `src/pano_depth.py`: method A (14 overlapping 100° views → Depth Anything V2 Metric Indoor → z to radial distance → resampling to equirect with feather weights → robust log-space least-squares per-view scale, optional shift step with scales fixed → feathered blend); method B DAP loader (fp32; fp16 gives NaN) + `dap_depth_wrap` (DAP on the panorama and on it rolled by half, cross-faded cos²/sin²); panorama segmentation via the 14 views; wrap-aware gated denoising and depth refinement.
+- `scripts/eval_pano_depth.py` (30 panoramas of the selected generator).
+
+**Results** (medians): method A alignment 33% → 10% view disagreement, floor inliers 43% → 62%, but rooms 6.1 m tall (0% plausible), distances 2× DAP's. DAP: floor inliers 95%, tilt 0.4°, room height 2.88 m (100% plausible), wall inliers 28% vs 17%, 0.4 s, 2.3 GB. DAP seam ratio 9.75 → 0.62 with the wrap fix (0.9 s). Gated denoise + refinement: no geometry gain (floor RMS 2.7% → 3.1%). **Selected for 3D: DAP + wrap fix, no refinement.** Tables `results/tables/pano_depth*.csv`, figure `pano_depth_examples.png`, README section 8 "Panoramic Depth".
+
+**Failed / limitations**: no real panorama ground truth (official sets need signed licences; HF mirrors are third-party redistributions, not used) → only plausibility checks; walls only ~28% planar (curved generated walls, SegFormer labels cupboards as wall); method A's absolute scale is wrong.
+
+**Next:** Milestone 4 — full-room 3D (`src/room_mesh.py`): spherical back-projection of the DAP distance map, textured mesh with discontinuity cuts, seam stitching and poles, RANSAC room box, dollhouse variant, two-mode viewer, empty-share metrics vs. the single-view mesh.
