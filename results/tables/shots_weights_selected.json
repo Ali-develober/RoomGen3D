@@ -1,0 +1,10 @@
+{
+ "inst": 0.25,
+ "fam": 1.0,
+ "furn": 2.0,
+ "wall": 0.0,
+ "cf": 1.0,
+ "anchor": 0.0,
+ "anchor_share": 5.0,
+ "depth": 1.0
+}

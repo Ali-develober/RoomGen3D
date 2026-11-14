@@ -67,3 +67,25 @@ def _cast(mesh: dict, origins: np.ndarray, dirs: np.ndarray):
     y = np.clip((uv[:, 1] * tex.shape[0]).astype(int), 0, tex.shape[0] - 1)
     rgb[hit] = tex[y, x]
     return hit, t, rgb
+
+
+def pano_sphere(pano: np.ndarray, radius: float = 10.0, n_lon: int = 128, n_lat: int = 64) -> dict:
+    """PLAN_V4 milestone 1: the equirectangular panorama on an inward-facing UV sphere around the origin
+    (camera frame: X right, Y down, Z forward, same pixel convention as src/equirect.py), for an interactive
+    360° viewer: from the centre it shows exactly the panorama. A duplicate seam column (u = 1) keeps the
+    texture continuous across the wrap."""
+    lon = np.linspace(-np.pi, np.pi, n_lon + 1)
+    lat = np.linspace(np.pi / 2, -np.pi / 2, n_lat + 1)
+    LON, LAT = np.meshgrid(lon, lat)
+    v = np.stack([np.cos(LAT) * np.sin(LON), -np.sin(LAT), np.cos(LAT) * np.cos(LON)], -1) * radius
+    uv = np.stack([(LON + np.pi) / (2 * np.pi), (np.pi / 2 - LAT) / np.pi], -1)
+    idx = np.arange((n_lat + 1) * (n_lon + 1)).reshape(n_lat + 1, n_lon + 1)
+    a, b, c, d = idx[:-1, :-1], idx[:-1, 1:], idx[1:, 1:], idx[1:, :-1]
+    faces = np.concatenate([np.stack([a, b, c], -1).reshape(-1, 3), np.stack([a, c, d], -1).reshape(-1, 3)])
+    return {"vertices": v.reshape(-1, 3).astype(np.float32), "uvs": uv.reshape(-1, 2).astype(np.float32),
+            "faces": faces.astype(np.int64), "texture": pano}
+
+
+def pano_sphere_glb(pano: np.ndarray, path) -> None:
+    from . import textured_mesh as tm
+    tm.export_glb(pano_sphere(pano), path, double_sided=True)

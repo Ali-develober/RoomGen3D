@@ -1,0 +1,13 @@
+split,method,measure,diff_vs_baseline,ci_lo,ci_hi,better,equal,worse
+dev,hero_default,gt_anchor,0.15,-0.1,0.4,5,13,2
+dev,hero_default,gt_inst,0.95,0.1,1.7,12,7,1
+dev,hero_default,pred_inst,1.0,0.7,1.35,15,5,0
+dev,hero_tuned,gt_anchor,0.2,0.0,0.4,5,14,1
+dev,hero_tuned,gt_inst,1.25,0.75,1.75,12,8,0
+dev,hero_tuned,pred_inst,1.0,0.7,1.35,15,5,0
+test,hero_default,gt_anchor,0.15,-0.05,0.35,4,15,1
+test,hero_default,gt_inst,0.6,-0.15,1.4,8,8,4
+test,hero_default,pred_inst,1.3,0.9,1.75,18,2,0
+test,hero_tuned,gt_anchor,0.15,-0.05,0.4,4,15,1
+test,hero_tuned,gt_inst,0.65,0.0,1.35,7,10,3
+test,hero_tuned,pred_inst,1.25,0.85,1.7,17,3,0

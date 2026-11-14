@@ -11,7 +11,11 @@ Runs the same code as scripts/run_pipeline.py (src/pipeline.py):
 
 Two modes:
   Quick (single view)  the pipeline above; 2D image + floor plan + 3D relief of the view.
-  360° Room            v3 (default, src/pipeline_v3.py): 1-4 candidate panoramas (SD 2.1 panorama model,
+  360° Room            v4 (default, src/pipeline_v4.py, PLAN_V4): v3 below + readable design shots (hero view
+                       + four wall views, perspective, level, 1024 x 768) shown in a gallery next to the floor
+                       plan, whose camera and view cones carry the same letters; the panorama itself moves to
+                       the "360° panorama" viewer tab and the Analysis section.
+                       v3 (src/pipeline_v3.py): 1-4 candidate panoramas (SD 2.1 panorama model,
                        one-room prompt) -> DAP + SegFormer -> the most box-like candidate is kept
                        (src/boxiness.py) -> Real-ESRGAN -> Mask2Former instances -> room box shell +
                        solid furniture -> architectural plan (PNG / SVG / DXF).
@@ -30,6 +34,8 @@ Two modes:
                    360°: inside view, camera at the panorama centre; drag to look around, the
                    orbit radius (zoom) is limited to 5 cm - 1 m around the centre.
   "Dollhouse"      360° / layout-first: the room without its ceiling, orbited from outside and above.
+  "360° panorama"  the panorama on an inward-facing sphere (src/viewers.pano_sphere): drag to look around;
+                   v4 opens facing the hero view.
   "Free orbit"     gr.Model3D, no limits (works offline).
 
 GPU memory (8 GB card): segmenter and depth model stay on the GPU; only the diffusion models of
@@ -42,6 +48,7 @@ then open http://127.0.0.1:7860
 
 import sys
 import time
+import zipfile
 from pathlib import Path
 from urllib.parse import quote
 
@@ -64,6 +71,10 @@ from src import pano_depth as pdp  # noqa: E402
 from src import pipeline as pl  # noqa: E402
 from src import instances as ins  # noqa: E402
 from src import pipeline_v3 as p3v  # noqa: E402
+from src import pipeline_v4 as p4v  # noqa: E402
+from src import design_shots as ds  # noqa: E402
+from src import equirect as eq  # noqa: E402
+from src import viewers as vw  # noqa: E402
 from src import pipeline_360 as p3  # noqa: E402
 from src import reconstruct_3d as r3  # noqa: E402
 
@@ -75,7 +86,7 @@ MODEL_VIEWER_JS = "https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/mode
 HEAD = f'<script type="module" src="{MODEL_VIEWER_JS}"></script>'
 QUICK, ROOM360, LAYOUT = "Quick (single view)", "360° Room", "Layout-first"
 BIG = {QUICK: ("sd",), ROOM360: ("alt", "dap", "m2f"), LAYOUT: ("cn",)}     # large models of each mode
-V3, V2 = "v3: clean box room (default)", "v2: previous mesh (comparison)"
+V4, V3, V2 = "v4: design shots + clean box room (default)", "v3: clean box room (comparison)", "v2: previous mesh (comparison)"
 NEUTRAL_BG = "#e9e8e4"        # dollhouse background (v3)
 LAYOUT_CN_SCALE, LAYOUT_CN_END = 0.75, 0.6   # layout-first: SD 2.1 panorama model + SD 2.1 depth ControlNet (milestone 7)
 VIEWER_EMPTY = ('<div style="height:540px;display:flex;align-items:center;justify-content:center;'
@@ -135,6 +146,20 @@ def dollhouse_html(glb_path: str, camera_height: float, bg: str = "#ffffff") -> 
                "Drag to orbit around the room, scroll to zoom.", bg)
 
 
+def pano_html(glb_path: str, yaw_deg: float = 0.0) -> str:
+    """Interactive 360° panorama: the camera sits at the centre of the textured sphere (radius 10 m) and only
+    turns. yaw_deg = panorama longitude to face first (model-viewer theta = -longitude, see viewers.pano_sphere)."""
+    return _mv(_src(glb_path), f'camera-target="0m 0m 0m" camera-orbit="{-yaw_deg:.1f}deg 90deg 0.01m" '
+               'min-camera-orbit="auto 5deg 0.01m" max-camera-orbit="auto 175deg 0.01m" '
+               'field-of-view="80deg" min-field-of-view="30deg" max-field-of-view="100deg"',
+               "Drag to look around the panorama, scroll to zoom.", "#000000")
+
+
+PANO_EMPTY = ('<div style="height:300px;display:flex;align-items:center;justify-content:center;'
+              'color:#888;border:1px solid #ddd;border-radius:8px">The 360° panorama viewer needs the 360° Room or '
+              'Layout-first mode.</div>')
+
+
 DOLL_EMPTY = ('<div style="height:300px;display:flex;align-items:center;justify-content:center;'
               'color:#888;border:1px solid #ddd;border-radius:8px">The dollhouse view needs the 360° Room or Layout-first mode.</div>')
 
@@ -190,18 +215,38 @@ def load_models(mode: str = QUICK) -> dict:
     return MODELS
 
 
-def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: str = V3, candidates: float = 1):
-    """One request in the chosen mode."""
+def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: str = V4, candidates: float = 1):
+    """One request in the chosen mode. The first output becomes the gallery: v4 returns its design shots
+    (hero first), the other modes their single image / panorama. Then: the 360° panorama viewer, the panorama
+    for the Analysis section and the design-shot zip (v4)."""
     prompt = (prompt or "").strip()
     if not prompt:
         raise gr.Error("Please enter a prompt, e.g. 'a coastal style bedroom'.")
+    extra = {}
     if mode == ROOM360:
         if version == V2:
-            return (*run_360(prompt, seed, steps, cfg), None, None)
-        return run_360_v3(prompt, seed, steps, cfg, int(candidates))
-    if mode == LAYOUT:
-        return (*run_layout(prompt, seed, steps, cfg), None, None)
-    return (*run_quick(prompt, seed, steps, cfg), None, None)
+            out = [*run_360(prompt, seed, steps, cfg), None, None]
+        else:
+            out = list(run_360_v3(prompt, seed, steps, cfg, int(candidates), v4=(version != V3), extra=extra))
+    elif mode == LAYOUT:
+        out = [*run_layout(prompt, seed, steps, cfg), None, None]
+    else:
+        out = [*run_quick(prompt, seed, steps, cfg), None, None]
+    first = out[0]
+    if isinstance(first, list):
+        gallery = first
+    else:
+        gallery = [(first, "generated image" if mode == QUICK else "panorama (equirectangular, 360° x 180°)")]
+    pano_view, pano_img = PANO_EMPTY, None
+    if mode != QUICK:
+        pano_path = extra.get("pano_path", out[8])
+        pano_img = cv2.cvtColor(cv2.imread(pano_path), cv2.COLOR_BGR2RGB)
+        sphere = extra.get("sphere")
+        if sphere is None:
+            sphere = str(Path(pano_path).with_name("pano_sphere.glb"))
+            vw.pano_sphere_glb(pano_img, sphere)
+        pano_view = pano_html(sphere, extra.get("hero_lon", 0.0))
+    return (gallery, *out[1:], pano_view, pano_img, extra.get("shots_zip"))
 
 
 def run_layout(prompt: str, seed: float, steps: float, cfg: float):
@@ -292,9 +337,13 @@ def run_360(prompt: str, seed: float, steps: float, cfg: float):
             files["pano"], files["plan_svg"], files["room_glb"], files["dollhouse_glb"], info)
 
 
-def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1):
+def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1, v4: bool = True,
+               extra: dict | None = None):
     """360° Room, v3 (PLAN_V3): k candidate panoramas (one-room prompt), the most box-like one kept ->
-    Real-ESRGAN -> panoptic instances -> room box shell + solid furniture -> architectural plan."""
+    Real-ESRGAN -> panoptic instances -> room box shell + solid furniture -> architectural plan.
+    v4 (PLAN_V4): the same room plus design shots (gallery, view cones on the plan, panorama sphere)."""
+    extra = {} if extra is None else extra
+    P = p4v if v4 else p3v
     models = load_models(ROOM360)
     seed, steps = int(seed), int(steps)
     if DEVICE.type == "cuda":
@@ -310,26 +359,43 @@ def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1):
     with watch.stage("instances"):
         ana = p3v.analyse((models["m2f"], models["m2f_proc"]), pano, cm, id2label, DEVICE)
     with watch.stage("room"):
-        res = p3v.build(dist, tex, ana, id2label)
-    out_dir = OUT / f"room360v3_{pl.slug(prompt, seed)}_k{k}_st{steps}_cfg{cfg:g}"
+        res = P.build(dist, tex, ana, id2label)
+    out_dir = OUT / f"room360{'v4' if v4 else 'v3'}_{pl.slug(prompt, seed)}_k{k}_st{steps}_cfg{cfg:g}"
     with watch.stage("export"):
-        files = p3v.save(res, out_dir, title=prompt)
+        files = p4v.save(res, out_dir, title=prompt, pano=tex) if v4 else p3v.save(res, out_dir, title=prompt)
         files["pano"] = str(out_dir / "pano.png")
         cv2.imwrite(files["pano"], cv2.cvtColor(pano, cv2.COLOR_RGB2BGR))
+        if v4:
+            zp = out_dir / "design_shots.zip"
+            with zipfile.ZipFile(zp, "w") as z:
+                for s in res["shots"]["shots"]:
+                    z.write(files[f"shot_{s['letter']}"], f"{s['letter']}.png")
+                z.write(files["plan_png"], "floorplan_with_views.png")
+            hero = res["shots"]["shots"][0]
+            dc = np.array([0.0, 0.0, 1.0]) @ ds.view_to_cam(res["box"], hero["yaw"])
+            extra.update({"shots_zip": str(zp), "sphere": files["pano_sphere_glb"], "pano_path": files["pano"],
+                          "hero_lon": float(np.degrees(np.arctan2(dc[0], dc[2])))})
     peak = torch.cuda.max_memory_allocated() / 2 ** 30 if DEVICE.type == "cuda" else 0.0
     s, b = watch.seconds, res["box"]
     cands = ", ".join(f"seed {c['seed']}: {c['score']:.2f}" for c in best["candidates"])
     furn = ", ".join(sorted({x["label"] for x in res["solids"]})) or "none"
-    info = (f"**360° room (v3) done in {sum(s.values()):.1f} s** ({k} candidate(s) {s['candidates']:.1f} s, "
+    shots_txt = ""
+    if v4:
+        sh = res["shots"]["shots"]
+        shots_txt = (f"\n\nDesign shots ({res['shots']['seconds']:.1f} s): {', '.join(x['letter'] for x in sh)}; "
+                     f"hero view facing {sh[0]['yaw']:.0f}° in the room frame with {sh[0]['measures']['inst']} furniture "
+                     f"piece(s) in view. Camera at the panorama centre, {b['camera_height']:.2f} m above the floor; "
+                     "letters match the view cones on the floor plan.")
+    info = (f"**360° room ({'v4' if v4 else 'v3'}) done in {sum(s.values()):.1f} s** ({k} candidate(s) {s['candidates']:.1f} s, "
             f"super-resolution {s['super_res']:.1f} s, instances {s['instances']:.1f} s, room {s['room']:.1f} s, "
             f"export {s['export']:.1f} s). Peak VRAM {peak:.1f} GB.\n\n"
             f"Boxiness (1 = one closed room): {cands}; kept seed {best['seed']}.\n\n"
             f"Room ≈ {b['width']:.2f} × {b['depth']:.2f} m ({b['area']:.1f} m²), ceiling {b['ceiling_height']:.2f} m; "
             f"{b['n_detected']} of 4 walls measured (the others hatched on the plan). Furniture: {len(res['solids'])} "
             f"solid(s) ({furn}); {len(res['openings'])} door(s)/window(s). Dimensions are approximate "
-            "(monocular depth).")
+            "(monocular depth)." + shots_txt)
     masks = an.room_masks(ana["class_map"], id2label)
-    return (tex, res["plan_image"], inside_html(files["room_glb"], res["bg_color"]),
+    return (p4v.gallery(res) if v4 else tex, res["plan_image"], inside_html(files["room_glb"], res["bg_color"]),
             dollhouse_html(files["dollhouse_glb"], b["camera_height"], NEUTRAL_BG),
             gr.Model3D(value=files["room_glb"]), pl.depth_gray(dist), an.overlay_edges(pano, an.canny_edges(pano)),
             an.overlay_masks(pano, masks), files["pano"], files["plan_svg"], files["room_glb"],
@@ -395,7 +461,7 @@ def build() -> gr.Blocks:
                 steps = gr.Slider(10, 50, value=g2.GEN_STEPS, step=1, label="Steps")
                 cfg = gr.Slider(1.0, 15.0, value=g2.GEN_GUIDANCE, step=0.5, label="CFG (guidance scale)")
                 with gr.Accordion("360° Room options", open=False):
-                    version = gr.Radio([V3, V2], value=V3, label="Pipeline")
+                    version = gr.Radio([V4, V3, V2], value=V4, label="Pipeline")
                     candidates = gr.Slider(1, 4, value=1, step=1, label="Candidates (v3): panoramas generated, "
                                            "the most box-like one is kept (1 = fast)")
                 btn = gr.Button("Generate", variant="primary")
@@ -406,12 +472,18 @@ def build() -> gr.Blocks:
                 with gr.Row():
                     dl_mesh = gr.DownloadButton("Download mesh (.glb)")
                     dl_cloud = gr.DownloadButton("Download point cloud (.ply) / dollhouse (.glb)")
-                dl_dxf = gr.DownloadButton("Download floor plan (.dxf, 360° v3)")
+                dl_dxf = gr.DownloadButton("Download floor plan (.dxf, 360° v3 / v4)")
+                dl_shots = gr.DownloadButton("Download design shots (.zip, 360° v4)")
                 gr.Examples([[p, s] for p, s in pl.DEMO_PROMPTS], inputs=[prompt, seed], label="Example prompts")
             with gr.Column(scale=2):
                 with gr.Row():
-                    image = gr.Image(label="2D image / panorama", type="numpy", height=420)
-                    plan = gr.Image(label="Floor plan (approximate dimensions)", type="numpy", height=420)
+                    with gr.Column(scale=3):
+                        image = gr.Gallery(label="Design shots (H = hero view, A-D = wall views; letters as on the "
+                                           "plan) / generated image", columns=3, height=420, object_fit="contain",
+                                           preview=True, show_label=True)
+                    with gr.Column(scale=2):
+                        plan = gr.Image(label="Floor plan with camera and view cones (approximate dimensions)",
+                                        type="numpy", height=420)
                 with gr.Tabs():
                     with gr.Tab("3D viewer (original view / inside the 360° room)"):
                         viewer = gr.HTML(VIEWER_EMPTY)
@@ -419,10 +491,13 @@ def build() -> gr.Blocks:
                         doll = gr.HTML(DOLL_EMPTY)
                         topview = gr.Image(label="Top view (orthographic, same orientation as the floor plan; v3)",
                                            type="numpy", height=320)
+                    with gr.Tab("360° panorama"):
+                        pano_view = gr.HTML(PANO_EMPTY)
                     with gr.Tab("3D: free orbit (offline)"):
                         model3d = gr.Model3D(label="Textured mesh (drag to rotate, scroll to zoom)", height=540,
                                              clear_color=[1.0, 1.0, 1.0, 1.0])
                 with gr.Accordion("Analysis: depth, edges, segmentation", open=False):
+                    pano_img = gr.Image(label="Panorama (equirectangular, 360° x 180°)", type="numpy", height=300)
                     with gr.Row():
                         depth = gr.Image(label="Depth map (white = near, black = far)", type="numpy", height=260)
                         edges = gr.Image(label="Canny edges", type="numpy", height=260)
@@ -430,7 +505,7 @@ def build() -> gr.Blocks:
                     gr.Markdown("Segmentation colours: blue = wall, orange = floor, green = ceiling, pink = furniture.")
         btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates],
                   [image, plan, viewer, doll, model3d, depth, edges, seg, dl_image, dl_plan, dl_mesh, dl_cloud, info,
-                   dl_dxf, topview],
+                   dl_dxf, topview, pano_view, pano_img, dl_shots],
                   concurrency_limit=1)
     return demo
 

@@ -809,6 +809,36 @@ All numbers on held-out data (`results/tables/v3_summary.csv`, built by `scripts
 
 Summary figures (panorama | v2 dollhouse | v3 dollhouse | v2 plan | v3 plan): `results/figures/v3_summary_<room>.png` for the six demo rooms and `v3_summary_overview.png`. Not improved (written down above): raw area error (DAP scale), flatter inpainted surfaces, lower furniture recall, door / window detection (recall 0.02 on the bench).
 
+### Readable 2D design shots (milestone 1 of PLAN_V4)
+Code: `src/design_shots.py`, `src/pipeline_v4.py`, `plan_v3.draw_views`, `viewers.pano_sphere`, `app/app.py`, `scripts/eval_design_shots.py`, `scripts/pano_viewer_check.py`.
+
+The raw equirectangular panorama is distorted and hard to read, so the main 2D output of the 360° mode (v4) is now a set of normal interior photos cut out of it by exact perspective re-projection (no generation):
+- **Camera:** at the panorama centre (DAP camera height, 1.12–1.29 m on the demo rooms), **level** in the gravity frame of the fitted room box (roll and pitch 0, vertical lines stay vertical), 1024 × 768, rendered from the Real-ESRGAN texture (2048 × 1024) with bicubic interpolation.
+- **Wall views A–D:** facing the four box walls, 90° horizontal FOV (together they cover the horizon). A faces the top of the floor-plan drawing, then clockwise.
+- **Hero view(s) H, H2:** every 5° of yaw (80° FOV) is scored on the predicted maps: furniture instances ≥ 50% inside the frame, distinct families, furniture / wall share, ceiling + floor beyond 45% of the frame (penalty), frame share of the room's main piece (bed, sofa, table, bathtub, island…) and median scene distance. A second hero is kept if it is ≥ 60° away and scores ≥ 80% of the first.
+- **Weights chosen on the 20 development bench rooms** (3 888-combination grid) by a ground-truth objective that the score never sees: the layout's main piece ≥ 50% in view, then the number of layout furniture boxes ≥ 50% in view (`gt_inst.png`). Selected: `results/tables/shots_weights_selected.json`.
+- **Plan:** the camera position and each shot's view cone with its letter (blue = wall views, orange = hero) are drawn on the v4 plan (PNG / SVG / DXF layer `VIEWS`); the gallery captions use the same letters.
+- **360° viewer:** the panorama on an inward-facing sphere (`pano_sphere.glb`) in `<model-viewer>`, opened facing the hero view.
+
+Hero selection vs. "always the first wall" (same 80° FOV), **20 held-out bench rooms** (`results/tables/shots_selection.csv`, paired differences with bootstrap 95% CI in `shots_selection_paired.csv`):
+
+| View | Layout furniture ≥ 50% in view | Main piece in view | Predicted instances in view | Furniture + wall share of frame (pred / GT) |
+|---|---|---|---|---|
+| Baseline: first wall | 0.70 | 0.10 | 0.45 | 0.92 / 0.97 |
+| Random direction (mean over yaws) | 0.77 | 0.09 | 0.48 | 0.90 / 0.94 |
+| Hero, weights fixed before tuning | 1.30 | 0.25 | 1.75 | 0.92 / 0.94 |
+| **Hero, dev-tuned weights (used)** | **1.35** | **0.25** | **1.70** | 0.90 / 0.91 |
+| Oracle (best yaw by the layout GT) | 2.25 | 0.45 | 1.00 | 0.90 / 0.93 |
+
+- Hero − baseline: layout furniture **+0.65** [0.00, +1.35] (better / equal / worse in 7 / 10 / 3 rooms); main piece +0.15 [−0.05, +0.40]; predicted instances +1.25 [+0.85, +1.70] (17 / 3 / 0). The furniture + wall share does not improve (0.92 → 0.90): the depth term prefers deeper views that show a little more floor and ceiling.
+- Six demo rooms (`shots_demo.csv`, predicted maps only): instances in view 11 → 26 in total, main piece in view 2 → 4 of 6; 1.9 s per room for all shots.
+- **Real browser:** the 360° viewer opened in headed Chromium (Playwright, `<model-viewer>` 3.5) matches the hero shot: NCC 0.92–0.997 for the six rooms, vs. ≤ 0.34 for a mirrored sign or the opposite direction (`results/tables/pano_viewer_check.csv`, `results/figures/pano_viewer_check.png`).
+- Figures: `results/figures/shots_<room>.png` (hero + walls + plan with view cones), `shots_overview.png`, `shots_before_after.png` (raw panorama → hero shot).
+- **Limitations:** the shots are as sharp as the panorama (a 90° view of a 2048-px panorama is upsampled about 2× — milestone 2); all shots share one camera position (the panorama centre: moving it would open disocclusion holes), and that camera sits at 1.1–1.3 m, a little below eye height; the hero still sometimes prefers a cluttered close-up (coastal bedroom: cabinets, the bed is in H2 and the wall views) because fragmented instances (cabinet doors) each count; the improvement over the baseline is modest against the oracle (1.35 vs. 2.25 pieces).
+
+### Demo modes (v4)
+**360° Room** runs **v4** by default (pipeline switch v4 / v3 / v2). The top of the page is a **gallery of design shots** (hero first, then A–D, captions with the plan letters; Quick and the other modes show their single image or panorama there) next to the **floor plan with view cones**; the viewer tabs are Inside, Dollhouse (+ top view), **360° panorama** (new) and Free orbit; the panorama itself is in the Analysis section. New download: the design shots + plan as a zip. Headless test: v4 one candidate 40.7 s including the first model loads, peak 5.9 GB; v3 15.1 s; Quick 13.0 s.
+
 ### Demo modes (v3)
 The **360° Room** mode now runs the v3 pipeline by default (`app/app.py` → `src/pipeline_v3.py`); the "360° Room options" accordion has the **pipeline switch** (v3 / v2 for comparison) and the **Candidates** slider (1–4 panoramas, the most box-like one is kept). Outputs: the panorama, the architectural plan (PNG, SVG and **DXF** downloads), the inside viewer (background = the room's mean colour), the dollhouse viewer (single-sided, near walls culled, neutral background) with the **orthographic top view** next to it, and the free-orbit fallback. Mask2Former is parked on the CPU with the other large models when another mode is active. Headless test of all modes (one request each, after switching): v3 with 1 candidate 13.7 s, with 2 candidates 29.6 s, peak 5.9 GB VRAM; v2 15.2 s; Quick 6.2 s (2.9 GB); Layout-first 18.0 s (4.6 GB).
 
@@ -866,8 +896,10 @@ RoomGen3D/
 │   ├── furniture.py           # v3: furniture solids (cleaning, priors, wall snapping, overlaps, textured boxes)
 │   ├── plan_v3.py             # v3: openings on walls, architectural plan drawing, PNG / SVG / DXF
 │   ├── boxiness.py            # v3: "one closed room" score for candidate selection
-│   ├── viewers.py             # v3: room colour, orthographic top view
-│   ├── pipeline_v3.py         # v3 360° Room stages (default in the demo)
+│   ├── viewers.py             # v3: room colour, orthographic top view; v4: panorama sphere for the 360° viewer
+│   ├── pipeline_v3.py         # v3 360° Room stages (comparison in the demo)
+│   ├── design_shots.py        # v4: level perspective design shots (hero + wall views) from the panorama
+│   ├── pipeline_v4.py         # v4 360° Room stages (default in the demo)
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures

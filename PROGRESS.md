@@ -260,3 +260,25 @@ Free space on C: **22.3 GB before → 33.5 GB after** (+11.2 GB). Sizes measured
 - README: v3 pipeline diagram, sections for milestones 1–7, PLAN_V3 summary table, demo modes v3, objectives 9–11, limitations, repository structure.
 - Kept on disk: `outputs/bench` (0.3 GB, the test bench every v3 script reads), `outputs/room360/*/v3` (demo rooms), `outputs/viewer_check` (browser screenshots). Free space at the end: 30.4 GB.
 - Not done (on purpose): the final course notebook (per the plan). Open: door/window detection on generated images; non-rectangular rooms; mouse-driven viewer testing.
+
+---
+
+# PLAN_V4 work log
+
+Restart rule: read this section, continue with the first milestone not marked DONE. Disk at the start: 31 GB free on C:.
+
+### PLAN_V4 downloads (budget 10 GB)
+
+| Date | What | Size |
+|---|---|---|
+| — | none so far | 0 GB |
+
+## 2026-11-14 — V4 Milestone 1: readable 2D design shots — DONE
+
+**Built**: `src/design_shots.py` (level pinhole views in the room box frame, cut from the Real-ESRGAN texture by exact re-projection; wall views A–D at 90°, hero view(s) H/H2 at 80° chosen by a score over yaws every 5°: instances ≥ 50% in view, families, furniture/wall share, ceiling+floor penalty, main-piece frame share, scene depth); `src/pipeline_v4.py` (v3 + shots; v3 stays callable unchanged); `plan_v3.draw_views` (camera + view cones + letters, DXF layer VIEWS) and `pipeline_v3.save(tag=, views=)`; `viewers.pano_sphere(_glb)` (panorama on an inward sphere); app: 360° mode v4 by default (v4/v3/v2 switch), gallery of shots next to the plan, "360° panorama" viewer tab opened facing the hero, panorama in Analysis, shots zip download. Scripts: `scripts/eval_design_shots.py`, `scripts/pano_viewer_check.py`.
+
+**Results** (held-out bench, 20 rooms, hero vs. "always the first wall" at the same 80° FOV; weights tuned on the 20 dev rooms against the layout GT, which the score never sees): layout furniture ≥ 50% in view 0.70 → 1.35 (+0.65, 95% CI [0.00, +1.35]; better/equal/worse 7/10/3), main piece in view 0.10 → 0.25, predicted instances 0.45 → 1.70; oracle 2.25. Furniture + wall share not improved (0.92 → 0.90). Demo rooms: instances in view 11 → 26 total, main piece 2 → 4 of 6; shots 1.9 s per room. Headed Chromium: 360° viewer vs hero shot NCC 0.92–0.997 (mirrored / opposite ≤ 0.34). App headless test: v4 40.7 s incl. first model loads (peak 5.9 GB), v3 15.1 s, Quick 13.0 s. Tables `shots_*.csv`, `pano_viewer_check.csv`; figures `shots_<room>.png`, `shots_overview.png`, `shots_before_after.png`, `pano_viewer_check.png`; README "Readable 2D design shots".
+
+**Failed / limitations**: first score (instances only) picked cluttered close-ups (cabinet walls); main-piece and depth terms added and tuned on dev — the coastal-bedroom hero is still the cabinet wall (fragmented cabinet instances each count). The first viewer check looked zoomed: model-viewer clamps the FOV to its 45° default max unless max-field-of-view is set (the app sets it; the check now does too). All shots share the panorama centre as camera (1.1–1.3 m high, a little below eye height). Shots are only as sharp as the 2048-px panorama (→ milestone 2).
+
+**Next**: Milestone 2 — sharper panorama (measure px/deg and sharpness of the current views; per-view Real-ESRGAN + low-strength img2img with / without the MMIS LoRA; blend to 4096×2048; drift checks; comparison table).

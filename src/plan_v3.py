@@ -578,7 +578,7 @@ def render(Dw: Drawing, png=None, svg=None, dpi: int = 150, scale_in_per_m: floa
         else:
             ax.text(*it["p"], it["s"], fontsize=it["pt"], ha=it["ha"], va=it["va"], rotation=it["rot"],
                     color=it["color"], fontweight="bold" if it["bold"] else "normal",
-                    bbox=dict(fc="white", ec="none", pad=0.6, alpha=0.85) if it["layer"] in ("TEXT", "DIMS") else None)
+                    bbox=dict(fc="white", ec="none", pad=0.6, alpha=0.85) if it["layer"] in ("TEXT", "DIMS", "VIEWS") else None)
     ax.set_xlim(lo[0], hi[0])
     ax.set_ylim(lo[1], hi[1])
     ax.set_aspect("equal")
@@ -597,7 +597,7 @@ def write_dxf(Dw: Drawing, path, m_per_pt: float) -> None:
     """Minimal DXF R12 (ASCII): LINE, CIRCLE, ARC, TEXT and closed POLYLINEs, units = metres, one layer per kind."""
     out = ["0", "SECTION", "2", "HEADER", "9", "$INSUNITS", "70", "6", "0", "ENDSEC",
            "0", "SECTION", "2", "TABLES", "0", "TABLE", "2", "LAYER", "70", "6"]
-    colors = {"WALLS": 7, "OPENINGS": 4, "FURNITURE": 8, "TEXT": 7, "DIMS": 5}
+    colors = {"WALLS": 7, "OPENINGS": 4, "FURNITURE": 8, "TEXT": 7, "DIMS": 5, "VIEWS": 1}
     for name, col in colors.items():
         out += ["0", "LAYER", "2", name, "70", "0", "62", str(col), "6", "CONTINUOUS"]
     out += ["0", "ENDTAB", "0", "ENDSEC", "0", "SECTION", "2", "ENTITIES"]
@@ -629,12 +629,46 @@ def write_dxf(Dw: Drawing, path, m_per_pt: float) -> None:
         fh.write("\n".join(out) + "\n")
 
 
+VIEW_INK, HERO_INK = "#2f6db3", "#c2410c"
+
+
+def draw_views(Dw: Drawing, info: dict, views: list[dict], radius: float | None = None) -> int:
+    """PLAN_V4 milestone 1: camera position (panorama centre = frame B origin) and the view cone of each
+    design shot (dashed edges + arc), labelled with the shot's letter at the tip of the cone (letters in
+    blue for wall views, orange for hero views). views: [{"letter", "yaw" (frame B deg), "fov", "hero"}]."""
+    rot = info["rot"]
+    span = float(min(info["W"], info["H"]))
+    r = radius or float(np.clip(0.28 * span, 0.5, 1.1))
+    cam = _to_plan(np.zeros(2), rot)
+
+    def d_at(yaw):                                   # unit direction of a frame-B yaw, in drawing coords
+        t = np.radians(yaw)
+        return _to_plan(np.array([np.sin(t), np.cos(t)]), rot)
+
+    for v in sorted(views, key=lambda v: v["hero"]):                 # heroes drawn last (on top)
+        col = HERO_INK if v["hero"] else VIEW_INK
+        rr = r * (1.25 if v["hero"] else 1.0)
+        a0, a1 = d_at(v["yaw"] - v["fov"] / 2), d_at(v["yaw"] + v["fov"] / 2)
+        for e in (a0, a1):
+            Dw.line(cam, cam + rr * e, layer="VIEWS", lw=0.7 if v["hero"] else 0.5, color=col, ls="--")
+        g0, g1 = (np.degrees(np.arctan2(e[1], e[0])) for e in (a0, a1))
+        lo_, hi_ = sorted([g0, g1])
+        if hi_ - lo_ > 180:                          # the arc that spans the FOV (< 180 deg)
+            lo_, hi_ = hi_, lo_ + 360
+        Dw.arc(cam, rr, lo_, hi_, layer="VIEWS", lw=0.7 if v["hero"] else 0.5, color=col)
+        Dw.text(cam + (rr + 0.17) * d_at(v["yaw"]), v["letter"], pt=8, layer="VIEWS", color=col, bold=True)
+    Dw.circle(cam, 0.07, layer="VIEWS", lw=0.6, color=INK, fill=INK)
+    return len(views)
+
+
 def draw_plan(box: dict, solids: list[dict], openings: list[dict], png=None, svg=None, dxf=None,
-              title: str | None = None, scale_in_per_m: float = 1.1, dpi: int = 150):
-    """Whole milestone-4 plan: returns (RGB image, stats)."""
+              title: str | None = None, scale_in_per_m: float = 1.1, dpi: int = 150, views: list[dict] | None = None):
+    """Whole milestone-4 plan: returns (RGB image, stats). views (PLAN_V4): design-shot cones to draw."""
     Dw, info = build_drawing(box, solids, openings, title)
     m_per_pt = 1.0 / (72.0 * scale_in_per_m)
     st = annotate(Dw, info, m_per_pt)
+    if views:
+        st["views"] = draw_views(Dw, info, views)
     img = render(Dw, png, svg, dpi, scale_in_per_m)
     if dxf:
         write_dxf(Dw, dxf, m_per_pt)
