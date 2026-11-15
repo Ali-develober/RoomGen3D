@@ -22,6 +22,8 @@ def main():
     ap.add_argument("--rooms", default="")
     ap.add_argument("--out", default="outputs/v6_demo")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--reuse-pano", action="store_true", help="keep a room's panorama when its depth condition is unchanged")
+    ap.add_argument("--doll-only", action="store_true", help="skip the design shots (keeps the existing shot files)")
     a = ap.parse_args()
     rooms = [(r.split("|")[0], int(r.split("|")[1])) for r in a.rooms.split(";")] if a.rooms else pl.DEMO_PROMPTS
     for prompt, seed in rooms:
@@ -29,7 +31,7 @@ def main():
         if (d / "timing.json").exists() and not a.force:
             print("skip", d.name)
             continue
-        r = P6.run(prompt, seed, d)
+        r = P6.run(prompt, seed, d, reuse_pano=a.reuse_pano, with_shots=not a.doll_only)
         t = json.loads((d / "timing.json").read_text())
         print(d.name, {k: round(v, 1) for k, v in t.items()}, flush=True)
         del r

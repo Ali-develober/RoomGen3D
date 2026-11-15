@@ -36,8 +36,17 @@ def reproject(rd: S.Renderer, pano: np.ndarray, c0, cam: dict, w: int = W, h: in
     v = X - np.asarray(c0)[None, None, :]
     dist = np.linalg.norm(v, axis=-1)
     u = v / np.maximum(dist[..., None], 1e-6)
-    back = rd.tracer.cast(np.asarray(c0, float), u, colors=False)["t"]
+    bk = rd.tracer.cast(np.asarray(c0, float), u, colors=False)
+    back = bk["t"]
     vis = hit & np.isfinite(back) & (np.abs(back - dist) < 0.02 * dist + 0.03)
+    # outside a window (the backdrop 3 m behind the wall) is far away: use it as an environment map (the shot
+    # ray's DIRECTION looked up in the panorama), where the panorama also looks out of a window that way
+    win = hit & (r["inst"] == S.WINDOW) & (t > 1.0)
+    if win.any():
+        through = rd.tracer.cast(np.asarray(c0, float), d, colors=False)["inst"] == S.WINDOW
+        sel = win & through
+        u = np.where(sel[..., None], d, u)
+        vis = vis | sel
     img = V.sample_equirect(pano, u)
     img[~vis] = 0
     return img, vis, r

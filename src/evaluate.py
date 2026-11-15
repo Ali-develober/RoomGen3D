@@ -39,8 +39,9 @@ def release_memory() -> None:
         torch.cuda.empty_cache()
 
 
-BASE_MODEL = "stable-diffusion-v1-5/stable-diffusion-v1-5"
-CLIP_MODEL = "openai/clip-vit-large-patch14"
+from .local_models import local as _local  # noqa: E402
+BASE_MODEL = _local("stable-diffusion-v1-5/stable-diffusion-v1-5")
+CLIP_MODEL = _local("openai/clip-vit-large-patch14")
 SEED_BASE = 20_000            # seed of held-out row i = SEED_BASE + i (same for every model)
 GEN_STEPS = 30
 GEN_GUIDANCE = 7.5

@@ -211,7 +211,7 @@ def _dims(ax, W: float, D: float) -> None:
 
 
 def _scale_bar(ax, W: float, D: float) -> None:
-    L = 2.0 if W >= 4.5 else 1.0
+    L = 2.0 if W >= 3.5 else 1.0                              # about half the room width
     x0, y = W - L, -0.75
     for k in range(int(L / 0.5)):
         ax.add_patch(Rectangle((x0 + k * 0.5, y), 0.5, 0.08, fc=INK if k % 2 == 0 else "white", ec=INK, lw=0.7))

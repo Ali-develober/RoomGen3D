@@ -568,3 +568,31 @@ Decision (`v6_pano_decision.json`; the ranking rule was written AFTER the sweep 
 | seconds / panorama, VRAM, process RAM | 55 s, 5.9 GB, 10 GB | 51 s, 6.5 GB, 11.1 GB | 49 s | 50 s |
 
 **Negative / open**: BRISQUE slightly worse than v5 (plain painted walls), CLIP lower on demo; one dev dining room still gets an invented alcove on a blank near wall (camera 0.9 m from the wall: no point in that room is far from both the table set and the walls); wall art did not remove it. IP-Adapter / LCM speed-ups not tried yet.
+
+## 2026-11-15 — V6 Milestone 3: design shots from cameras placed in the scene — DONE
+
+**Built**: `src/cameras_v6.py` (hero candidates at the four corners 0.45 m from both walls and 0.6 m inside the door, 1.5 m high, level; FOV 70 / 75 / 80°; yaw aimed between the main piece and the room centre, swept ±25°; **vertical lens shift** 0 / 15 / 25 % of the image height — the optical axis stays level, so verticals stay vertical and the horizon level, but the furniture below eye height fills the frame instead of the ceiling (a plain level camera at 1.5 m put the table at the bottom edge); H2 = best valid camera > 1 m from H; wall views A-D from 0.5-1.1 m in front of the opposite wall; validity exact from the rendered instance ids: main group 15-50 % (hero), content nearer than 0.8 m < 15 %, floor < 35 %), `src/shots_v6.py` (z-buffered reprojection of the panorama through the proxy; window backdrop used as an environment map (shot ray direction looked up where the panorama also looks out of a window); LaMa holes; SD 1.5 + depth ControlNet img2img on the exact proxy depth; Real-ESRGAN → 1536 × 1152), `scripts/eval_v6_shots.py`.
+
+**Cameras on the six demo rooms**: all 36 shots valid by the test above (hero main-group share 0.22-0.30; first version without lens shift: 2 of 6 heroes invalid, bathroom and Mediterranean living room).
+
+**Sweep** (10 dev rooms × 6 shots, 768 × 576, `results/tables/v6_shots_summary.csv`, `v6_shots_per_shot.csv`; selection rule fixed in the script before the run):
+
+| config | ΔLab vs reprojection ↓ | LPIPS (co-visible) ↓ | depth AbsRel ↓ | edge recall ↑ | BRISQUE ↓ | sharpness | CLIP ↑ | KID×10³ ↓ |
+|---|---|---|---|---|---|---|---|---|
+| init (filled reprojection, no re-render) | 0.35 | 0.005 | 0.058 | 0.59 | 33.6 | 169 | 22.99 | 52.3 |
+| LoRA, s 0.35 / 0.45 / 0.55 | 3.3 / 3.9 / 4.7 | 0.105 / 0.128 / 0.156 | 0.053 / 0.050 / 0.049 | 0.57 / 0.56 / 0.56 | 33.6 / 34.0 / 35.0 | 95 / 85 / 77 | 23.18 / 23.41 / 24.16 | 47.8 / 45.7 / **44.0** |
+| no LoRA, s 0.35 / 0.45 / 0.55 | 3.3 / 3.9 / 4.6 | 0.104 / 0.124 / 0.148 | 0.052 / 0.049 / **0.048** | 0.57 / 0.56 / 0.55 | 33.5 / 33.2 / **32.9** | 112 / 110 / 113 | 23.16 / 23.60 / 23.92 | 53.5 / 52.5 / 53.5 |
+
+All configs pass the consistency / geometry constraints (LPIPS ≤ 0.30, ΔLab ≤ 12, depth AbsRel ≤ 0.15, edge recall ≥ 0.5). Mean rank of BRISQUE, KID, CLIP: LoRA 0.55 and no-LoRA 0.55 tie (2.67); tie broken by the plan's priority, consistency first (lower LPIPS) → **SD 1.5 + depth ControlNet, no LoRA, strength 0.55** (`v6_shots_decision.json`). **With vs without our LoRA**: the LoRA is better on KID (44.0 vs 53.5) and CLIP (24.2 vs 23.9) at every strength, worse on BRISQUE and sharpness (77 vs 113; by eye slightly softer). Re-rendering adds real texture (the raw reprojection is smeared where the generated furniture differs from the proxy model) at a small consistency cost (ΔLab 4.6, LPIPS 0.15).
+
+**Not done**: IP-Adapter (the consistency constraints were already met, and its 2.5 GB image encoder would put C: under the 20 GB floor). **Seen and open**: a wall camera next to a side wall shows grazing-angle smears, and the pendant lamp fills the top of shots taken under it (dining A) — to the review loop.
+
+## 2026-11-16 — V6 review loop, rounds 1-4 (six demo rooms incl. the owner's dining room seed 44 and coastal bedroom seed 22)
+
+`scripts/build_v6_rooms.py` (full pipeline, `outputs/v6_demo/<room>/`), `scripts/review_v6.py` (headed Chromium; hero, H2, every wall shot, Inside at 0 / 90 / 180 / 270° from the hero direction, dollhouse from two angles, top-down, plan; sheets `results/figures/v6_review_r<k>_<room>.png`). Every screenshot was looked at.
+
+- **Round 1** — shots / Inside / plan good in all rooms (one table with chairs facing it, level verticals, real-size windows with fabric curtains, styles as materials: coastal = white oak + linen + a sea picture, no sea view). Failures: dollhouse showed the near walls and hid the far walls + floor (trimesh already flips the winding for a mirroring transform; the extra `invert()` flipped it back); floor textures carried the panorama's nadir (swirls, a stretched sun streak) into the dollhouse and top-down; a wall camera next to a tall object gave smeared edges (coastal A); flush-ceiling-lamp blob at the top of shots; scale bar 1 m. Memory: the second room of a run waited forever for RAM — a model freed on Windows stays in the process heap (RSS does not drop) but is reused by the next load (measured: a second SDXL load adds no RSS) → `memory.ram_available_gb(reuse=True)`.
+- **Round 2** — fixes: winding, floor texels > 55° below the horizon treated as unseen (quilted instead), flush ceiling light except over the dining table, scale bar 2 m from 3.5 m width. Result: dollhouse renders floor + far walls + windows + coloured furniture models. New failures: wall camera A on top of hero H (plan markers overlap), remaining sun streak.
+- **Round 3** — wall cameras ≥ 0.6 m from H / H2 / each other, wider search (0.5-1.4 m from the wall, 65-80° FOV), ranked by near-lens share; floor highlights (> 1.2 × median luminance) treated as unseen. Result: all 36 shots valid with nothing within 0.8 m; plan markers separate. Remaining: pale halos at quilted floor borders (kitchen).
+- **Round 4** — highlight mask grown by 8 texels, quilted fill colour-matched (Lab mean / std) to the seen floor, wider feather. Result: coherent floors in all six dollhouses / top-downs.
+- Build timings of rounds 3-4 used cached panoramas (`--reuse-pano`, only when the depth condition is identical) and are not run-time measurements; the run-time numbers come from the fresh-process app test.

@@ -9,7 +9,8 @@ import cv2
 import numpy as np
 import torch
 
-SEG_MODEL = "nvidia/segformer-b2-finetuned-ade-512-512"
+from .local_models import local as _local  # noqa: E402
+SEG_MODEL = _local("nvidia/segformer-b2-finetuned-ade-512-512")
 
 # ADE20K class names (as in the model config) merged into room groups.
 ROOM_GROUPS = {

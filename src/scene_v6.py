@@ -144,8 +144,8 @@ def _art_spots(lay: dict) -> list:
 def _pendant(x: float, z: float, H: float, drop: float = 0.9, r: float = 0.22) -> list:
     """Pendant lamp: cord + conical shade hanging from the ceiling."""
     tm = _tm()
-    cord = _box(x - 0.006, H - drop + 0.2, z - 0.006, x + 0.006, H, z + 0.006, color=(40, 40, 40))
-    shade = tm.creation.cone(radius=r, height=0.22, sections=24)
+    cord = _box(x - 0.006, H - drop + min(0.2, drop * 0.5), z - 0.006, x + 0.006, H, z + 0.006, color=(40, 40, 40))
+    shade = tm.creation.cone(radius=r, height=min(0.22, max(0.08, drop - 0.02)), sections=24)
     v = np.asarray(shade.vertices).copy()
     v[:, [1, 2]] = v[:, [2, 1]]                                # cone axis z -> y (apex up)
     shade = tm.Trimesh(v + np.array([x, H - drop, z]), np.asarray(shade.faces)[:, ::-1], process=False)
@@ -244,8 +244,9 @@ def build(lay: dict, seed: int | None = None) -> dict:
         q0 = o + a * (s_ - w_ / 2) + np.array([0, y0_, 0]) + n * 0.0
         q1 = o + a * (s_ + w_ / 2) + np.array([0, y1_, 0]) + n * 0.035
         parts.append((_box(*np.minimum(q0, q1), *np.maximum(q0, q1), color=(180, 170, 150)), ART))
-    parts += [(m, LAMP) for m in _pendant(lx, lz, lay["H"], drop=0.95 if lay["room"] == "dining room" else 0.55)]
-    lay["lamp"] = [round(lx, 3), round(lay["H"] - (0.95 if lay["room"] == "dining room" else 0.55), 3), round(lz, 3)]
+    drop = 0.95 if lay["room"] == "dining room" else 0.12     # pendant over the table, else a flush ceiling light
+    parts += [(m, LAMP) for m in _pendant(lx, lz, lay["H"], drop=drop, r=0.22 if drop > 0.5 else 0.25)]
+    lay["lamp"] = [round(lx, 3), round(lay["H"] - drop, 3), round(lz, 3)]
     models, fits = {}, {}
     for p in lay["items"]:
         cls = p["cls"]

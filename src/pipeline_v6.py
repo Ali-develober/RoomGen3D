@@ -62,8 +62,11 @@ def missing_models() -> list[str]:
 
 
 class Stopwatch:
-    def __init__(self):
-        self.s = {}
+    """Seconds per stage; also logs process RSS and free system RAM after each stage (memory leaks between
+    requests were the reason the second room of a run had to wait for RAM)."""
+
+    def __init__(self, log=None):
+        self.s, self.mem, self.log = {}, {}, log
 
     def stage(self, name):
         sw = self
@@ -74,6 +77,11 @@ class Stopwatch:
 
             def __exit__(self_, *a):
                 sw.s[name] = sw.s.get(name, 0.0) + time.perf_counter() - self_.t
+                import psutil
+                rss = psutil.Process().memory_info().rss / 2 ** 30
+                sw.mem[name] = (round(rss, 2), round(mem.ram_free_gb(), 2))
+                if sw.log:
+                    sw.log(f"[v6] {name}: {sw.s[name]:.1f} s, process RSS {rss:.2f} GB, free RAM {mem.ram_free_gb():.1f} GB")
         return _C()
 
 
@@ -91,8 +99,8 @@ def panorama(sc: dict, rd: S.Renderer, seed: int, device="cuda", pipe=None) -> t
     prompt = P6.pano_prompt(lay)
     own = pipe is None
     if own:
-        mem.wait_for_ram(7.0, label="v6 SDXL")
-        pipe = P6.load_pipeline(p["cond"])
+        mem.wait_for_ram(7.0, label="v6 SDXL", reuse=True)
+        pipe = P6.load_pipeline(p["cond"], ram_checked=True)
     img = P6.generate(pipe, ctrl, prompt, seed, scale=p["scale"], end=p["end"], steps=int(p["steps"]))
     if own:
         mem.free(pipe)
@@ -109,7 +117,7 @@ def segment(pano: np.ndarray, device="cuda") -> np.ndarray:
     return seg
 
 
-def run(prompt: str, seed: int, out_dir, device="cuda", with_shots: bool = True, log=print) -> dict:
+def run(prompt: str, seed: int, out_dir, device="cuda", with_shots: bool = True, log=print, reuse_pano: bool = False) -> dict:
     """Full v6 room. Returns paths, images, metrics and timing."""
     from . import dollhouse_v6 as DH
     from . import generate_pano as gp
@@ -118,14 +126,25 @@ def run(prompt: str, seed: int, out_dir, device="cuda", with_shots: bool = True,
     from . import shots_v6 as SH
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    watch = Stopwatch()
+    watch = Stopwatch(log)
     res = {"prompt": prompt, "seed": int(seed)}
     with mem.PeakMonitor() as pm:
         with watch.stage("scene"):
             sc, rd = build_scene(prompt, seed)
             lay = sc["layout"]
         with watch.stage("panorama"):
-            pano, pinfo = panorama(sc, rd, seed, device)
+            cached = None
+            if reuse_pano and (out_dir / "pano_2048.jpg").exists() and (out_dir / "control.png").exists():
+                from . import pano_v6 as P6
+                e = rd.equirect(lay["camera"], 2048, 1024)
+                ctrl = S.depth_control(e["t"])
+                old = cv2.imread(str(out_dir / "control.png"))
+                if old is not None and old.shape == ctrl.shape and np.abs(old.astype(int) - ctrl.astype(int)).max() <= 1:
+                    img = cv2.cvtColor(cv2.imread(str(out_dir / "pano_2048.jpg")), cv2.COLOR_BGR2RGB)
+                    prompt_p = P6.pano_prompt(lay)
+                    cached = (img, {"prompt": prompt_p, "control": ctrl, "tokens": P6.n_tokens(prompt_p), "cached": True,
+                                    **decision("v6_pano_decision.json", "pano")})
+            pano, pinfo = cached if cached else panorama(sc, rd, seed, device)
         log(f"panorama {watch.s['panorama']:.0f} s")
         with watch.stage("esrgan_seg"):
             esr = gp.load_esrgan(device)

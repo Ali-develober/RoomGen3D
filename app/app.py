@@ -85,7 +85,6 @@ from src import instances as ins  # noqa: E402
 from src import pipeline_v3 as p3v  # noqa: E402
 from src import pipeline_v4 as p4v  # noqa: E402
 from src import design_shots as ds  # noqa: E402
-from src import equirect as eq  # noqa: E402
 from src import viewers as vw  # noqa: E402
 from src import pano_refine as pr  # noqa: E402
 from src import objects3d as o3  # noqa: E402
@@ -104,11 +103,13 @@ STATIC = ROOT / "app" / "static"
 MODEL_VIEWER_JS = "/gradio_api/file=" + quote(str((STATIC / "model-viewer.min.js").resolve()).replace("\\", "/"), safe="/:")
 # Number fields: an Arabic-locale browser renders <input type=number> with Arabic-Indic digits ("V.o" for 7.5);
 # the page is English, so the document language is set to "en" and digits are forced to Latin.
-LATIN_DIGITS = ("<script>document.documentElement.setAttribute('lang','en');"
-                "new MutationObserver(()=>document.querySelectorAll('input[type=number],input[type=range]')"
-                ".forEach(e=>{if(e.lang!=='en')e.setAttribute('lang','en');})).observe(document.documentElement,"
-                "{childList:true,subtree:true});</script>"
-                "<style>input[type=number]{font-variant-numeric:lining-nums;unicode-bidi:plaintext}</style>")
+# Number fields: in an Arabic-locale browser Chrome draws <input type=number> with Arabic-Indic digits ("V.o" for 7.5)
+# whatever the lang attribute says (checked with Playwright, locale ar-EG). The fields are switched to text inputs with
+# a decimal keyboard (Gradio's input handler still parses the value as a number), so they always show Latin digits.
+LATIN_DIGITS = ("<script>(function(){const fix=()=>document.querySelectorAll('input[type=number]').forEach(e=>{"
+                "e.setAttribute('type','text');e.setAttribute('inputmode','decimal');e.setAttribute('lang','en');"
+                "e.setAttribute('dir','ltr');});new MutationObserver(fix).observe(document.documentElement,"
+                "{childList:true,subtree:true});document.addEventListener('DOMContentLoaded',fix);})();</script>")
 HEAD = f'<script type="module" src="{MODEL_VIEWER_JS}"></script>' + LATIN_DIGITS
 QUICK, ROOM360, LAYOUT = "Quick (single view)", "360° Room", "Layout-first"
 BIG = {QUICK: ("sd",), ROOM360: ("alt", "dap", "m2f"), LAYOUT: ("cn",)}     # large models of each mode
@@ -784,13 +785,12 @@ def plan_text(plan: dict) -> str:
 
 def build() -> gr.Blocks:
     with gr.Blocks(title="RoomGen3D") as demo:
-        gr.Markdown("# RoomGen3D\nText prompt → interior design image → depth → 3D room model. "
-                    "Prompts like *a coastal style bedroom* work best. **Quick** builds a 3D relief from one "
-                    "image (looks right from the original viewpoint). **360° Room** generates a full panorama "
-                    "and builds the whole room: look around inside, view it as a dollhouse, and get a closed "
-                    "floor plan (about 20 s). **Layout-first** designs the room plan first (bedroom, living room, "
-                    "kitchen, dining room or bathroom; the seed picks the layout), generates the panorama to follow "
-                    "it, and builds exact 3D. The first request of a mode loads its models.")
+        gr.Markdown("# RoomGen3D\nText prompt → interior design. Prompts like *a coastal style bedroom* work best "
+                    "(bedroom, living room, kitchen, dining room or bathroom + a style). **360° Room** designs the "
+                    "room first (size, door, windows, furniture by interior-design rules; the seed picks the layout), "
+                    "builds it in 3D, then generates a 360° panorama and design shots that follow it: look around "
+                    "inside, view it as a dollhouse or from the top, and get an exact floor plan (about 2-3 minutes). "
+                    "**Quick** generates one image and a 3D relief of it. Models load on the first request of a mode.")
         with gr.Row():
             with gr.Column(scale=1):
                 mode = gr.Radio([QUICK, ROOM360], value=ROOM360, label="Mode")
@@ -825,7 +825,7 @@ def build() -> gr.Blocks:
                                            "plan) / generated image", columns=3, height=420, object_fit="contain",
                                            preview=True, show_label=True)
                     with gr.Column(scale=2):
-                        plan = gr.Image(label="Floor plan with camera and view cones (approximate dimensions)",
+                        plan = gr.Image(label="Floor plan with camera positions and view cones",
                                         type="numpy", height=420)
                 with gr.Tabs():
                     with gr.Tab("Inside"):
@@ -835,12 +835,12 @@ def build() -> gr.Blocks:
                     with gr.Tab("Top-down"):
                         topview = gr.Image(label="Top view (orthographic, same orientation as the floor plan)",
                                            type="numpy", height=480)
-                    # removed from the UI in PLAN_V6 (duplicate of Inside / tears): kept as hidden outputs
-                    pano_view = gr.HTML(PANO_EMPTY, visible=False)
-                    mesh_tab = gr.HTML(MESH_EMPTY, visible=False)
                     with gr.Tab("Free orbit"):
                         model3d = gr.Model3D(label="Textured mesh (drag to rotate, scroll to zoom)", height=540,
                                              clear_color=[1.0, 1.0, 1.0, 1.0])
+                # removed from the UI in PLAN_V6 (duplicate of Inside / tears): kept as hidden outputs
+                pano_view = gr.HTML(PANO_EMPTY, visible=False)
+                mesh_tab = gr.HTML(MESH_EMPTY, visible=False)
                 with gr.Accordion("Analysis: depth, edges, segmentation", open=False):
                     pano_img = gr.Image(label="Panorama (equirectangular, 360° x 180°)", type="numpy", height=300)
                     raw_gallery = gr.Gallery(label="v5: design shots as cut from the panorama, before re-rendering",

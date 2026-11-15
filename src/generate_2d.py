@@ -9,7 +9,8 @@ from pathlib import Path
 import numpy as np
 import torch
 
-BASE_MODEL = "stable-diffusion-v1-5/stable-diffusion-v1-5"
+from .local_models import local as _local
+BASE_MODEL = _local("stable-diffusion-v1-5/stable-diffusion-v1-5")   # local snapshot: no Hub requests
 DEFAULT_LORA = Path(__file__).resolve().parents[1] / "checkpoints" / "lora_mmis" / "step_03000"
 GEN_STEPS, GEN_GUIDANCE, GEN_SIZE = 30, 7.5, 512     # same sampler settings as the 2D evaluation
 

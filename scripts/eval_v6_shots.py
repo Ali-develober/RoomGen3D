@@ -214,9 +214,9 @@ def summarize(df, configs, kid: pd.DataFrame | None):
         ok = dev[(dev.lpips <= RULE["lpips_max"]) & (dev.dlab <= RULE["dlab_max"]) &
                  (dev.depth_absrel <= RULE["absrel_max"]) & (dev.edge_recall >= RULE["edge_min"])]
         if len(ok):
-            rk = pd.DataFrame({"brisque": ok.brisque.rank(), "clip": ok.clip.rank(ascending=False)})
+            rk = pd.DataFrame({"brisque": ok["brisque"].rank(), "clip": ok["clip"].rank(ascending=False)})
             if "kid_x1e3" in ok:
-                rk["kid"] = ok.kid_x1e3.rank()
+                rk["kid"] = ok["kid_x1e3"].rank()
             ok = ok.assign(mean_rank=rk.mean(1).values)
             sel = ok.sort_values("mean_rank").iloc[0]
             why = "passes the consistency constraints; best mean rank of BRISQUE, KID, CLIP"

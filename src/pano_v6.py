@@ -31,7 +31,7 @@ from . import memory as mem
 ROOT = Path(__file__).resolve().parents[1]
 CONDS = {"cn_small": ROOT / "checkpoints" / "cn_depth_sdxl_small",
          "cn_mid": ROOT / "checkpoints" / "cn_depth_sdxl_mid",
-         "t2i": ROOT / "checkpoints" / "t2i_depth_sdxl"}
+         "t2i": ROOT / "checkpoints" / "t2i_depth_sdxl"}      # mid / t2i deleted after the sweep (unused, disk)
 MAX_TOKENS = 77
 
 FLOORS = {"coastal": "whitewashed oak floor", "contemporary": "large grey stone tile floor", "rustic": "wide plank wood floor",
@@ -143,11 +143,12 @@ def pano_prompt(lay: dict) -> str:
     return assert_tokens(p)
 
 
-def load_pipeline(cond: str = "cn_small", offload: bool = True):
+def load_pipeline(cond: str = "cn_small", offload: bool = True, ram_checked: bool = False):
     """SDXL + 360Redmond (fused) + depth ControlNet / T2I adapter, circular padding everywhere."""
     from diffusers import (AutoencoderKL, ControlNetModel, DPMSolverMultistepScheduler,
                            StableDiffusionXLAdapterPipeline, StableDiffusionXLControlNetPipeline, T2IAdapter)
-    mem.wait_for_ram(7.5, label="load SDXL v6")
+    if not ram_checked:
+        mem.wait_for_ram(7.5, label="load SDXL v6", reuse=True)
     vae = AutoencoderKL.from_pretrained(str(gx.SDXL_VAE), dtype=torch.float16)
     if cond.startswith("cn"):
         net = ControlNetModel.from_pretrained(str(CONDS[cond]), dtype=torch.float16)

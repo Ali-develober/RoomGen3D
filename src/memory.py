@@ -31,13 +31,27 @@ def ram_free_gb() -> float:
     return psutil.virtual_memory().available / 2 ** 30
 
 
-def wait_for_ram(gb: float, timeout: float = 600.0, poll: float = 10.0, label: str = "") -> float:
+PROCESS_BASE_GB = 1.5      # RSS of a process with torch + the CUDA context loaded and no model
+
+
+def ram_available_gb(reuse: bool = False) -> float:
+    """Free system RAM; with reuse=True plus this process's RSS above PROCESS_BASE_GB: on Windows a model freed in
+    this process stays in the process heap (RSS does not drop) but is reused by the next load (measured: a second
+    SDXL load in the same process adds no RSS), so it counts as available for the next model of this process."""
+    f = ram_free_gb()
+    if reuse:
+        f += max(0.0, psutil.Process().memory_info().rss / 2 ** 30 - PROCESS_BASE_GB)
+    return f
+
+
+def wait_for_ram(gb: float, timeout: float = 600.0, poll: float = 10.0, label: str = "", reuse: bool = False) -> float:
     """Wait until `gb` GB of RAM is available (gc + empty_cache on every poll). Returns the free RAM.
-    Raises MemoryError after `timeout` seconds so that a resumable job stops cleanly instead of swapping."""
+    Raises MemoryError after `timeout` seconds so that a resumable job stops cleanly instead of swapping.
+    reuse=True counts memory this process already holds and can reuse (see ram_available_gb)."""
     t0 = time.perf_counter()
     while True:
         free()
-        f = ram_free_gb()
+        f = ram_available_gb(reuse)
         if f >= gb:
             return f
         if time.perf_counter() - t0 > timeout:

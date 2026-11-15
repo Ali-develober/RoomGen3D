@@ -1,0 +1,96 @@
+{
+ "selected": "lora0_s0.55",
+ "why": "passes the consistency constraints; best mean rank of BRISQUE, KID, CLIP",
+ "rule": {
+  "lpips_max": 0.3,
+  "dlab_max": 12.0,
+  "absrel_max": 0.15,
+  "edge_min": 0.5
+ },
+ "selected_params": {
+  "lora": false,
+  "strength": 0.55
+ },
+ "dev": [
+  {
+   "config": "lora0_s0.35",
+   "set": "dev",
+   "dlab": 3.3311,
+   "lpips": 0.1042,
+   "depth_absrel": 0.0519,
+   "edge_recall": 0.5646,
+   "brisque": 33.4623,
+   "sharpness": 111.6583,
+   "clip": 23.1618,
+   "covis": 0.9116,
+   "kid_x1e3": 53.5248
+  },
+  {
+   "config": "lora0_s0.45",
+   "set": "dev",
+   "dlab": 3.8953,
+   "lpips": 0.1239,
+   "depth_absrel": 0.0489,
+   "edge_recall": 0.5572,
+   "brisque": 33.1659,
+   "sharpness": 109.8454,
+   "clip": 23.5957,
+   "covis": 0.9116,
+   "kid_x1e3": 52.5126
+  },
+  {
+   "config": "lora0_s0.55",
+   "set": "dev",
+   "dlab": 4.6193,
+   "lpips": 0.1478,
+   "depth_absrel": 0.0484,
+   "edge_recall": 0.5539,
+   "brisque": 32.8979,
+   "sharpness": 113.2248,
+   "clip": 23.9193,
+   "covis": 0.9116,
+   "kid_x1e3": 53.5149
+  },
+  {
+   "config": "lora1_s0.35",
+   "set": "dev",
+   "dlab": 3.3254,
+   "lpips": 0.1046,
+   "depth_absrel": 0.053,
+   "edge_recall": 0.5646,
+   "brisque": 33.5871,
+   "sharpness": 95.0737,
+   "clip": 23.1832,
+   "covis": 0.9116,
+   "kid_x1e3": 47.839
+  },
+  {
+   "config": "lora1_s0.45",
+   "set": "dev",
+   "dlab": 3.9025,
+   "lpips": 0.1278,
+   "depth_absrel": 0.05,
+   "edge_recall": 0.5595,
+   "brisque": 33.9834,
+   "sharpness": 84.7409,
+   "clip": 23.4135,
+   "covis": 0.9116,
+   "kid_x1e3": 45.6978
+  },
+  {
+   "config": "lora1_s0.55",
+   "set": "dev",
+   "dlab": 4.6525,
+   "lpips": 0.1557,
+   "depth_absrel": 0.0492,
+   "edge_recall": 0.5586,
+   "brisque": 34.9949,
+   "sharpness": 77.0652,
+   "clip": 24.1624,
+   "covis": 0.9116,
+   "kid_x1e3": 44.0397
+  }
+ ],
+ "tie": "lora0_s0.55 and lora1_s0.55 tie on the mean rank (2.67); tie broken by the plan's priority, consistency first: lower LPIPS (0.148 vs 0.156). By eye nearly identical, the LoRA version slightly softer. Our LoRA is better on KID (44.0 vs 53.5) and CLIP (24.16 vs 23.92), worse on BRISQUE (35.0 vs 32.9) and sharpness.",
+ "ip_adapter": "not tested: all configs already pass the consistency constraints (dLab <= 4.7, LPIPS <= 0.16) and the IP-Adapter SD1.5 image encoder (2.5 GB) would take C: below the 20 GB floor"
+}

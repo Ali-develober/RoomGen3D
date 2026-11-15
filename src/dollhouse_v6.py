@@ -130,6 +130,21 @@ def smooth_fill(tex: np.ndarray, seen: np.ndarray, sigma_px: float) -> np.ndarra
     return np.clip(fill, 0, 255).astype(np.uint8)
 
 
+def match_stats(fill: np.ndarray, ref: np.ndarray, seen: np.ndarray) -> np.ndarray:
+    """Per-channel Lab mean / std of the filled texels matched to the seen texels of the same plane (the quilted
+    patches come from the brighter, nearer floor and showed as pale halos)."""
+    a = cv2.cvtColor(fill, cv2.COLOR_RGB2LAB).astype(np.float32)
+    b = cv2.cvtColor(ref, cv2.COLOR_RGB2LAB).astype(np.float32)
+    m = ~seen
+    if m.sum() < 50 or seen.sum() < 50:
+        return fill
+    for c in range(3):
+        ma, sa = a[..., c][m].mean(), a[..., c][m].std() + 1e-3
+        mb, sb = b[..., c][seen].mean(), b[..., c][seen].std() + 1e-3
+        a[..., c] = (a[..., c] - ma) / sa * min(sb, 1.5 * sa) + mb
+    return cv2.cvtColor(np.clip(a, 0, 255).astype(np.uint8), cv2.COLOR_LAB2RGB)
+
+
 def _feather(seen_tex, fill, seen, r=4):
     a = cv2.GaussianBlur(seen.astype(np.float32), (0, 0), r)
     a = np.where(seen, np.maximum(a, 0.5), a * 0.8)
@@ -148,15 +163,26 @@ def shell_textures(rd, lay, pano, seed: int = 0, seg=None) -> dict:
         col, seen = col.reshape(h, w, 3), seen.reshape(h, w)
         if seg is not None:                                         # drop thin slivers at class borders
             seen = cv2.erode(seen.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+        if kind == "floor":                                         # the panorama's nadir is distorted (swirls,
+            Pf = P.reshape(h, w, 3)                                 # light streaks): use floor seen <= 55 deg
+            hd = np.hypot(Pf[..., 0] - c0[0], Pf[..., 2] - c0[2])   # below the horizon only, quilt the rest
+            seen &= hd >= c0[1] / np.tan(np.deg2rad(55))
+            if seen.sum() > 100:                                    # specular highlights / sun patches stretched
+                lum = col.astype(np.float32).mean(-1)               # along the view rays: treat as unseen,
+                hi = seen & (lum > 1.2 * np.median(lum[seen]) + 12) # with their bright fringe (8 texels)
+                hi = cv2.dilate(hi.astype(np.uint8), np.ones((17, 17), np.uint8)) > 0
+                seen &= ~hi
         name = "floor" if kind == "floor" else wall
         share[name] = float(seen.mean())
         if kind == "floor":
             fill = quilt(col, seen, seed=seed)
             if fill is None:
                 fill = smooth_fill(col, seen, 0.6 * PX_PER_M)
+            else:
+                fill = match_stats(fill, col, seen)
         else:
             fill = smooth_fill(col, seen, 0.6 * PX_PER_M)
-        out[name] = _feather(col.astype(np.float32), fill.astype(np.float32), seen)
+        out[name] = _feather(col.astype(np.float32), fill.astype(np.float32), seen, r=6)
     out["seen"] = share
     return out
 
@@ -274,8 +300,7 @@ def export_glb(tp: dict, path) -> None:
 
     def add(m, name):
         m = m.copy()
-        m.apply_transform(flip)
-        m.invert()                                          # winding back to outward after the flip
+        m.apply_transform(flip)            # trimesh flips the face winding itself for a mirroring transform
         sc.add_geometry(m, geom_name=name)
     add(_textured_quad_grid(lay, "floor", None, np.ascontiguousarray(tp["tex"]["floor"])), "floor")
     for w in ("S", "N", "W", "E"):

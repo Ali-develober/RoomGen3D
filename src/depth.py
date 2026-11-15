@@ -49,7 +49,8 @@ def load_depth_model(name: str, device):
     evaluate.release_memory() before loading the next one.
     """
     from transformers import AutoImageProcessor, AutoModelForDepthEstimation
-    repo = DEPTH_MODELS[name]
+    from .local_models import local
+    repo = local(DEPTH_MODELS[name])                         # local snapshot: no Hub requests
     model = AutoModelForDepthEstimation.from_pretrained(repo, dtype=torch.float16).to(device).eval()
     return model, AutoImageProcessor.from_pretrained(repo)
 

@@ -130,25 +130,26 @@ def choose_cameras(rd: S.Renderer, lay: dict) -> dict:
     others = [m for m in cands if np.linalg.norm(np.array(m["pos"]) - p0) > 1.0]
     shots["H2"] = dict(others[0], name="H2") if others else None
     names = {"N": "A", "E": "B", "S": "C", "W": "D"}
+    used = [np.array(m["pos"]) for m in (shots["H"], shots["H2"]) if m]
     for wall, nm in names.items():
         best = None
         L = lay["W"] if wall in ("N", "S") else lay["D"]
         opp = LV.OPP[wall]
         yaw = {"N": 0, "S": 180, "E": 90, "W": 270}[wall]
-        for off in (0.5, 0.8, 1.1):
+        for off in (0.5, 0.8, 1.1, 1.4):
             for t in np.linspace(0.5, 0.1, 5).tolist() + np.linspace(0.5, 0.9, 5).tolist():
                 s = t * L
                 x, z = {"S": (s, off), "N": (s, lay["D"] - off), "W": (off, s), "E": (lay["W"] - off, s)}[opp]
-                if not _clear(lay, x, z):
-                    continue
-                for hf, sh in ((75, 0.15), (80, 0.15), (75, 0.25), (80, 0.0)):
+                if not _clear(lay, x, z) or any(np.hypot(x - u[0], z - u[2]) < 0.6 for u in used):
+                    continue                                   # not on top of another camera (plan markers)
+                for hf, sh in ((75, 0.15), (80, 0.15), (70, 0.15), (65, 0.1)):
                     m = evaluate(rd, lay, (x, EYE, z), yaw, hf, group, sh)
                     m["valid"] = valid(m, False)
-                    key = (m["valid"], -abs(t - 0.5), -off, m["pieces"])
+                    # valid first, then nothing near the lens (smeared edges), then centred, close to the wall
+                    key = (m["valid"], m["near_share"] < 0.01, -round(m["near_share"], 2), -abs(t - 0.5), -off, hf)
                     if best is None or key > best[0]:
                         best = (key, m)
-            if best and best[1]["valid"]:
-                break
         if best:
             shots[nm] = dict(best[1], name=nm, wall=wall)
+            used.append(np.array(best[1]["pos"]))
     return shots
