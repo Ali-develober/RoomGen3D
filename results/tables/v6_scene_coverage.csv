@@ -1,0 +1,24 @@
+class,occurrences,models,sources,covered,model_ids
+TV unit,20,3,kenney;polyhaven,True,modern_wooden_cabinet;ClassicConsole_01;cabinetTelevision
+armchair,28,2,polyhaven,True,ArmChair_01;mid_century_lounge_chair
+bathtub,20,1,kenney,True,bathtub
+bed,20,2,kenney;polyhaven,True,bedDouble;GothicBed_01
+chair,168,4,polyhaven,True,dining_chair_02;painted_wooden_chair_01;gallinera_chair;GreenChair_01
+coffee table,20,3,polyhaven,True,CoffeeTable_01;modern_coffee_table_01;coffee_table_round_01
+counter,56,1,kenney,True,kitchenCabinet
+desk,16,2,polyhaven,True,WoodenTable_03;metal_office_desk
+dining table,20,2,polyhaven,True,painted_wooden_table;wooden_table_02
+floor lamp,12,1,kenney,True,lampRoundFloor
+fridge,20,1,kenney,True,kitchenFridgeLarge
+island,12,1,kenney,True,kitchenBar
+nightstand,40,3,polyhaven,True,ClassicNightstand_01;painted_wooden_nightstand;side_table_01
+plant,72,1,kenney,True,pottedPlant
+shelf,40,2,polyhaven,True,wooden_bookshelf_worn;Shelf_01
+sideboard,16,3,polyhaven,True,GothicCommode_01;painted_wooden_cabinet;modern_wooden_cabinet
+sink,20,1,kenney,True,kitchenSink
+sofa,20,3,polyhaven,True,Sofa_01;sofa_02;sofa_03
+stove,20,1,kenney,True,kitchenStove
+television,20,1,kenney,True,televisionModern
+toilet,20,1,kenney,True,toilet
+vanity,20,1,kenney,True,bathroomCabinetDrawer
+wardrobe,20,3,polyhaven,True,painted_wooden_cabinet_02;vintage_cabinet_01;chinese_cabinet

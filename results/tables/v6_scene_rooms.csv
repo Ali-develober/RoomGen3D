@@ -1,0 +1,27 @@
+id,set,room,pieces,violations,missing,build_s,equirect_s,persp_s,max_distortion,models
+dev_a_scandinavian_style_bedroom_s701,dev,bedroom,7,0,0,0.79,0.47,0.07,1.2,WoodenTable_03;bedDouble;painted_wooden_cabinet_02;painted_wooden_chair_01;pottedPlant;side_table_01
+dev_a_scandinavian_style_living_room_s701,dev,living room,8,0,0,0.13,0.53,0.069,1.201,Shelf_01;lampRoundFloor;mid_century_lounge_chair;modern_coffee_table_01;modern_wooden_cabinet;sofa_02;televisionModern
+dev_a_scandinavian_style_kitchen_s701,dev,kitchen,12,0,0,0.03,0.48,0.066,1.2,kitchenCabinet;kitchenFridgeLarge;kitchenSink;kitchenStove;pottedPlant;wooden_table_02
+dev_a_scandinavian_style_dining_room_s701,dev,dining room,12,0,0,0.03,0.53,0.085,1.2,Shelf_01;modern_wooden_cabinet;painted_wooden_chair_01;pottedPlant;wooden_table_02
+dev_a_scandinavian_style_bathroom_s701,dev,bathroom,4,0,0,0.02,0.46,0.061,1.2,bathroomCabinetDrawer;bathtub;pottedPlant;toilet
+dev_a_farmhouse_style_bedroom_s701,dev,bedroom,7,0,0,0.06,0.47,0.07,1.2,GothicBed_01;WoodenTable_03;painted_wooden_cabinet_02;painted_wooden_chair_01;painted_wooden_nightstand;pottedPlant
+dev_a_farmhouse_style_living_room_s701,dev,living room,8,0,0,0.1,0.52,0.069,1.201,ArmChair_01;CoffeeTable_01;cabinetTelevision;lampRoundFloor;sofa_03;televisionModern;wooden_bookshelf_worn
+dev_a_farmhouse_style_kitchen_s701,dev,kitchen,12,0,0,0.03,0.48,0.065,1.2,kitchenCabinet;kitchenFridgeLarge;kitchenSink;kitchenStove;painted_wooden_table;pottedPlant
+dev_a_farmhouse_style_dining_room_s701,dev,dining room,12,0,0,0.05,0.53,0.091,1.2,painted_wooden_cabinet;painted_wooden_chair_01;painted_wooden_table;pottedPlant;wooden_bookshelf_worn
+dev_a_farmhouse_style_bathroom_s701,dev,bathroom,4,0,0,0.01,0.46,0.064,1.2,bathroomCabinetDrawer;bathtub;pottedPlant;toilet
+test_a_industrial_style_bedroom_s701,test,bedroom,7,0,0,0.11,0.48,0.068,1.201,GreenChair_01;bedDouble;chinese_cabinet;metal_office_desk;pottedPlant;side_table_01
+test_a_industrial_style_living_room_s701,test,living room,8,0,0,0.03,0.52,0.069,1.201,CoffeeTable_01;cabinetTelevision;lampRoundFloor;mid_century_lounge_chair;sofa_03;televisionModern;wooden_bookshelf_worn
+test_a_industrial_style_kitchen_s701,test,kitchen,12,0,0,0.01,0.49,0.066,1.2,kitchenCabinet;kitchenFridgeLarge;kitchenSink;kitchenStove;painted_wooden_table;pottedPlant
+test_a_industrial_style_dining_room_s701,test,dining room,12,0,0,0.06,0.54,0.087,1.201,GreenChair_01;modern_wooden_cabinet;painted_wooden_table;pottedPlant;wooden_bookshelf_worn
+test_a_industrial_style_bathroom_s701,test,bathroom,4,0,0,0.01,0.45,0.061,1.2,bathroomCabinetDrawer;bathtub;pottedPlant;toilet
+test_a_bohemian_style_bedroom_s701,test,bedroom,7,0,0,0.05,0.47,0.067,1.2,bedDouble;chinese_cabinet;gallinera_chair;metal_office_desk;painted_wooden_nightstand;pottedPlant
+test_a_bohemian_style_living_room_s701,test,living room,8,0,0,0.04,0.52,0.069,1.201,Shelf_01;cabinetTelevision;coffee_table_round_01;lampRoundFloor;mid_century_lounge_chair;sofa_03;televisionModern
+test_a_bohemian_style_kitchen_s701,test,kitchen,12,0,0,0.01,0.51,0.069,1.2,kitchenCabinet;kitchenFridgeLarge;kitchenSink;kitchenStove;pottedPlant;wooden_table_02
+test_a_bohemian_style_dining_room_s701,test,dining room,12,0,0,0.07,0.56,0.091,1.2,Shelf_01;gallinera_chair;painted_wooden_cabinet;pottedPlant;wooden_table_02
+test_a_bohemian_style_bathroom_s701,test,bathroom,4,0,0,0.01,0.47,0.064,1.2,bathroomCabinetDrawer;bathtub;pottedPlant;toilet
+demo_a_contemporary_style_living_room_s11,demo,living room,7,0,0,0.04,0.52,0.08,1.2,Shelf_01;mid_century_lounge_chair;modern_coffee_table_01;modern_wooden_cabinet;sofa_02;televisionModern
+demo_a_coastal_style_bedroom_s22,demo,bedroom,6,0,0,0.01,0.47,0.066,1.2,Shelf_01;bedDouble;mid_century_lounge_chair;painted_wooden_cabinet_02;painted_wooden_nightstand
+demo_a_rustic_style_kitchen_s33,demo,kitchen,9,0,0,0.01,0.5,0.068,1.2,kitchenBar;kitchenCabinet;kitchenFridgeLarge;kitchenSink;kitchenStove;pottedPlant
+demo_a_mid_century_modern_style_dining_room_s44,demo,dining room,12,0,0,0.14,0.6,0.066,1.2,Shelf_01;dining_chair_02;modern_wooden_cabinet;pottedPlant;wooden_table_02
+demo_an_art_deco_style_bathroom_s55,demo,bathroom,4,0,0,0.01,0.47,0.066,1.2,bathroomCabinetDrawer;bathtub;pottedPlant;toilet
+demo_a_mediterranean_style_living_room_s66,demo,living room,7,0,0,0.05,0.53,0.07,1.201,ArmChair_01;ClassicConsole_01;Shelf_01;Sofa_01;coffee_table_round_01;pottedPlant;televisionModern
