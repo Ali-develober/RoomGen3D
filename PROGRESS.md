@@ -521,3 +521,50 @@ Kept: TripoSR (1.6 GB, still loadable by the v4 objects option), SD 1.5 / CLIP /
 **Results** (`results/tables/v6_scene_rules.csv`, `v6_scene_coverage.csv`, `v6_scene_rooms.csv`, figure `v6_scene_demo.png`): 1400 layouts (5 types × 14 styles × 20 seeds): **0 rule violations, 0 missing required pieces**; pieces per room: bathroom 3.6, bedroom 6.4, living 7.6, kitchen 9.2, dining 10.3. Asset coverage: 23 / 23 classes. Scene build 0.04-0.13 s, equirectangular 2048 × 1024 ray cast 0.5 s, perspective 768 × 576 0.07 s, max per-axis fit distortion 1.2.
 
 **Decisions / failed**: living-room ranges narrowed (4.0-5.2 × 4.4-5.8 m) after the first demo figure showed 33 m² rooms with an empty half (acceptance issue 13). Several first-run failures were float-rounding at exact 5 cm gaps (nightstands, chairs), a door reference point inside the wall margin (nothing reachable), and counter modules rejected by the gap rule — all fixed before the tests passed.
+
+### PLAN_V6 downloads (budget 10 GB)
+
+| Date | What | Size |
+|---|---|---|
+| 2026-11-15 | Kenney Furniture Kit 2.0 (CC0) → data/assets_raw/kenney | 0.005 GB (26 MB unpacked) |
+| 2026-11-15 | 33 Poly Haven models, glTF 1k, diffuse only (CC0) → data/assets_raw/polyhaven | 0.02 GB |
+| 2026-11-15 | `diffusers/controlnet-depth-sdxl-1.0-small` fp16 (openrail++) → checkpoints/cn_depth_sdxl_small | 0.32 GB |
+| 2026-11-15 | `diffusers/controlnet-depth-sdxl-1.0-mid` fp16 (openrail++) → checkpoints/cn_depth_sdxl_mid | 0.55 GB |
+| 2026-11-15 | `TencentARC/t2i-adapter-depth-midas-sdxl-1.0` fp16 (apache-2.0) → checkpoints/t2i_depth_sdxl | 0.16 GB |
+| 2026-11-15 | model-viewer 3.5.0 min.js (BSD-3-Clause) → app/static | 0.001 GB |
+
+## 2026-11-15 — V6 Milestone 2: panorama on the scene — DONE
+
+**Built**: `src/pano_v6.py` (SDXL base + fp16-fix VAE + 360Redmond LoRA fused + depth ControlNet small / mid or T2I-Adapter; circular padding in UNet, VAE and the ControlNet; model CPU offload; style word → materials + palette + floor ("coastal" → light oak, white linen, rattan, pale blue palette, whitewashed oak floor; never a location); furniture list and window count from the layout; negative prompt against glass walls / floor-to-ceiling windows / sea views / carpet / wall clutter; every prompt asserted ≤ 77 CLIP tokens, `fit_tokens` for the v5 path), `src/views_v6.py` (views pixel-aligned with the proxy renders), `scripts/eval_v6_pano.py` (gen / metrics / clip / report / kid, resumable).
+
+**Proxy changes found by looking at the first panoramas** (each fixed before the final run): a flat window pane was painted as a coloured panel → the window now opens to a backdrop 3 m outside; box-shaped curtain pleats were painted as walnut boards → curtains are folded fabric surfaces (4 cm sinusoidal folds) on a straight rod; the maximum-clearance camera sat 0.7 m from a wall in crowded rooms and the model filled that blank near wall with invented objects (a daybed in the coastal bedroom = "two beds") → camera = point ≥ 0.5 m from furniture and walls that maximises wall distance (capped 1.5 m) + 0.3 × furniture clearance; framed wall art above sofa / bed / sideboard and on blank walls ≥ 1.6 m; a pendant lamp over the dining table / room centre; window count in the prompt.
+
+**Sweep** (5 dev rooms, `results/tables/v6_pano_sweep_summary.csv`):
+
+| config | depth AbsRel ↓ | δ1 ↑ | instance IoU ↑ | structure-edge recall ↑ | straight share ↑ | BRISQUE ↓ | KID×10³ ↓ | CLIP ↑ | s |
+|---|---|---|---|---|---|---|---|---|---|
+| cn_small 0.5 | 0.119 | 0.84 | 0.22 | 0.26 | 0.38 | 44.3 | 46.6 | 22.5 | 56 |
+| cn_small 0.7 | 0.081 | 0.89 | 0.30 | 0.37 | 0.43 | 48.7 | 60.1 | 21.2 | 58 |
+| cn_small 0.7, end 0.7 | 0.084 | 0.89 | 0.30 | 0.34 | 0.42 | 49.2 | 59.5 | 21.2 | 51 |
+| **cn_small 0.9** | 0.053 | 0.95 | **0.32** | **0.49** | 0.54 | 45.4 | 74.9 | 20.6 | 52 |
+| cn_mid 0.5, end 0.8 | 0.063 | 0.95 | 0.26 | 0.29 | 0.47 | 47.8 | 57.9 | 21.2 | 50 |
+| cn_mid 0.7 | **0.032** | **0.99** | 0.32 | 0.41 | **0.55** | 47.4 | 80.3 | 20.3 | 52 |
+| T2I 0.8 | 0.070 | 0.93 | 0.29 | 0.18 | 0.45 | 47.7 | 58.8 | 21.7 | 46 |
+| T2I 1.0 | 0.042 | 0.98 | 0.29 | 0.23 | 0.48 | 48.3 | 71.3 | 21.6 | 45 |
+
+Decision (`v6_pano_decision.json`; the ranking rule was written AFTER the sweep — the plan named the gates but no ranking): gates δ1 ≥ 0.9, seam ratio ≤ 1.5, generated window share ≤ 1.5 × proxy (the three scale-0.5/0.7 small configs fail δ1), then mean rank of the 4 geometry gates + KID + CLIP + BRISQUE → **cn_small, scale 0.9, full schedule** (2.29) ahead of cn_mid 0.7 (2.57). By eye the two are close; mid invents strip skylights in the ceiling and loads in 104 s cold (small: 22 s warm). Weak conditioning (0.5-0.7) hallucinates extra furniture and split the 8-seat table into two tables (acceptance issue 3) — visible in `outputs/v6_pano/*/dev_a_scandinavian_style_dining_room_s701.jpg`.
+
+**Final (selected config, final proxy, 26 rooms; `results/tables/v6_pano_summary.csv`, per room `v6_pano_per_room.csv`; v5 rows: `v5_pano_summary.csv` and `v6_pano_v5demo_metrics.csv` (same view code on the v5 demo panoramas))**
+
+| | v5 (SDXL + Redmond, no condition) | v6 dev | v6 held-out | v6 demo |
+|---|---|---|---|---|
+| depth δ1 / AbsRel vs proxy | – (no ground truth) | 0.97 / 0.044 | 0.99 / 0.040 | 0.99 / 0.034 |
+| furniture present where the proxy puts it (seg covers ≥ 50 %) | – | 55 % | 51 % | 64 % |
+| straight-line share (proxy-free) | demo 0.34 | 0.53 | 0.25 | 0.49 |
+| window share generated / proxy | – (owner: "almost every wall glass") | 0.055 / 0.052 | 0.047 / 0.052 | 0.035 / 0.046 |
+| KID ×10³ vs MMIS | dev 70.2, demo 51.9 | **50.2** | **66.0** | **45.5** |
+| CLIP | dev 21.3, demo 23.6 | 21.1 | 22.2 | 20.6 |
+| BRISQUE (views) | demo 40.9 | 47.1 | 37.3 | 43.9 |
+| seconds / panorama, VRAM, process RAM | 55 s, 5.9 GB, 10 GB | 51 s, 6.5 GB, 11.1 GB | 49 s | 50 s |
+
+**Negative / open**: BRISQUE slightly worse than v5 (plain painted walls), CLIP lower on demo; one dev dining room still gets an invented alcove on a blank near wall (camera 0.9 m from the wall: no point in that room is far from both the table set and the walls); wall art did not remove it. IP-Adapter / LCM speed-ups not tried yet.

@@ -12,8 +12,11 @@ Furniture
     chosen by style and seed), scaled into the piece's footprint (proportions kept within 20 %), turned
     to its yaw and placed; the layout piece's w / d / h are then updated to the model's real extents so
     that the floor plan, the cameras and the renders all describe the same object.
+Windows look out to a backdrop 3 m behind the wall (a flat pane was read as a painted panel by the depth
+    ControlNet) and have two pleated curtain panels on a straight rod; a pendant lamp hangs over the dining
+    table (else the room centre).
 Instance ids (render "inst"):  0 wall (incl. baseboards, reveals), 1 floor, 2 ceiling, 3 window, 4 door,
-    10 + i = layout item i.
+    5 curtain, 6 lamp, 7 wall art, 10 + i = layout item i.
 """
 
 from __future__ import annotations
@@ -27,10 +30,11 @@ from . import assets_v6 as A
 from . import layout_v6 as LV
 from . import raycast_v6 as R
 
-WALL, FLOOR, CEIL, WINDOW, DOOR = 0, 1, 2, 3, 4
+WALL, FLOOR, CEIL, WINDOW, DOOR, CURTAIN_ID, LAMP, ART = 0, 1, 2, 3, 4, 5, 6, 7
 FURN0 = 10
 REVEAL = 0.15
-PANE_IN = 0.10
+PANE_IN = 0.10             # frame plane of the window (behind the wall surface)
+OUTSIDE = 3.0              # m: backdrop behind a window opening
 STRUCT_COLORS = {WALL: (232, 228, 220), FLOOR: (176, 140, 104), CEIL: (245, 245, 242), WINDOW: (250, 250, 250),
                  DOOR: (200, 180, 150)}
 
@@ -85,7 +89,71 @@ def _wall_with_holes(lay, wall, holes):
     return _mesh(v, f, STRUCT_COLORS[WALL])
 
 
-def shell_parts(lay: dict) -> list:
+def _curtains(P, c0: float, c1: float, y1: float, H: float) -> list:
+    """Two curtain panels (0.35 m each, pushed open) beside a window and a straight rod above it. Each panel is a
+    folded fabric surface: depth offset 4 cm * sin(2 pi s / 0.12 m) across its width (pleats), so the depth
+    condition reads as fabric (box-shaped pleats were painted as wooden boards in the first tests)."""
+    tm = _tm()
+    out = []
+    top = min(H - 0.08, y1 + 0.2)
+    col = (238, 234, 226)
+    for side in (-1, 1):
+        s0 = c0 - 0.3 if side < 0 else c1 - 0.05
+        ss = np.linspace(s0, s0 + 0.35, 36)
+        off = 0.10 + 0.04 * (0.5 + 0.5 * np.sin(2 * np.pi * (ss - s0) / 0.12))
+        v, f = [], []
+        for k, (sv, tv) in enumerate(zip(ss, off)):
+            v += [P(sv, 0.03, tv), P(sv, top, tv)]
+            if k:
+                i = 2 * k
+                f += [[i - 2, i - 1, i + 1], [i - 2, i + 1, i]]
+        m = tm.Trimesh(np.array(v), np.array(f), process=False)
+        m.visual.face_colors = np.tile(np.array([*col, 255], np.uint8), (len(f), 1))
+        out.append(m)
+    q0, q1 = P(c0 - 0.4, top, 0.12), P(c1 + 0.4, top + 0.03, 0.15)
+    out.append(_box(*np.minimum(q0, q1), *np.maximum(q0, q1), color=(60, 60, 60)))
+    return out
+
+
+def _art_spots(lay: dict) -> list:
+    """Framed pictures (wall art): above the sofa / bed / sideboard, and centred on every blank wall stretch of at
+    least 1.6 m (no opening, nothing taller than 1.2 m in front). Returns [(wall, s, width, y0, y1)]."""
+    out = []
+    for p in lay["items"]:
+        if p["cls"] in ("sofa", "bed", "sideboard") and p["wall"]:
+            s = p["cx"] if p["wall"] in ("N", "S") else p["cz"]
+            w = min(1.0, 0.6 * p["w"])
+            y0 = max(p["h"] + 0.25, 1.25) if p["cls"] != "bed" else 1.35
+            out.append((p["wall"], s, w, y0, min(y0 + 0.65, lay["H"] - 0.4)))
+    for wall in ("S", "N", "W", "E"):
+        L = lay["W"] if wall in ("N", "S") else lay["D"]
+        busy = [(o["c"] - o["w"] / 2 - 0.45, o["c"] + o["w"] / 2 + 0.45) for o in lay["openings"] if o["wall"] == wall]
+        for p in lay["items"]:
+            if p["wall"] == wall and p["h"] > 1.2 or p["wall"] == wall and p["cls"] in ("sofa", "bed", "sideboard"):
+                x0, z0, x1, z1 = LV.extent(p)
+                busy.append((x0, x1) if wall in ("N", "S") else (z0, z1))
+        busy = sorted(busy) + [(L, L)]
+        cur = 0.0
+        for a, b in busy:
+            if a - cur >= 1.6:
+                out.append((wall, (cur + a) / 2, min(0.9, 0.45 * (a - cur)), 1.3, 1.95))
+            cur = max(cur, b)
+    return out
+
+
+def _pendant(x: float, z: float, H: float, drop: float = 0.9, r: float = 0.22) -> list:
+    """Pendant lamp: cord + conical shade hanging from the ceiling."""
+    tm = _tm()
+    cord = _box(x - 0.006, H - drop + 0.2, z - 0.006, x + 0.006, H, z + 0.006, color=(40, 40, 40))
+    shade = tm.creation.cone(radius=r, height=0.22, sections=24)
+    v = np.asarray(shade.vertices).copy()
+    v[:, [1, 2]] = v[:, [2, 1]]                                # cone axis z -> y (apex up)
+    shade = tm.Trimesh(v + np.array([x, H - drop, z]), np.asarray(shade.faces)[:, ::-1], process=False)
+    shade.visual.face_colors = np.tile(np.array([230, 225, 210, 255], np.uint8), (len(shade.faces), 1))
+    return [cord, shade]
+
+
+def shell_parts(lay: dict, curtains: bool = True) -> list:
     """[(mesh, inst id)] of the room shell."""
     W, D, H = lay["W"], lay["D"], lay["H"]
     parts = [(_quad([0, 0, 0], [W, 0, 0], [W, 0, D], [0, 0, D], STRUCT_COLORS[FLOOR]), FLOOR),
@@ -115,9 +183,14 @@ def shell_parts(lay: dict) -> list:
             parts.append((_quad(P(c0, y1, 0), P(c0, y1, -REVEAL), P(c1, y1, -REVEAL), P(c1, y1, 0), col), WALL))
             if x["kind"] == "window":
                 parts.append((_quad(P(c0, y0, 0), P(c1, y0, 0), P(c1, y0, -REVEAL), P(c0, y0, -REVEAL), col), WALL))
-                pane = _quad(P(c0, y0, -PANE_IN), P(c1, y0, -PANE_IN), P(c1, y1, -PANE_IN), P(c0, y1, -PANE_IN),
-                             STRUCT_COLORS[WINDOW])
-                parts.append((pane, WINDOW))
+                # no pane: the opening looks out to a backdrop OUTSIDE m behind the wall, so the depth
+                # condition shows a real window (a flat pane read as a painted panel in the first tests)
+                m_ = 0.6 * OUTSIDE
+                bd = _quad(P(c0 - m_, y0 - m_, -OUTSIDE), P(c1 + m_, y0 - m_, -OUTSIDE), P(c1 + m_, y1 + m_, -OUTSIDE),
+                           P(c0 - m_, y1 + m_, -OUTSIDE), (205, 225, 240))
+                parts.append((bd, WINDOW))
+                if curtains:
+                    parts += [(m, CURTAIN_ID) for m in _curtains(P, c0, c1, y1, lay["H"])]
                 fw, fd = 0.05, 0.06
                 fr = (245, 245, 245)
                 bars = [(c0, y0, c0 + fw, y1), (c1 - fw, y0, c1, y1), (c0, y0, c1, y0 + fw), (c0, y1 - fw, c1, y1)]
@@ -161,6 +234,18 @@ def build(lay: dict, seed: int | None = None) -> dict:
     rng = np.random.default_rng(lay["seed"] if seed is None else seed)
     chosen = {}
     parts = shell_parts(lay)
+    main = next((i for i in lay["items"] if i["cls"] == LV.MAIN[lay["room"]]), None)
+    if lay["room"] in ("dining room", "kitchen") and main is not None and lay["room"] != "kitchen":
+        lx, lz = main["cx"], main["cz"]
+    else:
+        lx, lz = lay["W"] / 2, lay["D"] / 2
+    for wall, s_, w_, y0_, y1_ in _art_spots(lay):                       # wall art (thin framed boards)
+        o, a, n, L = wall_frame(lay, wall)
+        q0 = o + a * (s_ - w_ / 2) + np.array([0, y0_, 0]) + n * 0.0
+        q1 = o + a * (s_ + w_ / 2) + np.array([0, y1_, 0]) + n * 0.035
+        parts.append((_box(*np.minimum(q0, q1), *np.maximum(q0, q1), color=(180, 170, 150)), ART))
+    parts += [(m, LAMP) for m in _pendant(lx, lz, lay["H"], drop=0.95 if lay["room"] == "dining room" else 0.55)]
+    lay["lamp"] = [round(lx, 3), round(lay["H"] - (0.95 if lay["room"] == "dining room" else 0.55), 3), round(lz, 3)]
     models, fits = {}, {}
     for p in lay["items"]:
         cls = p["cls"]
@@ -195,8 +280,8 @@ class Renderer:
         res["dirs"] = d
         return res
 
-    def perspective(self, center, yaw: float, pitch: float, hfov: float, w: int, h: int) -> dict:
-        d = R.persp_rays(yaw, pitch, hfov, w, h)
+    def perspective(self, center, yaw: float, pitch: float, hfov: float, w: int, h: int, shift: float = 0.0) -> dict:
+        d = R.persp_rays(yaw, pitch, hfov, w, h, shift)
         res = self.tracer.cast(np.asarray(center, float), d)
         res["dirs"] = d
         z_axis = R.cam_rotation(yaw, pitch)[:, 2]

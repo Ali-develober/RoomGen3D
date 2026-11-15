@@ -1,0 +1,6 @@
+{
+ "class_logits_max_abs_diff": 0.0,
+ "mask_logits_max_abs_diff": 0.0,
+ "image": "dev scandinavian bedroom v6 panorama 768x384",
+ "test": "swin.layernorm weights replaced by N(0,1) noise; outputs compared"
+}

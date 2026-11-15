@@ -1,0 +1,37 @@
+{
+ "selected": "cn_small_s0.9_e1.0",
+ "selected_params": {
+  "cond": "cn_small",
+  "scale": 0.9,
+  "end": 1.0,
+  "steps": 25
+ },
+ "rule": "gates: depth delta1 >= 0.9, seam ratio <= 1.5, generated window share <= 1.5 x proxy; then mean rank on dev5 of depth AbsRel, instance IoU, structure-edge recall, straight-line share, KID, CLIP, BRISQUE (rule written after the sweep: the plan named the gates but no ranking)",
+ "ranking": [
+  {
+   "config": "cn_small_s0.9_e1.0",
+   "mean_rank": 2.286
+  },
+  {
+   "config": "cn_mid_s0.7_e1.0",
+   "mean_rank": 2.571
+  },
+  {
+   "config": "t2i_s1.0_e1.0",
+   "mean_rank": 3.143
+  },
+  {
+   "config": "cn_mid_s0.5_e0.8",
+   "mean_rank": 3.429
+  },
+  {
+   "config": "t2i_s0.8_e1.0",
+   "mean_rank": 3.571
+  }
+ ],
+ "failed_gates": [
+  "cn_small_s0.5_e1.0",
+  "cn_small_s0.7_e0.7",
+  "cn_small_s0.7_e1.0"
+ ]
+}

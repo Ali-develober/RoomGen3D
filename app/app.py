@@ -51,9 +51,16 @@ Launch (from the project root):   .venv\\Scripts\\python.exe app\\app.py
 then open http://127.0.0.1:7860
 """
 
+import os
 import sys
 import time
 import zipfile
+
+# PLAN_V6 milestone 5: once the models are in the local cache, never call the Hugging Face Hub (no unauthenticated
+# requests on start); a missing model then fails with a clear message (check_models below).
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
 from pathlib import Path
 from urllib.parse import quote
 
@@ -92,11 +99,21 @@ OUT = ROOT / "outputs" / "app"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MODELS = {}
 ORBIT_LIMIT_DEG = 30          # left / right; up / down is limited to 20 above and 12 below the camera
-MODEL_VIEWER_JS = "https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"
-HEAD = f'<script type="module" src="{MODEL_VIEWER_JS}"></script>'
+STATIC = ROOT / "app" / "static"
+# model-viewer 3.5.0 (BSD-3-Clause, Google), bundled locally so the 3D tabs work offline (PLAN_V6 milestone 5)
+MODEL_VIEWER_JS = "/gradio_api/file=" + quote(str((STATIC / "model-viewer.min.js").resolve()).replace("\\", "/"), safe="/:")
+# Number fields: an Arabic-locale browser renders <input type=number> with Arabic-Indic digits ("V.o" for 7.5);
+# the page is English, so the document language is set to "en" and digits are forced to Latin.
+LATIN_DIGITS = ("<script>document.documentElement.setAttribute('lang','en');"
+                "new MutationObserver(()=>document.querySelectorAll('input[type=number],input[type=range]')"
+                ".forEach(e=>{if(e.lang!=='en')e.setAttribute('lang','en');})).observe(document.documentElement,"
+                "{childList:true,subtree:true});</script>"
+                "<style>input[type=number]{font-variant-numeric:lining-nums;unicode-bidi:plaintext}</style>")
+HEAD = f'<script type="module" src="{MODEL_VIEWER_JS}"></script>' + LATIN_DIGITS
 QUICK, ROOM360, LAYOUT = "Quick (single view)", "360° Room", "Layout-first"
 BIG = {QUICK: ("sd",), ROOM360: ("alt", "dap", "m2f"), LAYOUT: ("cn",)}     # large models of each mode
-V5 = "v5: SDXL panorama, re-rendered design shots, 360° inside view, clean dollhouse (default)"
+V6 = "Scene first: layout → 3D scene → panorama (default)"
+V5 = "Image first: panorama → estimated room (previous version)"
 V4, V3, V2 = "v4: design shots + clean box room (comparison)", "v3: clean box room (comparison)", "v2: previous mesh (comparison)"
 V5_CANDIDATES = 2             # v5 default candidates (each SDXL panorama ~55 s; PLAN_V5 milestone 2)
 NEUTRAL_BG = "#e9e8e4"
@@ -140,8 +157,7 @@ def _mv(src: str, attrs: str, note: str, bg: str = "#ffffff", tone: str = "neutr
             f'interpolation-decay="100" shadow-intensity="0" exposure="1" tone-mapping="{tone}" '
             f'style="width:100%;max-width:760px;aspect-ratio:4/3;height:auto;margin:0 auto;display:block;'
             f'background:{bg};border:1px solid #ddd;border-radius:8px"></model-viewer>'
-            f'<p style="text-align:center;color:#777;font-size:12px;margin:4px 0 0">{note} '
-            f'Needs internet to load the viewer script.</p>')
+            f'<p style="text-align:center;color:#777;font-size:12px;margin:4px 0 0">{note}</p>')
 
 
 def inside_html(glb_path: str, bg: str = "#ffffff", yaw_deg: float | None = None) -> str:
@@ -161,9 +177,14 @@ def inside_html(glb_path: str, bg: str = "#ffffff", yaw_deg: float | None = None
                bg, tone=V4_TONE)
 
 
-def dollhouse_html(glb_path: str, camera_height: float, bg: str = "#ffffff") -> str:
-    """Room without ceiling, orbited from outside and above (polar angle 0-80 deg)."""
-    y = -float(camera_height) + 0.9                                   # target 0.9 m above the floor
+def dollhouse_html(glb_path: str, camera_height: float, bg: str = "#ffffff", center_y: float | None = None) -> str:
+    """Room without ceiling, orbited from outside and above (polar angle 0-80 deg). v6 models have the floor at
+    y = 0 (center_y = target height); earlier versions are centred at the panorama camera."""
+    y = -float(camera_height) + 0.9 if center_y is None else 0.9      # target 0.9 m above the floor
+    if center_y is not None:
+        return _mv(_src(glb_path), f'camera-target="auto {y:.2f}m auto" camera-orbit="30deg 50deg auto" '
+                   'min-camera-orbit="auto 0deg auto" max-camera-orbit="auto 80deg auto" field-of-view="40deg"',
+                   "Drag to orbit around the room, scroll to zoom.", bg)
     return _mv(_src(glb_path), f'camera-target="0m {y:.2f}m 0m" camera-orbit="30deg 45deg auto" '
                'min-camera-orbit="auto 0deg auto" max-camera-orbit="auto 80deg auto" field-of-view="45deg"',
                "Drag to orbit around the room, scroll to zoom.", bg)
@@ -241,7 +262,7 @@ def load_models(mode: str = QUICK) -> dict:
     return MODELS
 
 
-def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: str = V5, candidates: float = 1,
+def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: str = V6, candidates: float = 1,
         detail: bool = False, n_objects: float = 0, sharp_shots: bool = True, quick_hires: bool = True):
     """One request in the chosen mode. The first output becomes the gallery: v4 returns its design shots
     (hero first), the other modes their single image / panorama. Then: the 360° panorama viewer, the panorama
@@ -253,6 +274,8 @@ def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: 
     if mode == ROOM360:
         if version == V2:
             out = [*run_360(prompt, seed, steps, cfg), None, None]
+        elif version == V6:
+            out = list(run_360_v6(prompt, seed, extra=extra))
         elif version == V5:
             out = list(run_360_v5(prompt, seed, steps, cfg, int(candidates), extra=extra))
         else:
@@ -269,7 +292,9 @@ def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: 
     else:
         gallery = [(first, "generated image" if mode == QUICK else "panorama (equirectangular, 360° x 180°)")]
     pano_view, pano_img = PANO_EMPTY, None
-    if mode != QUICK:
+    if mode == ROOM360 and version == V6:
+        pano_img = cv2.cvtColor(cv2.imread(extra["pano_path"]), cv2.COLOR_BGR2RGB)
+    elif mode != QUICK:
         pano_path = extra.get("pano_path", out[8])
         pano_img = cv2.cvtColor(cv2.imread(pano_path), cv2.COLOR_BGR2RGB)
         sphere = extra.get("sphere")
@@ -622,6 +647,78 @@ def run_360_v5(prompt: str, seed: float, steps: float, cfg: float, k: int = V5_C
             res["topdown"])
 
 
+def check_models(names: dict) -> None:
+    """Clear message instead of a Hub error when a model is not in the local cache (offline mode)."""
+    missing = [k for k, p in names.items() if not Path(p).exists()]
+    if missing:
+        raise gr.Error("Missing local model(s): " + ", ".join(missing) + ". Download them first (README, 'Models'); "
+                       "the app runs offline and does not fetch models.")
+
+
+def run_360_v6(prompt: str, seed: float, extra: dict | None = None):
+    """360° Room, scene first (PLAN_V6): layout -> proxy scene -> SDXL panorama on the proxy depth -> design shots from
+    cameras placed in the scene -> textured proxy dollhouse -> floor plan from the layout."""
+    from src import pipeline_v6 as p6
+    check_models(p6.required_models())
+    extra = {} if extra is None else extra
+    seed = int(seed)
+    free_diffusion()
+    for k in list(MODELS):                                   # nothing else stays in memory during a v6 request
+        MODELS.pop(k, None)
+    mem.free()
+    t0 = time.perf_counter()
+    out_dir = OUT / f"room360v6_{pl.slug(prompt, seed)}"
+    r = p6.run(prompt, seed, out_dir, str(DEVICE))
+    total = time.perf_counter() - t0
+    lay, cams, sh = r["layout"], r["cams"], r["shots"]
+    files = {"pano": str(out_dir / "pano_2048.jpg"), "plan_png": str(out_dir / "floorplan_v6.png"),
+             "plan_svg": str(out_dir / "floorplan_v6.svg"), "doll": str(out_dir / "dollhouse_v6.glb"),
+             "layout": str(out_dir / "layout.json"), "inside": str(out_dir / "inside_v6.html")}
+    zp = out_dir / "design_shots.zip"
+    with zipfile.ZipFile(zp, "w") as z:
+        for n in sh:
+            z.write(out_dir / "shots" / f"{n}.jpg", f"{n}.jpg")
+        z.write(files["plan_png"], "floorplan_with_views.png")
+    names = {"H": "H: hero view", "H2": "H2: second hero view", "A": "A: north wall", "B": "B: east wall",
+             "C": "C: south wall", "D": "D: west wall"}
+
+    def cap(n):
+        c = cams[n]
+        return (f"{names[n]} ({'valid' if c['valid'] else 'not valid'}: main group {100 * c['main_share']:.0f} %, "
+                f"floor {100 * c['floor_share']:.0f} %, near {100 * c['near_share']:.0f} %; {c['hfov']:.0f}° FOV, "
+                f"1.5 m, level)")
+    gallery = [(sh[n]["image"], cap(n)) for n in p6.SHOT_ORDER if n in sh]
+    t = r["timing"]
+    n_valid = sum(bool(cams[n]["valid"]) for n in sh)
+    info = (f"**360° room (scene first) done in {total:.0f} s** (scene {t['scene']:.1f} s, panorama {t['panorama']:.0f} s, "
+            f"upscale + segmentation {t['esrgan_seg']:.0f} s, cameras {t['cameras']:.1f} s, design shots "
+            f"{t.get('shots', 0):.0f} s, dollhouse {t['dollhouse']:.0f} s, export {t['export']:.1f} s). Peak VRAM "
+            f"{r['peak_vram_gb']:.1f} GB, peak RAM {r['peak_ram_gb']:.1f} GB.\n\n"
+            f"Room {lay['W']:.2f} × {lay['D']:.2f} m ({lay['W'] * lay['D']:.1f} m²), ceiling {lay['H']:.2f} m, "
+            f"{len(lay['items'])} furniture pieces, one door, "
+            f"{sum(o['kind'] == 'window' for o in lay['openings'])} window(s). Dimensions are exact: the room was "
+            f"designed first and the images were generated to match it. {n_valid} of {len(sh)} shots pass the "
+            f"framing test. Prompt ({r['pano_info']['tokens']} of 77 CLIP tokens): *{r['pano_info']['prompt']}*")
+    small = cv2.resize(r["pano"], (1024, 512), interpolation=cv2.INTER_AREA)
+    seg_small = cv2.resize(r["seg"].astype(np.uint8), (1024, 512), interpolation=cv2.INTER_NEAREST)
+    extra.update({"shots_zip": str(zp), "pano_path": files["pano"],
+                  "raw": [(sh[n]["raw"], f"{n}: panorama reprojected through the 3D scene (black = not seen)")
+                          for n in p6.SHOT_ORDER if n in sh], "timing": {**t, "total_s": total,
+                                                                         "peak_vram_gb": r["peak_vram_gb"],
+                                                                         "peak_ram_gb": r["peak_ram_gb"]}})
+    seg_vis = an.overlay_masks(small, _v6_masks(seg_small))
+    return (gallery, r["plan"], inside_v5_html(files["inside"]),
+            dollhouse_html(files["doll"], 0.0, NEUTRAL_BG, center_y=lay["H"] / 2),
+            gr.Model3D(value=files["doll"]), r["pano_info"]["control"], an.overlay_edges(small, an.canny_edges(small)),
+            seg_vis, files["pano"], files["plan_svg"], files["doll"], files["layout"], info, None, r["topdown"])
+
+
+def _v6_masks(seg: np.ndarray) -> dict:
+    """Wall / floor / ceiling / furniture masks of an ADE20K class map (for the Analysis overlay)."""
+    return {"wall": seg == 0, "floor": np.isin(seg, [3, 28]), "ceiling": seg == 5,
+            "furniture": ~np.isin(seg, [0, 3, 5, 8, 14, 18, 28, 2])}
+
+
 def run_quick(prompt: str, seed: float, steps: float, cfg: float, hires: bool = True):
     """Quick mode: returns the pictures, the viewers, the download files and a summary.
     PLAN_V5 milestone 6 (hires=True): the 512 image is re-drawn at 1024 by img2img with the same LoRA pipeline
@@ -696,35 +793,30 @@ def build() -> gr.Blocks:
                     "it, and builds exact 3D. The first request of a mode loads its models.")
         with gr.Row():
             with gr.Column(scale=1):
-                mode = gr.Radio([QUICK, ROOM360, LAYOUT], value=QUICK, label="Mode")
+                mode = gr.Radio([QUICK, ROOM360], value=ROOM360, label="Mode")
                 prompt = gr.Textbox(label="Prompt", value=pl.DEMO_PROMPTS[1][0], lines=2)
                 seed = gr.Number(label="Seed", value=pl.DEMO_PROMPTS[1][1], precision=0)
-                steps = gr.Slider(10, 50, value=g2.GEN_STEPS, step=1, label="Steps")
-                cfg = gr.Slider(1.0, 15.0, value=g2.GEN_GUIDANCE, step=0.5, label="CFG (guidance scale)")
-                with gr.Accordion("360° Room options", open=False):
-                    version = gr.Radio([V5, V4, V3, V2], value=V5, label="Pipeline")
-                    candidates = gr.Slider(1, 4, value=V5_CANDIDATES, step=1, label="Candidates: panoramas generated; v5 keeps the "
-                                           "most box-like, largest room with the camera clear of furniture, v3 / v4 the most "
-                                           "box-like (v5: ~55 s per SDXL panorama; v4 used 3)")
-                    sharp_shots = gr.Checkbox(value=True, label="v4 sharp design shots: Real-ESRGAN on each shot, "
-                                              "1536 x 1152 (~1 s per shot; off = fast 1024 x 768 shots)")
-                    n_objects = gr.Slider(0, 12, value=DEFAULT_OBJECTS, step=1,
-                                          label="v4 furniture objects: how many pieces (largest first) are generated "
-                                                "as real 3D shapes with TripoSR (~3 s each; 0 = v3 blocks)")
-                    detail = gr.Checkbox(value=False, label="v4 detail pass: img2img (SD 1.5 + MMIS LoRA, strength 0.3) "
-                                         "on the 26 views before upscaling (+~75 s; selected on the dev rooms, "
-                                         "see README)")
-                quick_hires = gr.Checkbox(value=True, label="Quick: hires pass (img2img at 1024 with the LoRA, ~6 s)")
+                with gr.Group(visible=False) as quick_opts:
+                    steps = gr.Slider(10, 50, value=g2.GEN_STEPS, step=1, label="Steps")
+                    cfg = gr.Slider(1.0, 15.0, value=g2.GEN_GUIDANCE, step=0.5, label="Guidance scale (CFG)")
+                    quick_hires = gr.Checkbox(value=True, label="Hires pass (img2img at 1024 with the LoRA, ~6 s)")
+                with gr.Accordion("360° Room options", open=False, visible=True) as room_opts:
+                    version = gr.Radio([V6, V5], value=V6, label="Pipeline")
+                    candidates = gr.Slider(1, 4, value=V5_CANDIDATES, step=1, visible=False,
+                                           label="Candidate panoramas (previous version only; ~55 s each)")
+                    sharp_shots = gr.Checkbox(value=True, visible=False, label="sharp shots")
+                    n_objects = gr.Slider(0, 12, value=DEFAULT_OBJECTS, step=1, visible=False, label="objects")
+                    detail = gr.Checkbox(value=False, visible=False, label="detail pass")
                 btn = gr.Button("Generate", variant="primary")
                 info = gr.Markdown()
                 with gr.Row():
                     dl_image = gr.DownloadButton("Download image (.png)")
                     dl_plan = gr.DownloadButton("Download floor plan (.svg)")
                 with gr.Row():
-                    dl_mesh = gr.DownloadButton("Download mesh (.glb)")
-                    dl_cloud = gr.DownloadButton("Download point cloud (.ply) / dollhouse (.glb)")
-                dl_dxf = gr.DownloadButton("Download floor plan (.dxf, 360° v3 / v4)")
-                dl_shots = gr.DownloadButton("Download design shots (.zip, 360° v4)")
+                    dl_mesh = gr.DownloadButton("Download 3D model (.glb)")
+                    dl_cloud = gr.DownloadButton("Download layout (.json) / point cloud (.ply)")
+                dl_dxf = gr.DownloadButton("Download floor plan (.dxf, previous version)", visible=False)
+                dl_shots = gr.DownloadButton("Download design shots (.zip)")
                 gr.Examples([[p, s] for p, s in pl.DEMO_PROMPTS], inputs=[prompt, seed], label="Example prompts")
             with gr.Column(scale=2):
                 with gr.Row():
@@ -738,16 +830,15 @@ def build() -> gr.Blocks:
                 with gr.Tabs():
                     with gr.Tab("Inside"):
                         viewer = gr.HTML(VIEWER_EMPTY)
-                    with gr.Tab("Dollhouse (360°)"):
+                    with gr.Tab("Dollhouse"):
                         doll = gr.HTML(DOLL_EMPTY)
                     with gr.Tab("Top-down"):
-                        topview = gr.Image(label="Top view (orthographic, same orientation as the floor plan; v3 / v4)",
-                                           type="numpy", height=420)
-                    with gr.Tab("360° panorama"):
-                        pano_view = gr.HTML(PANO_EMPTY)
-                    with gr.Tab("Experimental: walkable mesh"):
-                        mesh_tab = gr.HTML(MESH_EMPTY)
-                    with gr.Tab("3D: free orbit (offline)"):
+                        topview = gr.Image(label="Top view (orthographic, same orientation as the floor plan)",
+                                           type="numpy", height=480)
+                    # removed from the UI in PLAN_V6 (duplicate of Inside / tears): kept as hidden outputs
+                    pano_view = gr.HTML(PANO_EMPTY, visible=False)
+                    mesh_tab = gr.HTML(MESH_EMPTY, visible=False)
+                    with gr.Tab("Free orbit"):
                         model3d = gr.Model3D(label="Textured mesh (drag to rotate, scroll to zoom)", height=540,
                                              clear_color=[1.0, 1.0, 1.0, 1.0])
                 with gr.Accordion("Analysis: depth, edges, segmentation", open=False):
@@ -759,6 +850,9 @@ def build() -> gr.Blocks:
                         edges = gr.Image(label="Canny edges", type="numpy", height=260)
                         seg = gr.Image(label="Segmentation", type="numpy", height=260)
                     gr.Markdown("Segmentation colours: blue = wall, orange = floor, green = ceiling, pink = furniture.")
+        mode.change(lambda m: (gr.update(visible=m == QUICK), gr.update(visible=m == ROOM360)), [mode],
+                    [quick_opts, room_opts])
+        version.change(lambda v: gr.update(visible=v == V5), [version], [candidates])
         btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates, detail, n_objects, sharp_shots, quick_hires],
                   [image, plan, viewer, doll, model3d, depth, edges, seg, dl_image, dl_plan, dl_mesh, dl_cloud, info,
                    dl_dxf, topview, pano_view, pano_img, dl_shots, mesh_tab, raw_gallery],
@@ -768,5 +862,6 @@ def build() -> gr.Blocks:
 
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
-    load_models(QUICK)
-    build().queue(max_size=8).launch(server_name="127.0.0.1", server_port=7860, allowed_paths=[str(OUT)], head=HEAD)
+    # lazy loading (PLAN_V6 milestone 5): nothing is loaded at start; each request loads what its mode needs
+    build().queue(max_size=8).launch(server_name="127.0.0.1", server_port=7860, allowed_paths=[str(OUT), str(STATIC)],
+                                     head=HEAD)

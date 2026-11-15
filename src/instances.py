@@ -79,7 +79,19 @@ def family_of(id2label: dict) -> dict[int, str]:
 def load_panoptic(device, path: Path = PANOPTIC_MODEL):
     """Mask2Former Swin-L ADE20K panoptic, fp16 (~1.2 GB VRAM)."""
     from transformers import AutoImageProcessor, Mask2FormerForUniversalSegmentation
-    model = Mask2FormerForUniversalSegmentation.from_pretrained(str(path), dtype=torch.float16).to(device).eval()
+    from transformers.utils import logging as hf_logging
+    # The load report lists swin.layernorm.{weight,bias} as MISSING: that layer norm only normalises SwinModel's
+    # last_hidden_state, which SwinBackbone (Mask2Former's encoder) never uses - its features come from the
+    # per-stage hidden_states_norms, which ARE in the checkpoint (transformers lists the key in
+    # SwinBackbone._keys_to_ignore_on_load_missing). Checked: replacing that layer norm by random weights changes
+    # the class and mask logits by exactly 0.0 (results/tables/v6_mask2former_missing_weights_check.json, PLAN_V6
+    # issue 43), so the report is silenced here.
+    old = hf_logging.get_verbosity()
+    hf_logging.set_verbosity_error()
+    try:
+        model = Mask2FormerForUniversalSegmentation.from_pretrained(str(path), dtype=torch.float16).to(device).eval()
+    finally:
+        hf_logging.set_verbosity(old)
     return model, AutoImageProcessor.from_pretrained(str(path))
 
 

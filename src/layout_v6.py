@@ -248,10 +248,25 @@ class Layout:
         dist = cv2.distanceTransform(pad, cv2.DIST_L2, 5)[1:-1, 1:-1] * cell
         return dist, cell
 
-    def pano_camera(self, height: float = 1.5) -> list[float]:
-        """Point of maximum clearance (furniture and walls) at `height`."""
-        dist, cell = self.clearance_map()
-        i = np.unravel_index(np.argmax(dist), dist.shape)
+    def pano_camera(self, height: float = 1.5, clear: float = 0.5) -> list[float]:
+        """Panorama camera at `height`: among floor points >= `clear` m from every piece of furniture and from the
+        walls, the one that maximises min(wall distance, 1.5 m) + 0.3 min(furniture clearance, 1 m). (Pure maximum
+        clearance put the camera next to a wall in crowded rooms; a near blank wall then dominated the depth
+        condition and the model filled it with invented objects.) Fallback: maximum clearance."""
+        import cv2
+        occ, cell = self.occupancy()
+        free = (~occ).astype(np.uint8)
+        fclear = cv2.distanceTransform(np.pad(free, 1, constant_values=1), cv2.DIST_L2, 5)[1:-1, 1:-1] * cell
+        zz, xx = np.mgrid[0:occ.shape[0], 0:occ.shape[1]]
+        X, Z = (xx + 0.5) * cell, (zz + 0.5) * cell
+        wdist = np.minimum.reduce([X, self.W - X, Z, self.D - Z])
+        ok = (fclear >= clear + cell) & (wdist >= clear)          # + one cell: grid distances are cell-centre based
+        if not ok.any():
+            dist, _ = self.clearance_map()
+            i = np.unravel_index(np.argmax(dist), dist.shape)
+        else:
+            score = np.minimum(wdist, 1.5) + 0.3 * np.minimum(fclear, 1.0) - 0.01 * np.hypot(X - self.W / 2, Z - self.D / 2)
+            i = np.unravel_index(np.argmax(np.where(ok, score, -1e9)), score.shape)
         return [round((i[1] + 0.5) * cell, 3), height, round((i[0] + 0.5) * cell, 3)]
 
     def reachable(self) -> np.ndarray:
@@ -325,7 +340,6 @@ def _living(L: Layout):
     r.shuffle(walls)
     walls.sort(key=lambda w: -L.wall_len(w))
     for wall in walls:
-        tv_wall = OPP[wall]
         s = L.wall_len(wall) / 2 + float(r.uniform(-0.3, 0.3))
         span = L.D if wall in ("N", "S") else L.W                       # distance sofa wall -> TV wall
         if span > 5.0:                                                 # big room: float the sofa 3.2 m from the TV

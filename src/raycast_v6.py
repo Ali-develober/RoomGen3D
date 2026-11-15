@@ -27,7 +27,7 @@ class Tracer:
     def __init__(self, parts: list):
         o3d = _o3d()
         self.scene = o3d.t.geometry.RaycastingScene()
-        self.inst_of_geom, self.face_colors = [], []
+        self.inst_of_geom, self.face_colors, self.vert_colors, self.faces = [], [], [], []
         for mesh, inst in parts:
             v = np.asarray(mesh.vertices, np.float32)
             f = np.asarray(mesh.faces, np.uint32)
@@ -37,6 +37,12 @@ class Tracer:
             while len(self.inst_of_geom) <= gid:
                 self.inst_of_geom.append(-99)
                 self.face_colors.append(None)
+                self.vert_colors.append(None)
+                self.faces.append(None)
+            vc = getattr(mesh, "_vcolors", None)                  # optional per-vertex colours (smooth shading)
+            if vc is not None:
+                self.vert_colors[gid] = np.asarray(vc, np.float32)
+                self.faces[gid] = f.astype(np.int64)
             self.inst_of_geom[gid] = inst
             fc = getattr(mesh.visual, "face_colors", None) if hasattr(mesh, "visual") else None
             self.face_colors[gid] = (np.asarray(fc)[:, :3].astype(np.uint8) if fc is not None and len(fc) == len(f)
@@ -62,9 +68,16 @@ class Tracer:
                "geom": np.where(hit, gid, -1).reshape(shape), "face": face.reshape(shape)}
         if colors:
             col = np.zeros((len(t), 3), np.uint8)
+            uv = ans["primitive_uvs"].numpy()
             for g in np.unique(gid[hit]):
                 m = hit & (gid == g)
-                col[m] = self.face_colors[g][face[m]]
+                if self.vert_colors[g] is not None:                 # barycentric interpolation
+                    tri = self.faces[g][face[m]]
+                    a, b = uv[m, 0:1], uv[m, 1:2]
+                    vc = self.vert_colors[g]
+                    col[m] = np.clip(vc[tri[:, 0]] * (1 - a - b) + vc[tri[:, 1]] * a + vc[tri[:, 2]] * b, 0, 255)
+                else:
+                    col[m] = self.face_colors[g][face[m]]
             out["color"] = col.reshape(*shape, 3)
         return out
 
@@ -92,11 +105,13 @@ def cam_rotation(yaw_deg: float, pitch_deg: float = 0.0) -> np.ndarray:
     return _yaw(yaw_deg) @ Rp @ flip
 
 
-def persp_rays(yaw_deg: float, pitch_deg: float, hfov_deg: float, w: int, h: int) -> np.ndarray:
-    """World-frame unit directions (h, w, 3) of a pinhole camera."""
+def persp_rays(yaw_deg: float, pitch_deg: float, hfov_deg: float, w: int, h: int, shift: float = 0.0) -> np.ndarray:
+    """World-frame unit directions (h, w, 3) of a pinhole camera. shift = vertical lens shift as a fraction
+    of the image height (positive = window moved down): the optical axis stays level, so verticals stay
+    vertical and the horizon level (architectural shift lens), but more of the room below eye height shows."""
     f = (w / 2) / np.tan(np.deg2rad(hfov_deg) / 2)
     xs = (np.arange(w) + 0.5 - w / 2) / f
-    ys = (np.arange(h) + 0.5 - h / 2) / f
+    ys = (np.arange(h) + 0.5 - h / 2 + shift * h) / f
     X, Y = np.meshgrid(xs, ys)
     dc = np.stack([X, Y, np.ones_like(X)], -1)
     dc /= np.linalg.norm(dc, axis=-1, keepdims=True)

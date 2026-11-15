@@ -68,8 +68,12 @@ def prompts(room: str, kind: str, spacious: bool = True) -> tuple[str, str]:
 
 
 def generate(pipe, kind: str, room: str, seed: int, spacious: bool = True) -> np.ndarray:
-    """One 2048 x 1024 panorama (sd21: 1024 x 512, upscale it with Real-ESRGAN afterwards)."""
+    """One 2048 x 1024 panorama (sd21: 1024 x 512, upscale it with Real-ESRGAN afterwards).
+    PLAN_V6 issue 42: prompts are cut to the 77-token CLIP window at a word boundary before the pipeline sees them
+    (the pipeline cut them anyway; this removes the truncation warning without changing the text it used)."""
+    from .pano_v6 import fit_tokens
     p, n = prompts(room, kind, spacious)
+    p, n = fit_tokens(p), fit_tokens(n)
     if kind == "sd21":
         from . import generate_pano as gp
         return gp.generate_pano(pipe, room, seed, prompt=p, negative=n)
