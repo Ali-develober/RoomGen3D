@@ -1,0 +1,18 @@
+{
+ "weights": {
+  "w_area": 0.0,
+  "w_near": 0.0
+ },
+ "k": 3,
+ "rule": "dev: max share of rooms with a valid hero, then mean valid shots, then boxiness",
+ "dev_row": {
+  "w_area": 0.0,
+  "w_near": 0.0,
+  "set": "dev",
+  "hero_valid": 0.8,
+  "shots_valid": 0.3,
+  "area_m2": 28.12346419766842,
+  "d_near_m": 1.1554754804278082,
+  "boxiness": 0.682616403219815
+ }
+}

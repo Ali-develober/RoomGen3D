@@ -92,4 +92,5 @@ def caption(shot: dict) -> str:
         s = f"H: hero view ({m['inst']} furniture pieces, main piece {100 * m['v_main_share']:.0f} % of the frame, " \
             f"median distance {m['v_median_depth']:.1f} m)"
         return s + (f" - {shot['note']}" if shot.get("note") else "")
-    return f"{shot['letter']}: wall view" + ("" if shot.get("valid") else " (close-up)")
+    fail = [f for f in m.get("v_fail", []) if f != "main piece size"]
+    return f"{shot['letter']}: wall view" + (f" ({', '.join(fail)})" if fail else "")
