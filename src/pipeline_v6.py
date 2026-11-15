@@ -35,6 +35,7 @@ TAB = ROOT / "results" / "tables"
 DEFAULTS = {"pano": {"cond": "cn_small", "scale": 0.7, "end": 1.0, "steps": 25},
             "shots": {"strength": 0.45, "lora": True, "cn_scale": 0.8}}
 SHOT_ORDER = ["H", "H2", "A", "B", "C", "D"]
+WINDOW_FIX_BELOW = 0.5        # window presence below which the windows are repaired (src/window_fix_v6.py)
 
 
 def decision(name: str, key: str) -> dict:
@@ -85,6 +86,16 @@ class Stopwatch:
         return _C()
 
 
+def inside_yaw(lay: dict) -> float:
+    """Opening direction of the Inside viewer: from the panorama camera towards the main piece's group (the hero shot's
+    yaw is measured from the hero camera, which stands elsewhere, and from the panorama centre it often faced a wall)."""
+    main, group = CV.main_group(lay)
+    pts = [(p["cx"], p["cz"]) for p in lay["items"] if p["id"] in group] or [(lay["W"] / 2, lay["D"] / 2)]
+    tx, tz = np.mean(pts, 0)
+    c = lay["camera"]
+    return float(np.degrees(np.arctan2(tx - c[0], tz - c[2])))
+
+
 def build_scene(prompt: str, seed: int) -> tuple[dict, S.Renderer]:
     sc = S.build(LV.generate(prompt, seed))
     return sc, S.Renderer(sc)
@@ -107,6 +118,31 @@ def panorama(sc: dict, rd: S.Renderer, seed: int, device="cuda", pipe=None) -> t
         del pipe
         mem.free()
     return img, {"prompt": prompt, "control": ctrl, "tokens": P6.n_tokens(prompt), **p}
+
+
+WINDOW_ADE = (8, 18, 2)        # windowpane, curtain, sky
+
+
+def window_presence(seg: np.ndarray, rd: S.Renderer, lay: dict) -> float:
+    """Share of the proxy's window pixels (equirectangular, 1024 x 512) that the panorama's segmentation labels as
+    window, curtain or sky: 1 = every window of the layout is visible in the generated panorama."""
+    inst = rd.equirect(lay["camera"], 1024, 512)["inst"]
+    m = inst == S.WINDOW
+    if not m.any():
+        return 1.0
+    sg = cv2.resize(seg.astype(np.uint8), (1024, 512), interpolation=cv2.INTER_NEAREST)
+    return float(np.isin(sg[m], WINDOW_ADE).mean())
+
+
+def extra_windows(seg: np.ndarray, rd: S.Renderer, lay: dict, min_share: float = 0.002) -> int:
+    """Number of window / sky regions of the panorama (>= min_share of it) that touch no window of the layout."""
+    sg = cv2.resize(seg.astype(np.uint8), (1024, 512), interpolation=cv2.INTER_NEAREST)
+    win = np.isin(sg, (8, 2)).astype(np.uint8)
+    prox = cv2.dilate((rd.equirect(lay["camera"], 1024, 512)["inst"] == S.WINDOW).astype(np.uint8),
+                      np.ones((21, 21), np.uint8))
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(win, connectivity=8)
+    return int(sum(1 for k in range(1, n) if stats[k, cv2.CC_STAT_AREA] >= min_share * win.size
+                   and not (prox[lab == k] > 0).any()))
 
 
 def segment(pano: np.ndarray, device="cuda") -> np.ndarray:
@@ -134,28 +170,51 @@ def run(prompt: str, seed: int, out_dir, device="cuda", with_shots: bool = True,
             lay = sc["layout"]
         with watch.stage("panorama"):
             cached = None
-            if reuse_pano and (out_dir / "pano_2048.jpg").exists() and (out_dir / "control.png").exists():
+            if reuse_pano and (out_dir / "pano_raw_2048.jpg").exists() and (out_dir / "control.png").exists():
                 from . import pano_v6 as P6
                 e = rd.equirect(lay["camera"], 2048, 1024)
                 ctrl = S.depth_control(e["t"])
                 old = cv2.imread(str(out_dir / "control.png"))
                 if old is not None and old.shape == ctrl.shape and np.abs(old.astype(int) - ctrl.astype(int)).max() <= 1:
-                    img = cv2.cvtColor(cv2.imread(str(out_dir / "pano_2048.jpg")), cv2.COLOR_BGR2RGB)
+                    img = cv2.cvtColor(cv2.imread(str(out_dir / "pano_raw_2048.jpg")), cv2.COLOR_BGR2RGB)
                     prompt_p = P6.pano_prompt(lay)
                     cached = (img, {"prompt": prompt_p, "control": ctrl, "tokens": P6.n_tokens(prompt_p), "cached": True,
                                     **decision("v6_pano_decision.json", "pano")})
             pano, pinfo = cached if cached else panorama(sc, rd, seed, device)
         log(f"panorama {watch.s['panorama']:.0f} s")
-        with watch.stage("esrgan_seg"):
-            esr = gp.load_esrgan(device)
-            hires = gp.esrgan_upscale(esr, pano)                     # 4096 x 2048 for the Inside viewer
+        raw_pano = pano.copy()
+        with watch.stage("segmentation"):
             seg = segment(pano, device)
+            res["window_presence"] = window_presence(seg, rd, lay)
+            res["extra_windows"] = extra_windows(seg, rd, lay)
+            log(f"[v6] window presence {res['window_presence']:.2f}, extra window regions {res['extra_windows']}")
         with watch.stage("cameras"):
             cams = CV.choose_cameras(rd, lay)
         shots = {}
+        sp = decision("v6_shots_decision.json", "shots")
+        need_fix = res["window_presence"] < WINDOW_FIX_BELOW
+        from . import window_fix_v6 as WF
+        need_remove = res["extra_windows"] > 0
+        pipe = None
+        if with_shots or need_fix or need_remove:
+            with watch.stage("shots"):
+                pipe = SR.load_cn_img2img(device, lora=bool(sp["lora"]))
+        if need_fix or need_remove:
+            with watch.stage("window_fix"):
+                from . import pano_v6 as P6
+                mat, pal = P6.style_words(lay["style"])
+                if need_fix:
+                    pano, res["window_fix"] = WF.fix_windows(pano, rd, lay, pipe, f"{lay['style']} style, {mat}", seed)
+                if need_remove:
+                    pano, res["window_removed"] = WF.remove_extra_windows(pano, seg, rd, lay, pipe,
+                                                                          f"{lay['style']} style, {pal}", seed)
+                seg = segment(pano, device)
+                res["window_presence_fixed"] = window_presence(seg, rd, lay)
+                res["extra_windows_after"] = extra_windows(seg, rd, lay)
+                log(f"[v6] after the repair: window presence {res['window_presence_fixed']:.2f}, "
+                    f"extra window regions {res['extra_windows_after']}")
         if with_shots:
             with watch.stage("shots"):
-                sp = decision("v6_shots_decision.json", "shots")
                 raws = {}
                 for name in SHOT_ORDER:
                     cam = cams.get(name)
@@ -166,21 +225,23 @@ def run(prompt: str, seed: int, out_dir, device="cuda", with_shots: bool = True,
                 from . import dollhouse_v5 as dh5
                 inits = {n: SH.fill_holes(raw, vis, device) for n, (raw, vis, r) in raws.items()}
                 dh5.free_lama()
-                mem.free()
-                pipe = SR.load_cn_img2img(device, lora=bool(sp["lora"]))
                 prompt_s = SH.shot_prompt(lay, "H")
                 for k, (n, (raw, vis, r)) in enumerate(raws.items()):
                     base = SH.rerender(pipe, inits[n], r["z"], prompt_s, float(sp["strength"]), seed + k,
                                        float(sp.get("cn_scale", SR.CN_SCALE)))
                     shots[n] = {"base": base, "raw": raw, "init": inits[n], "hole_share": float(1 - vis.mean())}
-                mem.free(pipe)
-                del pipe
-                mem.free()
-                for n in shots:
-                    shots[n]["image"] = SR.upscale(esr, shots[n]["base"])
-        mem.free(esr)
-        del esr
-        mem.free()
+        if pipe is not None:
+            mem.free(pipe)
+            del pipe
+            mem.free()
+        with watch.stage("upscale"):
+            esr = gp.load_esrgan(device)
+            hires = gp.esrgan_upscale(esr, pano)                     # 4096 x 2048 for the Inside viewer
+            for n in shots:
+                shots[n]["image"] = SR.upscale(esr, shots[n]["base"])
+            mem.free(esr)
+            del esr
+            mem.free()
         with watch.stage("dollhouse"):
             tp = DH.textured_parts(rd, sc, pano, seed, seg)
             DH.export_glb(tp, out_dir / "dollhouse_v6.glb")
@@ -191,6 +252,8 @@ def run(prompt: str, seed: int, out_dir, device="cuda", with_shots: bool = True,
             plan = PV.draw(lay, out_dir / "floorplan_v6.png", shots=plan_shots, models=sc["models"])
             PV.draw(lay, out_dir / "floorplan_v6.svg", shots=plan_shots, models=sc["models"])
             cv2.imwrite(str(out_dir / "pano_2048.jpg"), cv2.cvtColor(pano, cv2.COLOR_RGB2BGR), [cv2.IMWRITE_JPEG_QUALITY, 95])
+            cv2.imwrite(str(out_dir / "pano_raw_2048.jpg"), cv2.cvtColor(raw_pano, cv2.COLOR_RGB2BGR),
+                        [cv2.IMWRITE_JPEG_QUALITY, 95])                 # as generated, before any window repair
             cv2.imwrite(str(out_dir / "pano_4096.jpg"), cv2.cvtColor(hires, cv2.COLOR_RGB2BGR), [cv2.IMWRITE_JPEG_QUALITY, 92])
             cv2.imwrite(str(out_dir / "topdown_v6.png"), cv2.cvtColor(top, cv2.COLOR_RGB2BGR))
             cv2.imwrite(str(out_dir / "control.png"), pinfo["control"])
@@ -199,12 +262,15 @@ def run(prompt: str, seed: int, out_dir, device="cuda", with_shots: bool = True,
                 cv2.imwrite(str(out_dir / "shots" / f"{n}.jpg"), cv2.cvtColor(s["image"], cv2.COLOR_RGB2BGR),
                             [cv2.IMWRITE_JPEG_QUALITY, 93])
                 cv2.imwrite(str(out_dir / "shots" / f"{n}_reprojected.jpg"), cv2.cvtColor(s["raw"], cv2.COLOR_RGB2BGR))
-            hero = cams["H"]
-            PVW.save_viewer(out_dir / "inside_v6.html", hires, None, hero["yaw"], 80.0, title=prompt)
+            PVW.save_viewer(out_dir / "inside_v6.html", hires, None, inside_yaw(lay), 80.0, title=prompt)
             LV.save(lay, out_dir / "layout.json")
             meta = {"cameras": {n: c for n, c in cams.items() if c is not None}, "models": sc["models"],
                     "pano": {k: v for k, v in pinfo.items() if k != "control"},
-                    "seen_share": tp["tex"]["seen"], "pieces": len(lay["items"])}
+                    "seen_share": tp["tex"]["seen"], "pieces": len(lay["items"]),
+                    "window_presence": res.get("window_presence"),
+                    "window_presence_after_fix": res.get("window_presence_fixed"), "window_fix": res.get("window_fix"),
+                    "extra_windows": res.get("extra_windows"), "extra_windows_after": res.get("extra_windows_after"),
+                    "window_removed": res.get("window_removed")}
             (out_dir / "summary_v6.json").write_text(json.dumps(meta, indent=1, default=float))
     res.update({"layout": lay, "scene": sc, "pano": pano, "hires": hires, "seg": seg, "cams": cams, "shots": shots,
                 "plan": plan, "topdown": top, "dir": out_dir, "timing": dict(watch.s), "peak_ram_gb": pm.peak_ram_gb,

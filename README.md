@@ -1062,6 +1062,48 @@ Decisions and negative results (details in `PROGRESS.md`): SDXL was adopted alth
 
 Figures: before / after per demo room (v4 vs v5: hero, hero at 100 %, Inside, dollhouse; headed Chromium) `results/figures/v5_before_after_<room>.png` and `v5_before_after_overview.png`; Inside viewer `v5_inside_<room>.png`; shot re-render crops `v5_shots_crops.png`; panorama sources `v5_pano_views.png`, `v5_pano_crops_dev.jpg`; mesh walking limit `v5_viewer_mesh.png`; Quick hires `v5_quick_crops.png`.
 
+### PLAN_V6: scene first, image second (default 360° mode)
+The owner's verdict on v5 (dining room seed 44, coastal bedroom seed 22): bent lines, melted chairs, a split oversized table, glass walls / a sea view for "coastal", a 7 x 7 m room with a 3.9 m ceiling, a low camera touching furniture, two-piece dollhouses, an unreadable top-down, 221-237 s per room. Root cause: v5 generated an image first and then estimated the room from it. v6 reverses the order, as in Ctrl-Room (Fang et al., arXiv:2310.03602): **layout -> proxy 3D scene -> depth-conditioned generation**, so geometry, sizes, furniture, floor plan and cameras are known by construction (`src/pipeline_v6.py`; v5 stays callable):
+
+```
+prompt + seed -> layout by interior-design rules (room size per type, ceiling 2.6-3.0 m, one door, 1-2 windows,
+                 wall-aligned pieces: bed + nightstands, table + chairs facing it, sofa facing TV unit, counter run...)
+                                                                                     (src/layout_v6.py, 9 unit tests)
+  -> proxy scene: shell with real openings, frames, fabric curtains, pendant / ceiling light, wall art,
+     47 CC0 furniture models (Kenney, Poly Haven) fitted to the footprints         (src/assets_v6.py, src/scene_v6.py)
+  -> CPU ray casting (Open3D): depth, normals, instance ids, any camera             (src/raycast_v6.py)
+  -> SDXL + 360Redmond + depth ControlNet small (scale 0.9) on the proxy depth, 2048 x 1024, circular padding,
+     style words -> materials + palette + floor, <= 77 CLIP tokens                 (src/pano_v6.py)
+  -> window check: missing windows inpainted, invented windows removed (LaMa)      (src/window_fix_v6.py)
+  -> cameras in the scene: hero / H2 from corners or the doorway, wall views A-D, 1.5 m, level with lens shift,
+     validity from instance ids                                                    (src/cameras_v6.py)
+  -> shots: panorama reprojected through the proxy (z-buffer) -> LaMa holes -> SD 1.5 + depth ControlNet img2img
+     (strength 0.55) on the exact depth -> Real-ESRGAN 1536 x 1152                 (src/shots_v6.py)
+  -> dollhouse (textured proxy, real openings, coloured furniture models) + top-down (src/dollhouse_v6.py)
+  -> floor plan from the layout with every view cone                               (src/plan_v6.py)
+```
+
+| Milestone | Metric | Data | v5 | v6 |
+|---|---|---|---|---|
+| 1 scene | layout rule violations / missing required pieces | 1400 layouts | – | **0 / 0** |
+| 2 panorama | KID ×10³ vs MMIS hold-out | dev / held-out / demo | 70.2 / 69.0 / 51.9 | **50.2 / 66.0 / 45.5** |
+| 2 panorama | CLIP | dev / held-out / demo | **21.3 / 22.3 / 23.6** | 21.1 / 22.2 / 20.6 |
+| 2 panorama | depth agreement with the scene (δ1) | dev / held-out / demo | – | 0.97 / 0.99 / 0.99 |
+| 2 panorama | straight-line share / BRISQUE of views (same code) | demo | 0.34 / **40.9** | **0.49** / 43.9 |
+| 2 panorama | window share generated / scene | demo | (owner: "every wall glass") | 0.035 / 0.046 |
+| 3 shots | valid shots (main group 15-50 %, near < 15 %, floor < 35 %) | demo | 0.23 | **36 / 36** |
+| 3 shots | consistency with the panorama (ΔLab / LPIPS, co-visible) | dev | – | 4.6 / 0.15 |
+| 3 shots | our LoRA vs none (same pipeline, s 0.55): KID / CLIP / BRISQUE | dev | – | 44.0 / 24.2 / 35.0 vs 53.5 / 23.9 / 32.9 |
+| 4 dollhouse | furniture pieces = layout | demo rooms | coastal bedroom: 2 blocks | **6 / 6 rooms** |
+| 4 dollhouse | residual furniture / noise / BRISQUE of wall + floor textures | demo | **1.5 % / 0.24 / 56.0** | 6.0 % / 0.52 / 57.5 |
+| 4 plan | plan / shot agreement | 152 pairs | – | 73 % |
+| 5 app | 360° request, fresh process; VRAM; RAM | dining 44 | 212 s; 6.2 GB; 10.6 GB | **128 s** (136 s with window repair); 6.5 GB; 11.2 GB |
+
+Decisions and negative results (details in `PROGRESS.md`): the ControlNet-mid and the T2I-Adapter lost to ControlNet-small 0.9 by mean rank (the ranking rule was written after the sweep); weaker conditioning split the 8-seat table into two tables; the depth condition had to be redesigned after looking at the first panoramas (window backdrop instead of a flat pane, fabric curtains instead of box pleats, a camera away from blank near walls); moving the window phrase forward in the prompt did not bring back painted-over windows (the repair does); a border-crop penalty for cameras made the wall views worse (reverted); IP-Adapter was not tested (disk floor). In the shots our LoRA ties with the no-LoRA pipeline on the rank (better KID / CLIP, softer) and the tie went to the no-LoRA config by the consistency priority. The milestone-2 metrics predate the final prompt order and the window repair. Screens: `results/figures/v6_review_r13_<room>.png` (every view, headed Chromium), `v6_before_after_<room>.png` and `v6_before_after_overview.png`, `v6_scene_demo.png`, `v6_assets_sheet.png`, `v6_ui_*_arabic_locale.png`. Acceptance list: `PLAN_V6.md`.
+
+### Demo modes (v6)
+**360° Room** runs **v6, scene first** by default (toggle: image first = v5). Top: gallery of the design shots (H, H2, A-D; captions say whether each passes the framing test) next to the floor plan with every camera and view cone. Tabs: **Inside** (panorama viewer, opens towards the main furniture, offline), **Dollhouse** (textured scene, real furniture models; local model-viewer, offline), **Top-down** (orthographic, plan orientation), **Free orbit**. Analysis: the reprojected shots before re-rendering, panorama, depth condition, edges, segmentation. **Quick** keeps its Steps / CFG / hires options, shown only in Quick. Nothing loads at start; the app makes no Hub requests once the models are local.
+
 ### Demo modes (v5)
 **360° Room** runs **v5** by default (switch v5 / v4 / v3 / v2). Top: gallery of the re-rendered design shots (1536 × 1152, hero first, captions say whether the view passes the distance test) next to the floor plan with view cones. Tabs: **Inside** (panorama viewer: drag to turn, scroll to zoom, double-click returns to the hero; works offline), **Dollhouse**, **Top-down**, **360° panorama**, **Experimental: walkable mesh** (the v4 depth mesh, at most 5 cm from the centre), free orbit. Analysis: the raw shot crops before re-rendering, panorama, depth, edges, segmentation. Candidates default 2 (~55 s per SDXL panorama). **Quick** has a hires pass checkbox (default on). App test `scripts/test_app_v5.py` (`results/tables/v5_app_test.csv`): Quick 31 s (4.6 GB), v5 212 s in a fresh process / 527 s right after a Quick request (6.2 GB VRAM, 10.6 GB RAM), v4 69 s; all pass.
 
@@ -1139,6 +1181,18 @@ RoomGen3D/
 │   ├── pano_viewer.py         # offline WebGL2 panorama viewer (Inside view)
 │   ├── dollhouse_v5.py        # furniture-free plane textures (LaMa), flat-coloured hidden block faces
 │   ├── quick_v5.py            # Quick-mode hires pass
+│   ├── layout_v6.py           # v6 (default 360°): rule-based layouts (oriented, wall-aligned pieces, tests in tests/)
+│   ├── assets_v6.py           # CC0 furniture library (Kenney + Poly Haven; assets/LICENSES.md, scripts/download_assets_v6.py)
+│   ├── scene_v6.py            # proxy 3D scene: shell with real openings + fitted furniture models
+│   ├── raycast_v6.py          # CPU ray casting (Open3D): depth, normals, instance ids, colours
+│   ├── pano_v6.py             # SDXL + 360Redmond + depth ControlNet on the proxy depth; style words; token limits
+│   ├── window_fix_v6.py       # missing windows inpainted, invented windows removed
+│   ├── cameras_v6.py          # design-shot cameras placed in the scene (lens shift, validity from instance ids)
+│   ├── shots_v6.py            # panorama reprojected through the proxy + depth-ControlNet re-render
+│   ├── dollhouse_v6.py        # textured proxy dollhouse + orthographic top-down
+│   ├── plan_v6.py             # floor plan drawn from the layout with every view cone
+│   ├── pipeline_v6.py         # the v6 request (one GPU model at a time)
+│   ├── views_v6.py, local_models.py   # aligned panorama views; local snapshot paths (no Hub requests)
 │   └── memory.py              # RAM / VRAM helpers (free, wait_for_ram, PeakMonitor)
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
@@ -1229,6 +1283,7 @@ Version 5 (PLAN_V5.md):
 - **v3 (PLAN_V3):** the room is always one rectangle and the furniture always boxes (hidden faces repeat the visible side's texture); hidden wall / floor regions are inpainted smoothly (Navier–Stokes was chosen by SSIM; the patch fill keeps more texture). Doors and windows are rarely found on generated images. The box fit takes the farthest strong wall peak, which fixes rooms cut by furniture fronts but boxes open-plan panoramas around the neighbouring spaces (dining 74.7 m²). All v3 numbers come from layout-conditioned panoramas whose images follow the layout only approximately; the selection of the best of k panoramas favours one "look" and reduces variety.
 - **v4 (PLAN_V4):** all design shots and the inside view share one camera (the panorama centre, ~1.2 m high); moving it would open disocclusion holes. The hero choice is better than a fixed wall but far from the oracle (1.35 vs 2.25 pieces). Generated 3D furniture (TripoSR, single cropped view) does not beat boxes, so the dollhouse is still mostly blocks plus relief shells that can look like floating fragments. Open-plan rooms are now marked "open" but stay large, because furniture seen in the adjoining space cannot be assigned. Doors and windows remain rarely detected. The img2img detail pass costs ~75–90 s per room. Real-browser numbers come from scripted camera poses, not mouse interaction.
 - **v5 (PLAN_V5):** the 360° mode needs ~3.5 min per room (two SDXL candidates) and ~11 GB of RAM, so every other model is unloaded first; right after another request it can take ~9 min (RAM pressure). SDXL rooms are less box-like and repeat furniture (several beds / tables); the camera stays at the panorama height (~1.0-1.1 m), and walking in the 3D room is not possible (the mesh tears after 5 cm). Re-rendered shots invent small content (glassware, ceiling shapes) where the depth allows. The dollhouse is clean of smeared furniture, but most of each floor / wall is unseen from one viewpoint and its LaMa fill looks grey; rejected furniture (e.g. the bathroom's bathtub) is missing.
+- **v6 (PLAN_V6):** layouts come from rules and a fixed library of 47 CC0 furniture models, so variety is lower than free generation: every bedroom has a bed against a wall with two nightstands, every dining table is rectangular with chairs on its long sides, and a style can only choose among 1-4 models per class (low-poly Kenney models for kitchens and bathrooms). The panorama follows the scene's depth but repaints materials freely: small pieces (toilet, stove, vanity) are drawn poorly or not at all (plan / shot agreement 73 %), the panorama model sometimes paints windows over or invents new ones (repaired afterwards, +9-18 s), and in dense rooms foreground chairs are cut by the frame. The camera of the Inside view stays at one point (rotation only); in rooms whose free floor is near a wall, two of the four directions face a near wall. 42 % of the dollhouse wall / floor area is never seen from the panorama and is synthesised (quilted floor, smooth walls), and the dollhouse texture measures of v5 (residual furniture, noise, BRISQUE) are worse because real wall texture and wall art are kept. A room still needs ~2.2 min and ~11 GB of RAM.
 - Training on a subset of MMIS due to compute limits.
 - The 3D stage uses a metric depth model, but its absolute scale is only approximate (AbsRel 0.22 without alignment on NYU), and the camera field of view (60°) is assumed, so sizes in the 3D model are rough.
 - Classical preprocessing did **not** improve depth accuracy on clean NYU Depth V2 images: modern depth networks are already robust to moderate noise, blur and low light. Only noise-gated denoising helps, and only under strong noise (σ ≥ 25); nothing tested helps against blur. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.

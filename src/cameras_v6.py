@@ -67,9 +67,11 @@ def evaluate(rd: S.Renderer, lay: dict, pos, yaw: float, hfov: float, group: set
     pieces = len({int(i) - S.FURN0 for i in np.unique(inst[furn])
                   if (inst == i).sum() > 0.003 * n})
     med = float(np.median(np.nan_to_num(z, nan=10, posinf=10)))
+    border = np.concatenate([furn[:, :3].ravel(), furn[:, -3:].ravel(), furn[-3:, :].ravel()])
+    border_furn = float(border.mean())                       # furniture cut by the left / right / bottom frame edge
     return {"pos": [float(pos[0]), float(pos[1]), float(pos[2])], "yaw": float(yaw), "hfov": float(hfov),
             "vfov": float(vfov), "shift": float(shift), "main_share": main_share, "near_share": near, "floor_share": floor,
-            "pieces": pieces, "median_depth": med, "furn_share": float(furn.mean())}
+            "pieces": pieces, "median_depth": med, "furn_share": float(furn.mean()), "border_furn": border_furn}
 
 
 def valid(m: dict, hero: bool) -> bool:

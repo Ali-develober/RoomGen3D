@@ -90,47 +90,50 @@ measured and written in PROGRESS.md, plus a web search for alternatives.
 
 ## Acceptance list
 
-Status: OPEN / FIXED (round, evidence) / CANNOT FIX (evidence).
+Status after review round 13 (rounds 1-13 in PROGRESS.md). Evidence: headed-Chromium sheets
+`results/figures/v6_review_r13_<room>.png` (every shot, Inside at 0 / 90 / 180 / 270 deg, dollhouse from two angles,
+top-down, plan) for all six demo rooms, which include the owner rooms (dining seed 44, coastal bedroom seed 22);
+before / after `results/figures/v6_before_after_<room>.png`; numbers in `results/tables/v6_summary.csv`.
 
 | # | Area | Issue | Status | Evidence |
 |---|---|---|---|---|
-| 1 | Inside | straight lines are curved (window frames, ceiling, curtain rod) | OPEN | |
-| 2 | Inside | chairs deformed, legs melted, merged | OPEN | |
-| 3 | Inside | table irregular and oversized | OPEN | |
-| 4 | Inside | camera low (0.95-1.05 m) and touching furniture | OPEN | |
-| 5 | Inside | floor tiles warped | OPEN | |
-| 31 | Inside | furniture melted into blobs | OPEN | |
-| 33 | Inside | horizon tilted, outside view differs between windows | OPEN | |
-| 34 | Inside | almost every wall is glass; "coastal" read as a sea view instead of a style | OPEN | |
-| 6 | Selection | candidate chosen on a trivial boxiness difference | OPEN | |
-| 7 | Measure | room size wrong (7 × 7 m, 3.86 m ceiling; depth sees through glass) | OPEN | |
-| 8, 38 | Measure | boxiness low | OPEN | |
-| 9, 39 | Measure | only 2 of 5 shots pass the distance test | OPEN | |
-| 10 | Plan | furniture at random angles, not wall-aligned | OPEN | |
-| 11 | Plan | table drawn huge over a chair and the camera; second table under two chairs | OPEN | |
-| 12 | Plan | cabinets floating mid-room | OPEN | |
-| 13 | Plan | furniture clustered, rest empty | OPEN | |
-| 14 | Plan | labels overlap | OPEN | |
-| 15 | Plan | hero cone drawn differently, H2 missing | OPEN | |
-| 16 | Plan | unexplained dimension lines; scale bar too short | OPEN | |
-| 17 | 2D shots | shot does not match the panorama (carpet vs tiles, different windows) | OPEN | |
-| 18 | 2D shots | broken furniture (orphan chair leg, missing parts, chair melted into table) | OPEN | |
-| 19 | 2D shots | nonsense wall decor, distorted mirror | OPEN | |
-| 20 | 2D shots | camera low, floor fills half the frame, furniture cropped at the sides | OPEN | |
-| 24, 37 | Dollhouse | only 2 furniture pieces found in a bedroom | OPEN | |
-| 25 | Dollhouse | furniture is plain boxes with broken texture | OPEN | |
-| 26 | Dollhouse | floor is inpainting patches and a stretched light streak | OPEN | |
-| 27 | Dollhouse | walls stretched, windows small, deformed, misplaced | OPEN | |
-| 28 | Dollhouse | large grey-blue fills | OPEN | |
-| 29 | Top-down | blurry unreadable blob | OPEN | |
-| 30 | Top-down | title says v3 / v4 | OPEN | |
-| 21 | UI | button labels say v3 / v4 | OPEN | |
-| 22 | UI | Quick-only option shown in 360 mode | OPEN | |
-| 23 | Run | 221-237 s per room | OPEN | |
-| 35 | UI | "360 panorama" tab duplicates "Inside" | OPEN | |
-| 36 | UI | walkable mesh tears even at 5 cm | OPEN | |
-| 40 | UI | CFG number renders as Arabic-Indic digits ("V.o") | OPEN | |
-| 41 | Run | Quick models load at startup even for 360 mode | OPEN | |
-| 42 | Run | prompt exceeds 77 CLIP tokens and is truncated | OPEN | |
-| 43 | Run | Mask2Former loads with MISSING weights (swin layernorm) | OPEN | |
-| 44 | Run | unauthenticated Hub requests on every start; SD 1.5 loaded three times per request | OPEN | |
+| 1 | Inside | straight lines are curved | FIXED (r1) | Inside views of all rooms: window frames, ceiling edges, curtain rods straight (a straight rod is part of the proxy); straight-line share demo 0.34 (v5) -> 0.49 |
+| 2 | Inside | chairs deformed, legs melted, merged | FIXED (r1) | dining 44 inside_0, H, H2: eight separate chairs with legs; proxy uses real chair models |
+| 3 | Inside | table irregular and oversized | FIXED (r1) | one rectangular 1.9-2.0 m table sized to the room (layout rule), dining 44 inside_0 / plan; weak conditioning split it in two (sweep) -> scale 0.9 |
+| 4 | Inside | camera low and touching furniture | FIXED (r1) | camera 1.5 m, >= 0.5 m from furniture and walls (unit test test_camera_clearance) |
+| 5 | Inside | floor tiles warped | FIXED (r1) | kitchen 33 / Mediterranean 66 Inside and shots: regular terracotta tiles |
+| 31 | Inside | furniture melted into blobs | FIXED (r1) | no blobs in any Inside view; instance presence demo 64 % |
+| 33 | Inside | horizon tilted, outside view differs | FIXED (r6) | level viewer and level panorama; outside views all greenery; windows repaired in place (window presence 1.0) |
+| 34 | Inside | glass walls; "coastal" read as sea view | FIXED (r1) | window share generated 0.035 vs proxy 0.046 (demo); coastal 22 = white oak, linen, a sea PICTURE, no sea view |
+| 6 | Selection | candidate chosen on trivial boxiness | FIXED (design) | no candidate search in v6: the scene is designed first |
+| 7 | Measure | room size wrong | FIXED (design) | dining 44 is 3.92 x 5.02 m, ceiling 2.71 m by construction (plan title) |
+| 8, 38 | Measure | boxiness low | FIXED (design) | the room is the proxy box; panorama depth delta1 0.99 vs the proxy (demo) |
+| 9, 39 | Measure | only 2 of 5 shots pass | FIXED (r1) | 36 / 36 shots valid (H, H2, A-D in six rooms) |
+| 10 | Plan | random angles | FIXED (r1) | yaw in {0, 90, 180, 270} by construction (unit test) |
+| 11 | Plan | table over chair and camera; second table | FIXED (r1) | plan drawn from the layout; no overlaps in 1400 layouts |
+| 12 | Plan | cabinets floating mid-room | FIXED (r1) | cabinets / wardrobes / shelves have a wall (wall_align test) |
+| 13 | Plan | furniture clustered | FIXED (r1) | groups spread by rules; living-room ranges narrowed (4.0-5.2 x 4.4-5.8 m) |
+| 14 | Plan | labels overlap | FIXED (r3) | label collision avoidance + camera markers >= 0.6 m apart; all r13 plans |
+| 15 | Plan | hero cone different, H2 missing | FIXED (r1) | H, H2, A-D same cone style at true positions |
+| 16 | Plan | unexplained dimension lines; scale bar short | FIXED (r2) | overall dimensions only; 2 m scale bar from 3.5 m width (~half the room) |
+| 17 | 2D shots | shot does not match the panorama | FIXED (r6) | shots are the panorama reprojected through the proxy, then re-rendered (dLab 4.6, LPIPS 0.15 on co-visible pixels); windows / floors match across shots and Inside |
+| 18 | 2D shots | broken furniture | FIXED (r1), see weak points | no orphan legs / melted chairs in any r13 shot; small pieces (toilet, stove, vanity) are drawn poorly or not recognised (plan / shot agreement 73 %) |
+| 19 | 2D shots | nonsense wall decor, distorted mirror | FIXED (r10) | wall art proxies give plausible pictures; removed from kitchens (they became extra windows / niches); no mirrors |
+| 20 | 2D shots | camera low, floor half the frame, cropped | FIXED (r1), see weak points | 1.5 m, level with lens shift, floor < 35 %; dense dining room still cuts foreground chairs at the frame edge (border penalty tried and reverted, r12) |
+| 24, 37 | Dollhouse | only 2 pieces in a bedroom | FIXED (r2) | furniture count = layout in 6 / 6 rooms (coastal bedroom: 6 pieces) |
+| 25 | Dollhouse | plain boxes, broken texture | FIXED (r2) | CC0 furniture models coloured from the panorama, smooth vertex colours |
+| 26 | Dollhouse | inpainting patches, light streak | FIXED (r4) | nadir and highlights excluded, quilted floor colour-matched; r13 dollhouses |
+| 27 | Dollhouse | walls stretched, windows small / misplaced | FIXED (r2) | windows and door are the layout's real openings with frames and curtains |
+| 28 | Dollhouse | grey-blue fills | FIXED (r2) | unseen wall = the wall's own low-frequency colour |
+| 29 | Top-down | blurry blob | FIXED (r5) | orthographic render >= 1024 px both sides, furniture outlines, plan orientation |
+| 30 | Top-down | title says v3 / v4 | FIXED (M5) | tab label "Top view (orthographic, same orientation as the floor plan)" |
+| 21 | UI | labels say v3 / v4 | FIXED (M5) | `results/figures/v6_ui_360_arabic_locale.png`: "Scene first ... (default)" / "Image first ... (previous version)" |
+| 22 | UI | Quick-only option in 360 mode | FIXED (M5) | same screenshot: no Steps / CFG / hires in 360 mode |
+| 23 | Run | 221-237 s per room | FIXED (M5) | fresh process 128 s (dining 44), 136 s with window repair (coastal 22); `v6_app_test.csv` |
+| 35 | UI | duplicate panorama tab | FIXED (M5) | tabs Inside / Dollhouse / Top-down / Free orbit |
+| 36 | UI | walkable mesh tears | FIXED (M5) | tab removed from the UI (code kept) |
+| 40 | UI | CFG in Arabic-Indic digits | FIXED (M5) | `v6_ui_quick_arabic_locale.png` (ar-EG locale: 22, 30, 7.5) vs `..._before_fix.png` |
+| 41 | Run | Quick models load at startup | FIXED (M5) | app test: startup_models empty; nothing loads until a request |
+| 42 | Run | prompt > 77 tokens truncated | FIXED (M5) | v6 prompts asserted <= 77; v5 prompts cut at a word boundary; 0 truncation warnings in all app tests |
+| 43 | Run | Mask2Former MISSING weights | FIXED (proof) | the layer is unused by SwinBackbone: random weights change logits by 0.0 (`v6_mask2former_missing_weights_check.json`); report silenced |
+| 44 | Run | Hub requests; SD 1.5 loaded 3x | FIXED (M5) | offline mode + local snapshot paths: 0 Hub lines; one SDXL + one SD 1.5 load per v6 request |

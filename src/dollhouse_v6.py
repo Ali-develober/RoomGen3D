@@ -323,6 +323,7 @@ def export_glb(tp: dict, path) -> None:
 def topdown(tp: dict, scene: dict, px_per_m: float = 220.0, margin: float = 0.25) -> np.ndarray:
     """Orthographic top view of the textured dollhouse (x right, z up), with instance outlines."""
     lay = tp["layout"]
+    px_per_m = max(px_per_m, 1040.0 / (min(lay["W"], lay["D"]) + 2 * margin))   # >= 1024 px on both sides
     parts = [(m, i) for m, i in tp["furniture"]] + [(m, i) for m, i in tp["struct"] if i != S.LAMP]
     walls = []
     t = 0.12

@@ -1,0 +1,153 @@
+room,shot,cls,share,cover,present
+a_contemporary_style_living_room_s11,H,sofa,0.13875325520833334,0.9972303681981102,True
+a_contemporary_style_living_room_s11,H,TV unit,0.033148871527777776,0.430987452264048,False
+a_contemporary_style_living_room_s11,H,television,0.01284224898726852,0.8389368069001937,True
+a_contemporary_style_living_room_s11,H,coffee table,0.013287579571759259,0.05750255188839742,False
+a_contemporary_style_living_room_s11,H,armchair,0.0722950122974537,0.8309308652012132,True
+a_contemporary_style_living_room_s11,H,armchair,0.020835593894675927,0.9429315395464902,True
+a_contemporary_style_living_room_s11,H,shelf,0.010337547019675927,0.18150010933741526,False
+a_contemporary_style_living_room_s11,H2,sofa,0.14303023726851852,0.9979453786825135,True
+a_contemporary_style_living_room_s11,H2,TV unit,0.028110080295138888,0.9926819461198231,True
+a_contemporary_style_living_room_s11,H2,television,0.015213577835648149,0.0,False
+a_contemporary_style_living_room_s11,H2,coffee table,0.016106499565972224,0.05585964912280702,False
+a_contemporary_style_living_room_s11,H2,armchair,0.02098479094328704,0.519013250026931,True
+a_contemporary_style_living_room_s11,H2,armchair,0.07197175202546297,0.9910170236823921,True
+a_contemporary_style_living_room_s11,A,sofa,0.06710024233217593,0.9534750530606745,True
+a_contemporary_style_living_room_s11,A,TV unit,0.022614655671296297,0.0,False
+a_contemporary_style_living_room_s11,A,coffee table,0.014775028935185185,0.8679620563035496,True
+a_contemporary_style_living_room_s11,A,armchair,0.027185510706018517,0.5044071179111924,True
+a_contemporary_style_living_room_s11,A,armchair,0.020430953414351853,0.5091834476654127,True
+a_contemporary_style_living_room_s11,A,shelf,0.030329951533564815,0.3536558097935455,False
+a_contemporary_style_living_room_s11,B,TV unit,0.05595115379050926,0.9494969900206053,True
+a_contemporary_style_living_room_s11,B,television,0.017666286892361112,0.2927703134996801,False
+a_contemporary_style_living_room_s11,C,sofa,0.06767216435185185,0.9871392303580973,True
+a_contemporary_style_living_room_s11,C,TV unit,0.02221453631365741,0.2884908924391981,False
+a_contemporary_style_living_room_s11,C,coffee table,0.017908166956018517,0.10603382984094925,False
+a_contemporary_style_living_room_s11,C,armchair,0.02081298828125,0.13804713804713806,False
+a_contemporary_style_living_room_s11,D,sofa,0.07851381655092593,0.0036853622020039155,False
+a_contemporary_style_living_room_s11,D,coffee table,0.016739456741898147,0.562187711006077,True
+a_contemporary_style_living_room_s11,D,armchair,0.0812084056712963,0.7592417325464871,True
+a_contemporary_style_living_room_s11,D,armchair,0.043084038628472224,0.9741329555590534,True
+a_contemporary_style_living_room_s11,D,shelf,0.07109013310185185,0.8863202747392521,True
+a_coastal_style_bedroom_s22,H,bed,0.29355423538773145,0.9280142308195812,True
+a_coastal_style_bedroom_s22,H,wardrobe,0.1556419089988426,0.9813800816255392,True
+a_coastal_style_bedroom_s22,H,shelf,0.05996138961226852,1.0,True
+a_coastal_style_bedroom_s22,H2,bed,0.28916196469907407,0.93749804559242,True
+a_coastal_style_bedroom_s22,H2,nightstand,0.011542426215277778,0.8350959655307482,True
+a_coastal_style_bedroom_s22,H2,armchair,0.034333405671296294,0.8557413747695549,True
+a_coastal_style_bedroom_s22,A,wardrobe,0.20511429398148148,0.29269529183565507,False
+a_coastal_style_bedroom_s22,A,armchair,0.016710069444444444,0.0,False
+a_coastal_style_bedroom_s22,A,shelf,0.036327220775462965,0.4108276291225887,False
+a_coastal_style_bedroom_s22,B,bed,0.16099039713541666,0.9716781105634891,True
+a_coastal_style_bedroom_s22,B,nightstand,0.01238109447337963,0.9749863063721015,True
+a_coastal_style_bedroom_s22,B,wardrobe,0.09489610460069445,0.9887801043378832,True
+a_coastal_style_bedroom_s22,B,armchair,0.024644639756944444,0.4721152082186755,False
+a_coastal_style_bedroom_s22,C,bed,0.2194846824363426,0.9027530305995283,True
+a_coastal_style_bedroom_s22,C,nightstand,0.01610423900462963,0.8736664795058956,True
+a_coastal_style_bedroom_s22,C,nightstand,0.015846535011574073,0.9298145506419401,True
+a_coastal_style_bedroom_s22,D,bed,0.11597809968171297,0.9998050872234675,True
+a_coastal_style_bedroom_s22,D,wardrobe,0.2593700267650463,0.754333824311251,True
+a_coastal_style_bedroom_s22,D,shelf,0.04508011429398148,0.9908735332464146,True
+a_rustic_style_kitchen_s33,H,fridge,0.07611310040509259,0.2541134541134541,False
+a_rustic_style_kitchen_s33,H,counter,0.041707356770833336,0.8254742547425474,True
+a_rustic_style_kitchen_s33,H,counter,0.030863444010416668,0.6874679557606387,True
+a_rustic_style_kitchen_s33,H,sink,0.022447374131944444,0.919436052366566,True
+a_rustic_style_kitchen_s33,H,island,0.10579201027199074,0.8076027265539862,True
+a_rustic_style_kitchen_s33,H2,fridge,0.022379557291666668,0.1623232323232323,False
+a_rustic_style_kitchen_s33,H2,sink,0.017171223958333332,0.06358609794628751,False
+a_rustic_style_kitchen_s33,H2,counter,0.026814778645833332,0.0,False
+a_rustic_style_kitchen_s33,H2,stove,0.032267252604166664,0.0,False
+a_rustic_style_kitchen_s33,H2,counter,0.037172670717592594,0.0,False
+a_rustic_style_kitchen_s33,H2,island,0.1522510669849537,0.9942094400974002,True
+a_rustic_style_kitchen_s33,A,sink,0.015835232204861112,0.02198429693076374,False
+a_rustic_style_kitchen_s33,A,counter,0.033754701967592594,0.16173319046343423,False
+a_rustic_style_kitchen_s33,A,stove,0.020057960792824073,0.052180773131973404,False
+a_rustic_style_kitchen_s33,A,counter,0.010821307146990741,0.0624608314184249,False
+a_rustic_style_kitchen_s33,A,island,0.10908564814814815,0.09605023209549071,False
+a_rustic_style_kitchen_s33,B,island,0.1571044921875,0.0,False
+a_rustic_style_kitchen_s33,B,plant,0.0107421875,0.689604377104377,True
+a_rustic_style_kitchen_s33,C,fridge,0.02589020905671296,0.6693442766087488,True
+a_rustic_style_kitchen_s33,C,counter,0.019612630208333332,0.8010603964960812,True
+a_rustic_style_kitchen_s33,C,counter,0.03370949074074074,0.8274543991416309,True
+a_rustic_style_kitchen_s33,C,sink,0.015835232204861112,0.98401142041399,True
+a_rustic_style_kitchen_s33,C,island,0.10908564814814815,0.8006879973474801,True
+a_rustic_style_kitchen_s33,D,fridge,0.04265453197337963,0.9935873655201654,True
+a_rustic_style_kitchen_s33,D,counter,0.018943504050925927,0.7494033412887828,True
+a_rustic_style_kitchen_s33,D,stove,0.018943504050925927,0.6606205250596658,True
+a_rustic_style_kitchen_s33,D,counter,0.026719835069444444,0.6985617597292724,True
+a_rustic_style_kitchen_s33,D,island,0.19725206163194445,0.7015975612551285,True
+a_mid_century_modern_style_dining_room_s44,H,dining table,0.08033582899305555,0.9794023299003883,True
+a_mid_century_modern_style_dining_room_s44,H,chair,0.019018102575231483,0.7559728990847497,True
+a_mid_century_modern_style_dining_room_s44,H,chair,0.055704752604166664,0.9495982468955442,True
+a_mid_century_modern_style_dining_room_s44,H,chair,0.010319462528935185,0.8974808324205915,True
+a_mid_century_modern_style_dining_room_s44,H,chair,0.02290626808449074,0.9380242771143787,True
+a_mid_century_modern_style_dining_room_s44,H,chair,0.04673032407407408,0.9901799535603715,True
+a_mid_century_modern_style_dining_room_s44,H,chair,0.01404712818287037,0.6783070485999356,True
+a_mid_century_modern_style_dining_room_s44,H,chair,0.04445167824074074,0.9951179820992677,True
+a_mid_century_modern_style_dining_room_s44,H,shelf,0.05374710648148148,0.8815612382234186,True
+a_mid_century_modern_style_dining_room_s44,H2,dining table,0.08033582899305555,0.8117508019584669,True
+a_mid_century_modern_style_dining_room_s44,H2,chair,0.05570701316550926,0.9615306577932882,True
+a_mid_century_modern_style_dining_room_s44,H2,chair,0.019015842013888888,0.8087256300523062,True
+a_mid_century_modern_style_dining_room_s44,H2,chair,0.046712239583333336,0.6585365853658537,True
+a_mid_century_modern_style_dining_room_s44,H2,chair,0.022924352575231483,0.9040528547480524,True
+a_mid_century_modern_style_dining_room_s44,H2,chair,0.010326244212962963,0.8868213660245184,True
+a_mid_century_modern_style_dining_room_s44,H2,chair,0.04444941767939815,0.9968977266948075,True
+a_mid_century_modern_style_dining_room_s44,H2,chair,0.01404712818287037,0.8141293852590924,True
+a_mid_century_modern_style_dining_room_s44,H2,sideboard,0.010296856915509259,0.020417124039517013,False
+a_mid_century_modern_style_dining_room_s44,H2,shelf,0.05302146629050926,0.8763589852909828,True
+a_mid_century_modern_style_dining_room_s44,A,dining table,0.08000578703703703,0.9679306057866185,True
+a_mid_century_modern_style_dining_room_s44,A,chair,0.01505081741898148,0.7877741063382397,True
+a_mid_century_modern_style_dining_room_s44,A,chair,0.039794921875,0.9100204498977505,True
+a_mid_century_modern_style_dining_room_s44,A,chair,0.05482539424189815,0.9932791819568713,True
+a_mid_century_modern_style_dining_room_s44,A,chair,0.016074851707175927,0.9250457038391224,True
+a_mid_century_modern_style_dining_room_s44,A,chair,0.03876184534143518,0.9756808771213623,True
+a_mid_century_modern_style_dining_room_s44,A,chair,0.06795021339699074,0.9961076549452743,True
+a_mid_century_modern_style_dining_room_s44,A,shelf,0.05366572627314815,0.9696293176074137,True
+a_mid_century_modern_style_dining_room_s44,B,dining table,0.1475197120949074,0.9700266633975911,True
+a_mid_century_modern_style_dining_room_s44,B,chair,0.01745831524884259,0.8931762268548491,True
+a_mid_century_modern_style_dining_room_s44,B,chair,0.017388237847222224,0.9264170566822673,True
+a_mid_century_modern_style_dining_room_s44,B,chair,0.017460575810185185,0.9484722941481097,True
+a_mid_century_modern_style_dining_room_s44,B,chair,0.013439037181712963,0.9589571068124474,True
+a_mid_century_modern_style_dining_room_s44,B,chair,0.01343677662037037,0.9727456258411844,True
+a_mid_century_modern_style_dining_room_s44,C,dining table,0.08039686414930555,0.9512723182904541,True
+a_mid_century_modern_style_dining_room_s44,C,chair,0.059380425347222224,0.9970686767169179,True
+a_mid_century_modern_style_dining_room_s44,C,chair,0.035490813078703706,0.9962420382165605,True
+a_mid_century_modern_style_dining_room_s44,C,chair,0.01604320384837963,0.9997181907848387,True
+a_mid_century_modern_style_dining_room_s44,C,chair,0.02708830656828704,0.9976633564215973,True
+a_mid_century_modern_style_dining_room_s44,C,chair,0.039797182436342594,0.9816529395058222,True
+a_mid_century_modern_style_dining_room_s44,C,chair,0.01419632523148148,0.885828025477707,True
+a_mid_century_modern_style_dining_room_s44,C,sideboard,0.01434326171875,0.7557131599684791,True
+a_mid_century_modern_style_dining_room_s44,D,chair,0.011094835069444444,0.9058679706601467,True
+a_mid_century_modern_style_dining_room_s44,D,chair,0.06830512152777778,0.9787198835054276,True
+a_mid_century_modern_style_dining_room_s44,D,chair,0.017354329427083332,0.19082975120489776,False
+a_mid_century_modern_style_dining_room_s44,D,sideboard,0.07566098813657407,0.047057066029279955,False
+a_mid_century_modern_style_dining_room_s44,D,shelf,0.05594437210648148,0.9425004040730565,True
+an_art_deco_style_bathroom_s55,H,bathtub,0.23709897641782407,0.9903799399342137,True
+an_art_deco_style_bathroom_s55,H,toilet,0.010249385127314815,0.0,False
+an_art_deco_style_bathroom_s55,H2,bathtub,0.1564308449074074,0.9928323699421965,True
+an_art_deco_style_bathroom_s55,A,bathtub,0.17413330078125,0.9952097207617713,True
+an_art_deco_style_bathroom_s55,B,toilet,0.024124710648148147,0.0,False
+an_art_deco_style_bathroom_s55,C,vanity,0.10028754340277778,0.030294833648904517,False
+an_art_deco_style_bathroom_s55,C,plant,0.02154767071759259,0.6400545530843474,True
+an_art_deco_style_bathroom_s55,D,bathtub,0.02152732566550926,0.0,False
+an_art_deco_style_bathroom_s55,D,plant,0.02856671368634259,0.7695655614465459,True
+a_mediterranean_style_living_room_s66,H,sofa,0.16987440321180555,0.9820751327398299,True
+a_mediterranean_style_living_room_s66,H,coffee table,0.01704689308449074,0.7327940591433497,True
+a_mediterranean_style_living_room_s66,H,armchair,0.026514123987268517,0.9543865632193708,True
+a_mediterranean_style_living_room_s66,H2,sofa,0.10613109447337964,0.28837674923853546,False
+a_mediterranean_style_living_room_s66,H2,coffee table,0.03229663990162037,0.6596906278434941,True
+a_mediterranean_style_living_room_s66,H2,armchair,0.09458640769675926,0.8693896085273171,True
+a_mediterranean_style_living_room_s66,H2,plant,0.021145290798611112,0.7452426769296557,True
+a_mediterranean_style_living_room_s66,A,TV unit,0.016825358072916668,0.2782480182722021,False
+a_mediterranean_style_living_room_s66,A,television,0.016513400607638888,0.0,False
+a_mediterranean_style_living_room_s66,A,shelf,0.07193558304398148,0.9313682358117026,True
+a_mediterranean_style_living_room_s66,B,TV unit,0.01666033709490741,0.07462686567164178,False
+a_mediterranean_style_living_room_s66,B,television,0.020968967013888888,0.0,False
+a_mediterranean_style_living_room_s66,B,shelf,0.10676857277199074,0.9917638838898182,True
+a_mediterranean_style_living_room_s66,C,sofa,0.06058530454282408,0.561882019327637,True
+a_mediterranean_style_living_room_s66,C,coffee table,0.02119050202546296,0.7949647962449328,True
+a_mediterranean_style_living_room_s66,C,armchair,0.028295446325231483,0.9828233602300871,True
+a_mediterranean_style_living_room_s66,D,sofa,0.08196343315972222,0.3388217772629489,False
+a_mediterranean_style_living_room_s66,D,coffee table,0.024956597222222224,0.7303442028985507,True
+a_mediterranean_style_living_room_s66,D,armchair,0.0322265625,0.9640151515151515,True
+a_mediterranean_style_living_room_s66,D,plant,0.014065212673611112,0.5461266473802636,True

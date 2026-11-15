@@ -692,7 +692,8 @@ def run_360_v6(prompt: str, seed: float, extra: dict | None = None):
     t = r["timing"]
     n_valid = sum(bool(cams[n]["valid"]) for n in sh)
     info = (f"**360° room (scene first) done in {total:.0f} s** (scene {t['scene']:.1f} s, panorama {t['panorama']:.0f} s, "
-            f"upscale + segmentation {t['esrgan_seg']:.0f} s, cameras {t['cameras']:.1f} s, design shots "
+            f"segmentation {t['segmentation']:.0f} s, window repair {t.get('window_fix', 0):.0f} s, upscale {t['upscale']:.0f} s, "
+            f"cameras {t['cameras']:.1f} s, design shots "
             f"{t.get('shots', 0):.0f} s, dollhouse {t['dollhouse']:.0f} s, export {t['export']:.1f} s). Peak VRAM "
             f"{r['peak_vram_gb']:.1f} GB, peak RAM {r['peak_ram_gb']:.1f} GB.\n\n"
             f"Room {lay['W']:.2f} × {lay['D']:.2f} m ({lay['W'] * lay['D']:.1f} m²), ceiling {lay['H']:.2f} m, "

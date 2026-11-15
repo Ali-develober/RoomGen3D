@@ -1,0 +1,5 @@
+mode,status,seconds,process_s,ui_build_s,peak_vram_gb,peak_ram_gb,startup_models,hub_lines,truncation_warnings,missing_weight_reports,pipeline_loads,prompt,seed
+quick,PASS,28.6,31.4,2.8,4.64,2.62,,0,0,0,1,a mid-century modern style dining room,44
+v6,PASS,128.0,130.7,2.5,6.46,11.17,,0,0,0,2,a mid-century modern style dining room,44
+v5,PASS,195.1,198.3,3.0,5.93,11.53,,0,0,0,2,a mid-century modern style dining room,44
+v6,PASS,136.1,138.9,2.6,6.46,11.44,,0,0,0,2,a coastal style bedroom,22

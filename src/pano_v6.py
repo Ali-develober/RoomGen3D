@@ -136,8 +136,10 @@ def pano_prompt(lay: dict) -> str:
     room = lay["room"]
     for k in (5, 4, 3, 2, 1, 0):
         furn = furniture_phrase(lay, k)
-        p = (f"360 view, 360 panorama, {lay['style']} style {room} interior, {mat}, {pal}, {floor_words(lay)}"
-             + (f", {furn}" if furn else "") + f", plain painted walls, {windows_phrase(lay)}, interior design photo")
+        # the window phrase comes right after the room: at the end of the prompt it carried too little weight and a
+        # window of the depth condition was painted as a wardrobe (coastal bedroom seed 22, review round 5)
+        p = (f"360 view, 360 panorama, {lay['style']} style {room} interior with {windows_phrase(lay)}, {mat}, {pal}, "
+             f"{floor_words(lay)}" + (f", {furn}" if furn else "") + ", plain painted walls, interior design photo")
         if n_tokens(p) <= MAX_TOKENS:
             return p
     return assert_tokens(p)

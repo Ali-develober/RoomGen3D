@@ -596,3 +596,75 @@ All configs pass the consistency / geometry constraints (LPIPS ≤ 0.30, ΔLab �
 - **Round 3** — wall cameras ≥ 0.6 m from H / H2 / each other, wider search (0.5-1.4 m from the wall, 65-80° FOV), ranked by near-lens share; floor highlights (> 1.2 × median luminance) treated as unseen. Result: all 36 shots valid with nothing within 0.8 m; plan markers separate. Remaining: pale halos at quilted floor borders (kitchen).
 - **Round 4** — highlight mask grown by 8 texels, quilted fill colour-matched (Lab mean / std) to the seen floor, wider feather. Result: coherent floors in all six dollhouses / top-downs.
 - Build timings of rounds 3-4 used cached panoramas (`--reuse-pano`, only when the depth condition is identical) and are not run-time measurements; the run-time numbers come from the fresh-process app test.
+
+
+## 2026-11-16 — V6 Milestone 4: dollhouse, top-down, floor plan from the scene — DONE
+
+**Built**: `src/dollhouse_v6.py` — dollhouse = the proxy scene without its ceiling: floor + walls rasterised at 100 texels / m, a texel takes the panorama colour if the ray from the panorama centre reaches it (z-buffer) AND the panorama's SegFormer class there agrees (wall texel = wall, floor texel = floor / rug, furniture face = an object class), floor texels > 55 deg below the horizon and specular highlights (+ 8-texel fringe) treated as unseen; unseen floor = image quilting (Efros & Freeman) from fully seen floor patches, Lab mean / std matched; unseen wall = normalised convolution of the same wall (sigma 0.6 m); 6-texel feather; real door / window openings with frames, door leaf, curtains; furniture = the placed CC0 meshes subdivided to 4 cm, coloured from the panorama where seen, else the instance's dominant colour x the model's own texture luminance, smooth vertex colours; GLB exported in the right-handed glTF frame (z flipped, trimesh flips the winding itself). Top-down = orthographic ray cast of the same textured scene, >= 1024 px on both sides, furniture outlines and height shading, plan orientation. Floor plan = `src/plan_v6.py` (milestone 1) with every camera cone.
+
+**Results** (`results/tables/v6_doll_metrics.csv`, `v6_doll_summary.json`, `v6_plan_shot_agreement.csv`): furniture pieces in the dollhouse = layout in 6 / 6 demo rooms (v5 coastal bedroom: 2 blocks); 58 % of the wall / floor area seen from the panorama (the rest synthesised); plan / shot agreement 73 % of 152 (shot, piece) pairs (78 % for the heroes; weak: stove, toilet, vanity, TV unit). **Negative on v5's texture measures**: residual "furniture" share 6.0 % (v5 1.5 %), flat-area noise 0.52 (v5 0.24), BRISQUE 57.5 (v5 56.0): v6 keeps the panorama's wall art, curtains and real stone / panelling texture instead of LaMa + bilateral smoothing, which these measures penalise; visually the v6 dollhouse is far better (`v6_before_after_*.png`).
+
+## 2026-11-16 — V6 Milestone 5: app and run-time — DONE
+
+**Built**: app 360 mode defaults to v6 ("Scene first: layout -> 3D scene -> panorama"), toggle to v5 ("Image first ... previous version"); v4 / v3 / v2 / Layout-first removed from the UI (code kept); Steps / CFG / hires only in Quick, 360 options only in 360 mode, candidates only for v5; tabs Inside (panorama viewer, opens towards the main piece) / Dollhouse / Top-down / Free orbit (duplicate panorama tab and walkable-mesh tab hidden, code kept); model-viewer 3.5.0 served from app/static (offline); nothing loads at start (lazy); `HF_HUB_OFFLINE` + `src/local_models.py` (local snapshot folders, also partial fp16-only SD 1.5) so no Hub request is made, `app.check_models` gives a clear message when a model is missing; number fields switched to text inputs with a decimal keyboard (Chrome draws Arabic-Indic digits in type=number under an Arabic locale whatever the lang attribute says - checked with Playwright ar-EG); Mask2Former's MISSING report proven harmless and silenced (`v6_mask2former_missing_weights_check.json`: random weights in that layer change the logits by 0.0); v5 prompts cut to 77 tokens at a word boundary (`pano_v6.fit_tokens`); `memory.ram_available_gb(reuse=True)`: memory a model freed in this process stays in the Windows process heap but is reused by the next load (measured), so the second request of a session no longer waits for RAM.
+
+**App test** (`scripts/test_app_v6.py`, one fresh process per mode, `results/tables/v6_app_test.csv`): **Quick 29 s** (4.6 GB VRAM, 2.6 GB RAM, 1 pipeline load); **v6 128 s** dining 44 / **136 s** coastal 22 incl. window repair (6.5 GB VRAM, 11.2-11.4 GB RAM, 2 pipeline loads: SDXL once, SD 1.5 once); **v5 195 s** (5.9 GB, 11.5 GB); all PASS; 0 Hub lines, 0 truncation warnings, 0 MISSING reports, no model at start-up. UI screenshots in an Arabic locale: `results/figures/v6_ui_quick_arabic_locale.png`, `v6_ui_360_arabic_locale.png` (before the fix: `v6_ui_quick_arabic_locale_before_fix.png`).
+
+## 2026-11-16 — V6 review loop, rounds 5-13
+
+- **Round 5** — Inside viewer opened at the hero shot's yaw, which from the panorama centre often faced a near wall -> opens towards the main piece's group (`pipeline_v6.inside_yaw`). Coastal bedroom: the layout's window (clearly in the depth condition) was painted as a wardrobe; window presence (share of the proxy's window pixels segmented as window / curtain / sky) 0.0 also in the bathroom, 0.58 in the contemporary living room.
+- **Window fix, attempt 1 (failed)**: window phrase moved right after the room in the prompt -> presence coastal 0.0, bathroom 0.0, contemporary 0.31 (worse). **Attempt 2 (adopted)**: `src/window_fix_v6.py` - perspective view from the panorama centre aimed at each window, SD 1.5 + depth ControlNet inpainting (built from the shot pipeline's components, no extra load) on the window + curtain mask, pasted back into the panorama with a feathered mask -> presence 1.0 in all three rooms, consistent in shots, Inside and dollhouse (round 6 screenshots); +9-18 s, only when presence < 0.5.
+- **Round 7-10** — kitchen: framed-art proxies were painted as extra windows / a niche -> no wall art in kitchens; still one invented window on a blank wall -> **extra-window removal**: window / sky regions of the panorama that touch no proxy window (>= 0.2 %) are filled. Attempt with SD inpainting ("plain wall") gave a plank board (kitchen) and a pale-blue patch from the palette words (coastal) -> rejected; LaMa with a 35 px mask (incl. the frame) -> clean plaster walls (round 10).
+- **Round 12 (failed, reverted)** — a border-crop penalty for furniture cut at the frame edges (owner issue 20) pushed the wall cameras into corners (curtain / wardrobe close-ups) -> reverted.
+- **Round 13** — final state = round 11 for all six rooms; acceptance table below. Before / after per room: `results/figures/v6_before_after_<room>.png`, overview `v6_before_after_overview.png`.
+- Note: the milestone-2 panorama metrics (`v6_pano_summary.csv`) were measured before the window phrase moved forward in the prompt and before the window repair; the demo panoramas of the figures use the final prompt.
+
+## 2026-11-16 — PLAN_V6 Final
+
+- Summary of every metric: `results/tables/v6_summary.csv` (`scripts/v6_summary.py`). Downloads PLAN_V6: 1.05 GB of 10 GB (cn_mid and t2i adapter deleted after the sweep, unused). Free disk at the end: see the final commit message (>= 22 GB during the whole run).
+- Not done (on purpose): the final course notebook. Not done (disk): IP-Adapter test.
+
+### Acceptance table (final; same as PLAN_V6.md)
+
+| # | Area | Issue | Status | Evidence |
+|---|---|---|---|---|
+| 1 | Inside | straight lines are curved | FIXED (r1) | Inside views of all rooms: window frames, ceiling edges, curtain rods straight (a straight rod is part of the proxy); straight-line share demo 0.34 (v5) -> 0.49 |
+| 2 | Inside | chairs deformed, legs melted, merged | FIXED (r1) | dining 44 inside_0, H, H2: eight separate chairs with legs; proxy uses real chair models |
+| 3 | Inside | table irregular and oversized | FIXED (r1) | one rectangular 1.9-2.0 m table sized to the room (layout rule), dining 44 inside_0 / plan; weak conditioning split it in two (sweep) -> scale 0.9 |
+| 4 | Inside | camera low and touching furniture | FIXED (r1) | camera 1.5 m, >= 0.5 m from furniture and walls (unit test test_camera_clearance) |
+| 5 | Inside | floor tiles warped | FIXED (r1) | kitchen 33 / Mediterranean 66 Inside and shots: regular terracotta tiles |
+| 31 | Inside | furniture melted into blobs | FIXED (r1) | no blobs in any Inside view; instance presence demo 64 % |
+| 33 | Inside | horizon tilted, outside view differs | FIXED (r6) | level viewer and level panorama; outside views all greenery; windows repaired in place (window presence 1.0) |
+| 34 | Inside | glass walls; "coastal" read as sea view | FIXED (r1) | window share generated 0.035 vs proxy 0.046 (demo); coastal 22 = white oak, linen, a sea PICTURE, no sea view |
+| 6 | Selection | candidate chosen on trivial boxiness | FIXED (design) | no candidate search in v6: the scene is designed first |
+| 7 | Measure | room size wrong | FIXED (design) | dining 44 is 3.92 x 5.02 m, ceiling 2.71 m by construction (plan title) |
+| 8, 38 | Measure | boxiness low | FIXED (design) | the room is the proxy box; panorama depth delta1 0.99 vs the proxy (demo) |
+| 9, 39 | Measure | only 2 of 5 shots pass | FIXED (r1) | 36 / 36 shots valid (H, H2, A-D in six rooms) |
+| 10 | Plan | random angles | FIXED (r1) | yaw in {0, 90, 180, 270} by construction (unit test) |
+| 11 | Plan | table over chair and camera; second table | FIXED (r1) | plan drawn from the layout; no overlaps in 1400 layouts |
+| 12 | Plan | cabinets floating mid-room | FIXED (r1) | cabinets / wardrobes / shelves have a wall (wall_align test) |
+| 13 | Plan | furniture clustered | FIXED (r1) | groups spread by rules; living-room ranges narrowed (4.0-5.2 x 4.4-5.8 m) |
+| 14 | Plan | labels overlap | FIXED (r3) | label collision avoidance + camera markers >= 0.6 m apart; all r13 plans |
+| 15 | Plan | hero cone different, H2 missing | FIXED (r1) | H, H2, A-D same cone style at true positions |
+| 16 | Plan | unexplained dimension lines; scale bar short | FIXED (r2) | overall dimensions only; 2 m scale bar from 3.5 m width (~half the room) |
+| 17 | 2D shots | shot does not match the panorama | FIXED (r6) | shots are the panorama reprojected through the proxy, then re-rendered (dLab 4.6, LPIPS 0.15 on co-visible pixels); windows / floors match across shots and Inside |
+| 18 | 2D shots | broken furniture | FIXED (r1), see weak points | no orphan legs / melted chairs in any r13 shot; small pieces (toilet, stove, vanity) are drawn poorly or not recognised (plan / shot agreement 73 %) |
+| 19 | 2D shots | nonsense wall decor, distorted mirror | FIXED (r10) | wall art proxies give plausible pictures; removed from kitchens (they became extra windows / niches); no mirrors |
+| 20 | 2D shots | camera low, floor half the frame, cropped | FIXED (r1), see weak points | 1.5 m, level with lens shift, floor < 35 %; dense dining room still cuts foreground chairs at the frame edge (border penalty tried and reverted, r12) |
+| 24, 37 | Dollhouse | only 2 pieces in a bedroom | FIXED (r2) | furniture count = layout in 6 / 6 rooms (coastal bedroom: 6 pieces) |
+| 25 | Dollhouse | plain boxes, broken texture | FIXED (r2) | CC0 furniture models coloured from the panorama, smooth vertex colours |
+| 26 | Dollhouse | inpainting patches, light streak | FIXED (r4) | nadir and highlights excluded, quilted floor colour-matched; r13 dollhouses |
+| 27 | Dollhouse | walls stretched, windows small / misplaced | FIXED (r2) | windows and door are the layout's real openings with frames and curtains |
+| 28 | Dollhouse | grey-blue fills | FIXED (r2) | unseen wall = the wall's own low-frequency colour |
+| 29 | Top-down | blurry blob | FIXED (r5) | orthographic render >= 1024 px both sides, furniture outlines, plan orientation |
+| 30 | Top-down | title says v3 / v4 | FIXED (M5) | tab label "Top view (orthographic, same orientation as the floor plan)" |
+| 21 | UI | labels say v3 / v4 | FIXED (M5) | `results/figures/v6_ui_360_arabic_locale.png`: "Scene first ... (default)" / "Image first ... (previous version)" |
+| 22 | UI | Quick-only option in 360 mode | FIXED (M5) | same screenshot: no Steps / CFG / hires in 360 mode |
+| 23 | Run | 221-237 s per room | FIXED (M5) | fresh process 128 s (dining 44), 136 s with window repair (coastal 22); `v6_app_test.csv` |
+| 35 | UI | duplicate panorama tab | FIXED (M5) | tabs Inside / Dollhouse / Top-down / Free orbit |
+| 36 | UI | walkable mesh tears | FIXED (M5) | tab removed from the UI (code kept) |
+| 40 | UI | CFG in Arabic-Indic digits | FIXED (M5) | `v6_ui_quick_arabic_locale.png` (ar-EG locale: 22, 30, 7.5) vs `..._before_fix.png` |
+| 41 | Run | Quick models load at startup | FIXED (M5) | app test: startup_models empty; nothing loads until a request |
+| 42 | Run | prompt > 77 tokens truncated | FIXED (M5) | v6 prompts asserted <= 77; v5 prompts cut at a word boundary; 0 truncation warnings in all app tests |
+| 43 | Run | Mask2Former MISSING weights | FIXED (proof) | the layer is unused by SwinBackbone: random weights change logits by 0.0 (`v6_mask2former_missing_weights_check.json`); report silenced |
+| 44 | Run | Hub requests; SD 1.5 loaded 3x | FIXED (M5) | offline mode + local snapshot paths: 0 Hub lines; one SDXL + one SD 1.5 load per v6 request |

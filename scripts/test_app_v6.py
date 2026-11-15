@@ -68,7 +68,6 @@ def one(mode, prompt, seed):
         app.build()
         startup_models = list(app.MODELS)
         build_s = time.perf_counter() - t0
-        n_before = buf.getvalue().count("Loading pipeline components")
         status = "PASS"
         try:
             with mem.PeakMonitor() as pm:
@@ -79,14 +78,14 @@ def one(mode, prompt, seed):
             traceback.print_exc()
             status = "FAIL"
     log = buf.getvalue() + err.getvalue()
-    sd15 = log.count("stable-diffusion-v1-5") + log.count("models--stable-diffusion-v1-5")
     row = {"mode": mode, "status": status, "seconds": round(pm.seconds, 1), "process_s": round(time.perf_counter() - t0, 1),
            "ui_build_s": round(build_s, 1), "peak_vram_gb": round(pm.peak_vram_gb, 2), "peak_ram_gb": round(pm.peak_ram_gb, 2),
            "startup_models": ";".join(startup_models),
            "hub_lines": sum(("huggingface.co" in ln or "reach the Hub" in ln or "connect to the Hub" in ln) for ln in log.splitlines()),
            "truncation_warnings": log.count("truncated because CLIP can only handle"),
            "missing_weight_reports": log.count("MISSING"),
-           "pipeline_loads": log.count("Loading pipeline components") - n_before, "sd15_mentions": sd15,
+           # one load = one progress-bar start (the 100 % line can be printed twice)
+           "pipeline_loads": log.replace(chr(13), chr(10)).count("Loading pipeline components...:   0%"),
            "prompt": prompt, "seed": seed}
     (ROOT / "outputs" / f"app_test_v6_{mode}.log").write_text(log, encoding="utf-8")
     print("RESULT " + json.dumps(row), flush=True)

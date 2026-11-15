@@ -117,8 +117,11 @@ def _curtains(P, c0: float, c1: float, y1: float, H: float) -> list:
 
 def _art_spots(lay: dict) -> list:
     """Framed pictures (wall art): above the sofa / bed / sideboard, and centred on every blank wall stretch of at
-    least 1.6 m (no opening, nothing taller than 1.2 m in front). Returns [(wall, s, width, y0, y1)]."""
+    least 1.6 m (no opening, nothing taller than 1.2 m in front). Returns [(wall, s, width, y0, y1)].
+    Not in kitchens: there the boards were painted as small extra windows and niches (review round 5)."""
     out = []
+    if lay["room"] == "kitchen":
+        return out
     for p in lay["items"]:
         if p["cls"] in ("sofa", "bed", "sideboard") and p["wall"]:
             s = p["cx"] if p["wall"] in ("N", "S") else p["cz"]
