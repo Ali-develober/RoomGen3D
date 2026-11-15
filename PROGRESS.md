@@ -405,3 +405,21 @@ Held-out and demo show the same pattern (BRISQUE 26.1 / 28.2 for Redmond vs 34.7
 - v4 (v4 prompt, seed s, v4 hero) vs v5 (v5 prompt, best of 3, valid-shot hero) — share of rooms whose hero passes the test: **dev 0.30 → 0.80, held-out 0.20 → 0.50, demo 0.50 → 0.67**; all shots (hero + 4 walls) 0.16 → 0.30 / 0.10 → 0.16 / 0.20 → 0.23; hero median distance 2.0 → 2.7 m (dev).
 
 **Failed / limitations**: wall views rarely pass because the test requires the main piece in the frame (by the plan's definition); camera height stays at the panorama height (1.0-1.1 m for SDXL rooms, lower than the 1.4-1.6 m eye height): re-rendering from another height needs the depth mesh, which tears (milestone 4). Held-out mean area 52 m² is inflated by open-plan rooms boxed too large (v4 limitation). Prompt text slightly over 77 CLIP tokens ("high quality" truncated).
+
+## 2026-11-15 — V5 Milestone 3: real detail in the 2D design shots — DONE
+
+**Built**: `src/shot_render.py` (crop z-depth from the panorama distance, inverse-depth ControlNet image, SD 1.5 + depth ControlNet img2img with or without the MMIS LoRA fused, SDXL img2img variant, Real-ESRGAN to 1536 × 1152), `scripts/eval_v5_shots.py` (crops: 4096 panorama + v5 shots per room; render; metrics: sharpness, BRISQUE, CLIP, edge F1 vs crop, depth agreement, KID / FID; report + decision).
+
+**Results** (50 shots per set; `results/tables/v5_shots_summary.csv`, `v5_shots_decision.json`, figure `v5_shots_crops.png`): dev sweep of 11 configs; strength 0.65 fails the structure guard (edge F1 0.54-0.57); **selected: SD 1.5 + MMIS LoRA + depth ControlNet, strength 0.55** (mean rank 2.5; SDXL img2img 0.45 second, 3.75).
+
+| | ESRGAN only (v4 polish) | ControlNet re-render, no LoRA | **ControlNet re-render + MMIS LoRA** |
+|---|---|---|---|
+| dev BRISQUE / KID ×10³ / CLIP | 29.1 / 52.4 / 19.4 | 28.4 / 53.7 / 21.8 | **23.1 / 47.2 / 22.2** |
+| held-out BRISQUE / KID / CLIP / sharpness | 22.7 / 64.5 / 20.5 / 77.8 | 21.1 / 56.6 / 21.1 / 84.0 | **20.4 / 51.0 / 21.9 / 91.7** |
+| demo BRISQUE / KID / CLIP | 28.6 / 48.3 / 22.7 | 29.1 / 48.6 / 22.8 | **23.4 / 43.7 / 22.8** |
+| structure: edge F1 / depth error (dev) | 0.96 / 0.010 | 0.65 / 0.046 | 0.64 / 0.047 |
+| seconds per shot, peak VRAM | 1.2 s | 6.3 s, 3.8 GB | 6.5 s, 3.8 GB |
+
+**Our LoRA shows its value here**: same pipeline with vs without the MMIS LoRA, the LoRA is better on BRISQUE, KID and CLIP on dev, held-out and demo (only dev sharpness is lower, 54 vs 63). This is the first place in the 360° mode where the LoRA clearly helps.
+
+**Failed / limitations**: re-rendering changes small content (new glassware, a sloped ceiling became a vertical wall where DAP's depth says so); held-out edge F1 0.56 is below the 0.6 dev guard (more cluttered rooms); at 100 % the LoRA output is slightly softer than the no-LoRA output (lower Laplacian on dev) although every quality measure prefers it. First depth-agreement definition (AbsRel of relative disparities) blew up near zero disparity (values 7-22) → replaced by the aligned error / disparity range before any decision; the bad table was kept as outputs/v5_shots/metrics_bad_depth.csv. A Quick-mode job run in parallel with the crops crashed (CUDA illegal address): two GPU jobs at once broke the one-model rule; rerun alone.

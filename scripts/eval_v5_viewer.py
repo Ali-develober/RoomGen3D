@@ -4,7 +4,7 @@
                 Dev rooms (milestone-3 crops: 4096 panorama + the selected candidate): v4 inside mesh
                 (src/room_v4.build_meshes), offline ray casting at the hero yaw / FOV from the panorama centre moved by
                 t in TRANSLATIONS (m) in 8 horizontal directions. Hole share = rendered pixels whose surface point was
-                NOT seen from the panorama centre (|P| > observed distance along dir(P) * 1.03 + 3 cm): their colour
+                NOT seen from the panorama centre (|P| > observed distance along dir(P) * 1.04 + 10 cm, the shell tolerance): their colour
                 is invented (inpainted shell) or stretched (triangles across depth edges). Limit (fixed beforehand):
                 the largest t whose 90th percentile hole share over rooms and directions is <= HOLE_MAX.
                 -> results/tables/v5_viewer_mesh.csv, v5_viewer_selection.json, figure v5_viewer_mesh.png
@@ -58,7 +58,7 @@ def hole_share(mesh, box, dist, yaw, fov, origin_A, w=320, h=240):
     rr_ = np.linalg.norm(Pc, axis=1)
     u, v = eq.dirs_to_uv(Pc / rr_[:, None], dist.shape[1], dist.shape[0])
     obs = dist[np.clip(np.round(v).astype(int), 0, dist.shape[0] - 1), np.round(u).astype(int) % dist.shape[1]]
-    unseen = rr_ > obs * 1.03 + 0.03
+    unseen = rr_ > obs * 1.04 + 0.10                   # same tolerance as the shell (room_box.HIDDEN_REL / ABS)
     return float((unseen.sum() + (~hit).sum()) / len(t))
 
 

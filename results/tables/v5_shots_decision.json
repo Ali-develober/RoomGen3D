@@ -1,0 +1,45 @@
+{
+ "selected": "cn_lora_s0.55",
+ "mean_rank": {
+  "cn_lora_s0.55": 2.5,
+  "xl_s0.45": 3.75,
+  "cn_base_s0.55": 4.0,
+  "cn_lora_s0.45": 4.25,
+  "cn_base_s0.45": 5.25,
+  "cn_lora_s0.35": 5.5,
+  "xl_s0.3": 6.25,
+  "esrgan": 6.5,
+  "cn_base_s0.35": 7.0
+ },
+ "failed_guard": [
+  "cn_base_s0.65",
+  "cn_lora_s0.65"
+ ],
+ "rule": "guard edge F1 >= 0.6 and depth error <= 0.15 of the disparity range on dev; mean rank of BRISQUE (768 px), sharpness, CLIP, KID",
+ "lora_vs_base_dev": {
+  "brisque": [
+   23.13279052734375,
+   28.44038818359375
+  ],
+  "sharpness": [
+   54.31054258379854,
+   62.72869011062114
+  ],
+  "clip": [
+   22.17987522,
+   21.77601648
+  ],
+  "kid_x1e3": [
+   47.17686027288437,
+   53.719066083431244
+  ],
+  "edge_f1": [
+   0.6365173547869858,
+   0.6494283204936927
+  ],
+  "depth_err": [
+   0.0465509126451398,
+   0.04632166983975848
+  ]
+ }
+}

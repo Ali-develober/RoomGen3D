@@ -7,8 +7,8 @@ v4), v5 shots (hero + walls, src/shots_v5.py), raw crops 1024 x 768 and their z-
     cn_base_s<s>     the same without our LoRA
     xl_s<s>          SDXL base img2img at 1024 x 768 (only if milestone 1 adopted SDXL) -> Real-ESRGAN 1536
 Metrics per shot: sharpness (Laplacian variance), BRISQUE, CLIP vs the room prompt, structure kept: edge F1 vs the crop
-(structural edges at 512 x 384, src/pano_refine.edge_f1) and depth agreement (Depth Anything V2 relative depth of
-output vs crop, scale + shift aligned, AbsRel); KID / FID vs the MMIS hold-out per config and set.
+(structural edges at 512 x 384, src/pano_refine.edge_f1) and depth agreement (Depth Anything relative disparity of
+output vs crop, scale + shift aligned, mean error / disparity range); KID / FID vs the MMIS hold-out per config and set.
 Selection on dev (fixed in PLAN_V5.md): guard edge F1 >= 0.6 and depth AbsRel <= 0.15; mean rank of BRISQUE,
 sharpness, CLIP, KID; report with and without the LoRA.
 Usage: python scripts/eval_v5_shots.py --stage crops|render|metrics|report [--sets dev] [--configs ...]
@@ -148,13 +148,15 @@ def stage_render(df, configs):
     mem.free()
 
 
-def depth_absrel(a: np.ndarray, b: np.ndarray) -> float:
-    """Scale + shift aligned AbsRel of disparity a (output) vs b (crop)."""
-    m = b > np.percentile(b, 1)
-    A = np.stack([a[m], np.ones(m.sum())], 1)
-    x, *_ = np.linalg.lstsq(A, b[m], rcond=None)
+def depth_err(a: np.ndarray, b: np.ndarray) -> float:
+    """Depth agreement: disparity a (output) aligned to b (crop) by least-squares scale + shift, mean absolute
+    difference divided by the crop's disparity range (2-98 %). 0 = same depth layout; 0.15 = off by 15 % of the range.
+    (A plain AbsRel is unusable here: relative disparities approach 0 at far points.)"""
+    A = np.stack([a.ravel(), np.ones(a.size)], 1)
+    x, *_ = np.linalg.lstsq(A, b.ravel(), rcond=None)
     al = a * x[0] + x[1]
-    return float(np.mean(np.abs(al[m] - b[m]) / np.maximum(b[m], 1e-6)))
+    rng = max(float(np.percentile(b, 98) - np.percentile(b, 2)), 1e-6)
+    return float(np.mean(np.abs(al - b)) / rng)
 
 
 def stage_metrics(df, configs):
@@ -180,7 +182,7 @@ def stage_metrics(df, configs):
         rows.append({"id": r.id, "set": r.set, "letter": s["letter"], "kind": s["kind"], "config": c,
                      "sharpness": vc.sharpness([im15]), "brisque": vc.brisque([cv2.resize(im15, (768, 576), interpolation=cv2.INTER_AREA)]),
                      "brisque_full": vc.brisque([im15]),
-                     "edge_f1": pr.edge_f1(raw, im, size=(512, 384)), "depth_absrel": depth_absrel(dout, dcache[key]),
+                     "edge_f1": pr.edge_f1(raw, im, size=(512, 384)), "depth_err": depth_err(dout, dcache[key]),
                      **(json.loads(j.read_text()) if j.exists() else {})})
     model = None
     mem.free()
@@ -208,24 +210,24 @@ def report(df, tag="v5_shots"):
         rows += [{"set": split, "config": k, "kid_x1e3": v["kid_mean"] * 1e3, "kid_std_x1e3": v["kid_std"] * 1e3,
                   "fid": v["fid"]} for k, v in fk.items()]
     kid = pd.DataFrame(rows)
-    cols = ["sharpness", "brisque", "brisque_full", "clip", "edge_f1", "depth_absrel", "seconds", "peak_vram_gb", "peak_ram_gb"]
+    cols = ["sharpness", "brisque", "brisque_full", "clip", "edge_f1", "depth_err", "seconds", "peak_vram_gb", "peak_ram_gb"]
     summ = met.groupby(["set", "config"])[[c for c in cols if c in met]].mean().reset_index().merge(kid, on=["set", "config"])
     summ["n"] = met.groupby(["set", "config"]).size().values
     summ.to_csv(vc.TAB / f"{tag}_summary.csv", index=False, float_format="%.4f")
     dev = summ[(summ["set"] == "dev") & ~summ["config"].isin(["raw"])].set_index("config")
-    ok = dev[(dev["edge_f1"] >= 0.6) & (dev["depth_absrel"] <= 0.15)].copy()
+    ok = dev[(dev["edge_f1"] >= 0.6) & (dev["depth_err"] <= 0.15)].copy()
     rk = pd.DataFrame({"brisque": ok["brisque"].rank(), "sharp": ok["sharpness"].rank(ascending=False),
                        "clip": ok["clip"].rank(ascending=False), "kid": ok["kid_x1e3"].rank()})
     ok["mean_rank"] = rk.mean(1)
     best = ok["mean_rank"].idxmin()
     dec = {"selected": best, "mean_rank": ok["mean_rank"].sort_values().to_dict(),
            "failed_guard": sorted(set(dev.index) - set(ok.index)),
-           "rule": "guard edge F1 >= 0.6 and depth AbsRel <= 0.15 on dev; mean rank of BRISQUE (768 px), sharpness, CLIP, KID"}
+           "rule": "guard edge F1 >= 0.6 and depth error <= 0.15 of the disparity range on dev; mean rank of BRISQUE (768 px), sharpness, CLIP, KID"}
     if best.startswith("cn_lora"):
         twin = best.replace("cn_lora", "cn_base")
         if twin in dev.index:
             dec["lora_vs_base_dev"] = {c: [float(dev.loc[best, c]), float(dev.loc[twin, c])]
-                                       for c in ("brisque", "sharpness", "clip", "kid_x1e3", "edge_f1", "depth_absrel")}
+                                       for c in ("brisque", "sharpness", "clip", "kid_x1e3", "edge_f1", "depth_err")}
     vc.write_json(vc.TAB / f"{tag}_decision.json", dec)
     met.to_csv(vc.TAB / f"{tag}_per_shot.csv", index=False, float_format="%.4f")
     print(summ.round(3).to_string())
