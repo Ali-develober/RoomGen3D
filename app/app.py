@@ -241,8 +241,8 @@ def load_models(mode: str = QUICK) -> dict:
     return MODELS
 
 
-def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: str = V4, candidates: float = 1,
-        detail: bool = False, n_objects: float = 0, sharp_shots: bool = True):
+def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: str = V5, candidates: float = 1,
+        detail: bool = False, n_objects: float = 0, sharp_shots: bool = True, quick_hires: bool = True):
     """One request in the chosen mode. The first output becomes the gallery: v4 returns its design shots
     (hero first), the other modes their single image / panorama. Then: the 360° panorama viewer, the panorama
     for the Analysis section and the design-shot zip (v4)."""
@@ -262,7 +262,7 @@ def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: 
     elif mode == LAYOUT:
         out = [*run_layout(prompt, seed, steps, cfg), None, None]
     else:
-        out = [*run_quick(prompt, seed, steps, cfg), None, None]
+        out = [*run_quick(prompt, seed, steps, cfg, bool(quick_hires)), None, None]
     first = out[0]
     if isinstance(first, list):
         gallery = first
@@ -622,8 +622,11 @@ def run_360_v5(prompt: str, seed: float, steps: float, cfg: float, k: int = V5_C
             res["topdown"])
 
 
-def run_quick(prompt: str, seed: float, steps: float, cfg: float):
-    """Quick mode: returns the pictures, the viewers, the download files and a summary."""
+def run_quick(prompt: str, seed: float, steps: float, cfg: float, hires: bool = True):
+    """Quick mode: returns the pictures, the viewers, the download files and a summary.
+    PLAN_V5 milestone 6 (hires=True): the 512 image is re-drawn at 1024 by img2img with the same LoRA pipeline
+    (src/quick_v5.py; strength from results/tables/v5_quick_decision.json) for the 2D output; the 3D relief is still
+    built from the 512 image (depth and segmentation were tuned at that size)."""
     models = load_models(QUICK)
     seed, steps = int(seed), int(steps)
     if DEVICE.type == "cuda":
@@ -647,7 +650,25 @@ def run_quick(prompt: str, seed: float, steps: float, cfg: float):
             f"Assumed camera: {r3.DEFAULT_FOV_DEG:.0f}° horizontal field of view.\n\n"
             f"Floor plan ({s['floorplan']:.2f} s): {plan_text(res['plan'])}")
     f = res["files"]
-    return (img, res["plan_image"], viewer_html(f["mesh_glb"], mesh["target_z"]), DOLL_EMPTY,
+    shown = img
+    if hires:
+        t0 = time.perf_counter()
+        if "q5_i2i" not in MODELS:
+            MODELS["q5_i2i"] = q5.img2img_from(models["sd"])
+        dec = p5v.decision("v5_quick_decision.json") or {"selected": "hires_s0.4"}
+        sel = dec["selected"]
+        st_ = float(sel.split("_s")[1].split("_")[0]) if "_s" in sel else q5.STRENGTH
+        shown = q5.hires_pass(MODELS["q5_i2i"], img, prompt, seed, st_)
+        if sel.endswith("_esr"):
+            from src.shot_enhance import esrgan_shot
+            if "esrgan" not in MODELS:
+                MODELS["esrgan"] = gp.load_esrgan(DEVICE)
+            shown = esrgan_shot(MODELS["esrgan"], shown, 2048, 2048)[0]
+        f["image"] = str(Path(f["image"]).with_name("image_hires.png"))
+        cv2.imwrite(f["image"], cv2.cvtColor(shown, cv2.COLOR_RGB2BGR))
+        info += (f"\n\nHires pass ({sel}, {time.perf_counter() - t0:.1f} s): the 512 image re-drawn at "
+                 f"{shown.shape[1]} × {shown.shape[0]} with the MMIS LoRA (the 3D uses the 512 image).")
+    return (shown, res["plan_image"], viewer_html(f["mesh_glb"], mesh["target_z"]), DOLL_EMPTY,
             gr.Model3D(value=f["mesh_glb"], camera_position=free_orbit_camera(mesh)),
             pl.depth_gray(d), an.overlay_edges(res["pre"], res["edges"]), an.overlay_masks(res["pre"], res["masks"]),
             f["image"], f["plan_svg"], f["mesh_glb"], f["pointcloud"], info)
@@ -693,6 +714,7 @@ def build() -> gr.Blocks:
                     detail = gr.Checkbox(value=False, label="v4 detail pass: img2img (SD 1.5 + MMIS LoRA, strength 0.3) "
                                          "on the 26 views before upscaling (+~75 s; selected on the dev rooms, "
                                          "see README)")
+                quick_hires = gr.Checkbox(value=True, label="Quick: hires pass (img2img at 1024 with the LoRA, ~6 s)")
                 btn = gr.Button("Generate", variant="primary")
                 info = gr.Markdown()
                 with gr.Row():
@@ -737,7 +759,7 @@ def build() -> gr.Blocks:
                         edges = gr.Image(label="Canny edges", type="numpy", height=260)
                         seg = gr.Image(label="Segmentation", type="numpy", height=260)
                     gr.Markdown("Segmentation colours: blue = wall, orange = floor, green = ceiling, pink = furniture.")
-        btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates, detail, n_objects, sharp_shots],
+        btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates, detail, n_objects, sharp_shots, quick_hires],
                   [image, plan, viewer, doll, model3d, depth, edges, seg, dl_image, dl_plan, dl_mesh, dl_cloud, info,
                    dl_dxf, topview, pano_view, pano_img, dl_shots, mesh_tab, raw_gallery],
                   concurrency_limit=1)

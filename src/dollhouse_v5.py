@@ -143,6 +143,20 @@ def sd_fill(img: np.ndarray, mask: np.ndarray, kind: str, device, max_side: int 
     return res
 
 
+def colour_match(img: np.ndarray, mask: np.ndarray, weight: float = 0.7, min_share: float = 0.05) -> np.ndarray:
+    """Large LaMa fills drift to a grey / blue cast: give the masked texels the per-channel mean and spread of the
+    plane's visible texels (blended with `weight`), so the fill takes the colour of the real wall / floor."""
+    vis = ~mask
+    if vis.mean() < min_share or not mask.any():
+        return img
+    out = img.astype(np.float32)
+    for c in range(3):
+        v, m = out[..., c][vis], out[..., c][mask]
+        adj = (m - m.mean()) / max(m.std(), 1e-3) * v.std() + v.mean()
+        out[..., c][mask] = (1 - weight) * m + weight * adj
+    return np.clip(out, 0, 255).astype(np.uint8)
+
+
 def fill(img: np.ndarray, mask: np.ndarray, method: str, kind: str, device=None) -> np.ndarray:
     if not mask.any() or method == "none":
         return img
@@ -150,6 +164,8 @@ def fill(img: np.ndarray, mask: np.ndarray, method: str, kind: str, device=None)
         return cv2.inpaint(img, mask.astype(np.uint8), 5, cv2.INPAINT_TELEA)
     if method == "lama":
         return lama_fill(img, mask, device)
+    if method == "lamacc":
+        return colour_match(lama_fill(img, mask, device), mask)
     if method == "sd":
         return sd_fill(img, mask, kind, device)
     return rb.inpaint(img, mask, method)

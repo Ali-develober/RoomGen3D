@@ -423,3 +423,38 @@ Held-out and demo show the same pattern (BRISQUE 26.1 / 28.2 for Redmond vs 34.7
 **Our LoRA shows its value here**: same pipeline with vs without the MMIS LoRA, the LoRA is better on BRISQUE, KID and CLIP on dev, held-out and demo (only dev sharpness is lower, 54 vs 63). This is the first place in the 360° mode where the LoRA clearly helps.
 
 **Failed / limitations**: re-rendering changes small content (new glassware, a sloped ceiling became a vertical wall where DAP's depth says so); held-out edge F1 0.56 is below the 0.6 dev guard (more cluttered rooms); at 100 % the LoRA output is slightly softer than the no-LoRA output (lower Laplacian on dev) although every quality measure prefers it. First depth-agreement definition (AbsRel of relative disparities) blew up near zero disparity (values 7-22) → replaced by the aligned error / disparity range before any decision; the bad table was kept as outputs/v5_shots/metrics_bad_depth.csv. A Quick-mode job run in parallel with the crops crashed (CUDA illegal address): two GPU jobs at once broke the one-model rule; rerun alone.
+
+## 2026-11-15 — V5 Milestone 5: clean dollhouse — DONE
+
+**Built**: `src/dollhouse_v5.py` (object mask = ADE20K furniture + loose-object classes + instances; per-plane mask of texels whose panorama pixel is an object or hidden, dilated 5 cm; fills telea / LaMa (TorchScript, GPU, ≤ 1024 px) / SD 1.5 inpainting with a plain "empty floor / bare wall" prompt / LaMa + colour match; edge-preserving clean bilateral / NL-means; blocks with projected texture only on triangles the camera saw and flat median colour (sides × 0.82) elsewhere), `scripts/eval_v5_doll.py` (residual furniture share by SegFormer on the rectified textures, BRISQUE, flat-area noise).
+
+**Results** (`results/tables/v5_doll_summary.csv`, `v5_doll_decision.json`): selected on dev **LaMa + bilateral** (mean rank of residual furniture, BRISQUE, noise).
+
+| wall + floor textures | v4 (projection + patch fill) | v5 LaMa + bilateral |
+|---|---|---|
+| residual furniture share dev / held-out / demo | 4.6 % / 2.2 % / 3.0 % | **0.6 % / 0.9 % / 1.5 %** |
+| flat-area noise dev / held-out / demo | 0.30 / 0.29 / 0.30 | **0.22 / 0.24 / 0.24** |
+| BRISQUE dev / held-out / demo | **47.3 / 43.6 / 46.2** | 63.1 / 52.0 / 56.0 |
+| seconds per room (shell textures) | 3.0-3.4 | 4.9-8.2 |
+
+**Failed / negative**: BRISQUE is worse (it penalises smooth surfaces; LaMa without the filter scores 32.9 but keeps the noise, 0.41). SD inpainting: 40 s per room and more residual furniture (1.2 %). LaMa's very large fills (60-90 % of a plane is hidden or furniture from one viewpoint) drift to a grey / blue-grey cast; a per-channel colour match of the fill (`lamacc`) was tried and rejected (residual furniture 0.6 → 1.8 %, visible blob edges). Telea smears (BRISQUE 73.6).
+
+## 2026-11-15 — V5 Milestone 6: Quick mode hires pass — DONE
+
+**Built**: `src/quick_v5.py` (512 generation → bicubic 1024 → img2img with the same LoRA pipeline, optional Real-ESRGAN to 2048), app checkbox "Quick: hires pass" (default on; the 3D relief still uses the 512 image), `scripts/eval_v5_quick.py` (52 images: 26 prompts × 2 seeds; metrics at the 1024 display size).
+
+**Results** (`results/tables/v5_quick_summary.csv`, `v5_quick_decision.json`, figure `v5_quick_crops.png`): selected on dev **img2img strength 0.4 + Real-ESRGAN**.
+
+| held-out (demo) | current 512 output | v5 hires 0.4 + ESRGAN |
+|---|---|---|
+| BRISQUE | 54.4 (53.9) | **28.1 (22.1)** |
+| KID ×10³ vs MMIS | 12.9 (6.5) | **5.2 (6.3)** |
+| CLIP | **28.7 (27.8)** | 28.3 (27.6) |
+| Laplacian sharpness (1024 view) | 45 (33) | **409 (362)** |
+| seconds, peak VRAM | 3.7 s, 2.6 GB | 14.5 s, 4.4 GB |
+
+**Failed / limitations**: CLIP slightly lower (−0.4); 4× slower. Bug found: `StableDiffusionImg2ImgPipeline.from_pipe` (diffusers 0.42) made the 1024 pass take > 10 min per image (VRAM spilled to shared memory); building the pipeline from `pipe.components` takes ~4 s — the v4 detail pass (`pano_refine.load_img2img`) uses from_pipe too, which may explain its 16-21 s per view. The first attempt also crashed (CUDA illegal address) while another GPU job was running; all reruns were sequential.
+
+## 2026-11-15 — V5 Milestone 4 (part 1): mesh walking limit — measured
+
+`scripts/eval_v5_viewer.py --part mesh` (dev rooms, v4 inside mesh, hero view, 8 directions): 90th-percentile share of pixels never seen from the panorama centre: 1.6 % at 0 m, 2.3 % at 0.1 m, 3.5 % at 0.2 m, 7.2 % at 0.5 m → with the fixed 2 % threshold the "Experimental: walkable mesh" may move **0.05 m** (v4 allowed 1 m). First run used a 3 cm / 3 % tolerance smaller than the shell's own (12 % "holes" at 0 m, a measurement artefact) → aligned with room_box.HIDDEN_REL / ABS before deciding.

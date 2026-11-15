@@ -1,0 +1,12 @@
+{
+ "selected": "hires_s0.4_esr",
+ "mean_rank": {
+  "hires_s0.35": 4.75,
+  "hires_s0.35_esr": 3.5,
+  "hires_s0.4": 3.5,
+  "hires_s0.45": 5.0,
+  "hires_s0.45_esr": 2.25,
+  "hires_s0.4_esr": 2.0
+ },
+ "rule": "dev: mean rank of BRISQUE, sharpness, CLIP, KID (hires configs)"
+}

@@ -41,7 +41,7 @@ ROOT = vc.ROOT
 SHOTS = ROOT / "outputs" / "v5_shots"
 OUT = ROOT / "outputs" / "v5_doll"
 DEVICE = torch.device("cuda")
-METHODS = ["v4", "telea_bilateral", "lama_none", "lama_bilateral", "lama_nlm", "sd_bilateral"]
+METHODS = ["v4", "telea_bilateral", "lama_none", "lama_bilateral", "lama_nlm", "sd_bilateral", "lamacc_none", "lamacc_bilateral"]
 
 
 def furniture_share(seg, tex, id2label, obj_ids):

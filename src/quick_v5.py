@@ -23,9 +23,10 @@ HIRES, STRENGTH, STEPS, GUIDANCE = 1024, 0.4, 30, 6.5
 def img2img_from(pipe):
     """img2img pipeline sharing the txt2img pipeline's modules (no extra VRAM / RAM)."""
     from diffusers import StableDiffusionImg2ImgPipeline
-    p = StableDiffusionImg2ImgPipeline.from_pipe(pipe)
+    # built from the components, NOT with from_pipe(): with diffusers 0.42 from_pipe re-casts the modules and the
+    # 1024 pass ran > 10 min per image (measured); the plain constructor takes ~4 s
+    p = StableDiffusionImg2ImgPipeline(**pipe.components)
     p.set_progress_bar_config(disable=True)
-    p.vae.enable_tiling()
     return p
 
 
