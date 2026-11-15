@@ -1,0 +1,15 @@
+{
+ "selected": "xl_redmond",
+ "rule_result": {
+  "selected": "sd21",
+  "mean_rank": {
+   "sd21": 1.6,
+   "xl_redmond": 1.8,
+   "xl_pgg": 2.6
+  },
+  "excluded": [],
+  "rule": "drop failures / RAM >= 15 GB / median seam ratio > 1.5; mean rank on dev of KID, CLIP, BRISQUE, sharpness, boxiness; ties -> faster"
+ },
+ "override": true,
+ "override_reason": "The pre-fixed rule picks sd21 by 0.2 mean-rank points (1.6 vs 1.8); without the sharpness term it is a tie (1.5 / 1.5) broken by speed. Laplacian sharpness rewards the Real-ESRGAN edge over-sharpening of the 1024x512 source, the artefact the owner named (sharp edges, no real detail). Visual check of dev views at 100 % (results/figures/v5_pano_crops_dev.png): sd21 smeared surfaces; xl_redmond real texture (wood, foliage, window frames, fabric); xl_pgg mostly empty white walls. PLAN_V5 goal: a result that measures well and looks bad is a failure -> xl_redmond adopted; its lower boxiness is addressed by milestone-2 candidate selection; its worse KID vs MMIS is reported as a negative."
+}

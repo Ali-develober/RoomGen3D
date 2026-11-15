@@ -84,6 +84,9 @@ from src import pano_refine as pr  # noqa: E402
 from src import objects3d as o3  # noqa: E402
 from src import pipeline_360 as p3  # noqa: E402
 from src import reconstruct_3d as r3  # noqa: E402
+from src import pipeline_v5 as p5v  # noqa: E402
+from src import memory as mem  # noqa: E402
+from src import quick_v5 as q5  # noqa: E402
 
 OUT = ROOT / "outputs" / "app"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -93,7 +96,9 @@ MODEL_VIEWER_JS = "https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/mode
 HEAD = f'<script type="module" src="{MODEL_VIEWER_JS}"></script>'
 QUICK, ROOM360, LAYOUT = "Quick (single view)", "360° Room", "Layout-first"
 BIG = {QUICK: ("sd",), ROOM360: ("alt", "dap", "m2f"), LAYOUT: ("cn",)}     # large models of each mode
-V4, V3, V2 = "v4: design shots + clean box room (default)", "v3: clean box room (comparison)", "v2: previous mesh (comparison)"
+V5 = "v5: SDXL panorama, re-rendered design shots, 360° inside view, clean dollhouse (default)"
+V4, V3, V2 = "v4: design shots + clean box room (comparison)", "v3: clean box room (comparison)", "v2: previous mesh (comparison)"
+V5_CANDIDATES = 2             # v5 default candidates (each SDXL panorama ~55 s; PLAN_V5 milestone 2)
 NEUTRAL_BG = "#e9e8e4"
 V4_TONE = "neutral"           # v4 viewers' tone mapping (PLAN_V4 milestone 3, scripts/viewer_check_v4.py)
 DETAIL_STRENGTH = 0.3
@@ -248,6 +253,8 @@ def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: 
     if mode == ROOM360:
         if version == V2:
             out = [*run_360(prompt, seed, steps, cfg), None, None]
+        elif version == V5:
+            out = list(run_360_v5(prompt, seed, steps, cfg, int(candidates), extra=extra))
         else:
             out = list(run_360_v3(prompt, seed, steps, cfg, int(candidates), v4=(version != V3), extra=extra,
                                        detail=bool(detail), n_objects=int(n_objects),
@@ -270,7 +277,8 @@ def run(mode: str, prompt: str, seed: float, steps: float, cfg: float, version: 
             sphere = str(Path(pano_path).with_name("pano_sphere.glb"))
             vw.pano_sphere_glb(pano_img, sphere)
         pano_view = pano_html(sphere, extra.get("hero_lon", 0.0))
-    return (gallery, *out[1:], pano_view, pano_img, extra.get("shots_zip"))
+    return (gallery, *out[1:], pano_view, pano_img, extra.get("shots_zip"), extra.get("mesh_tab", MESH_EMPTY),
+            extra.get("raw"))
 
 
 def run_layout(prompt: str, seed: float, steps: float, cfg: float):
@@ -465,6 +473,155 @@ def run_360_v3(prompt: str, seed: float, steps: float, cfg: float, k: int = 1, v
             files["dollhouse_glb"], info, files["plan_dxf"], res["topdown"])
 
 
+# --------------------------------------------------------------------------- #
+# PLAN_V5
+# --------------------------------------------------------------------------- #
+def inside_v5_html(html_path: str) -> str:
+    """The v5 Inside view: the self-contained panorama viewer page (src/pano_viewer.py) in an iframe. Camera fixed at
+    the panorama centre, turn + zoom only, opens level facing the hero shot; no CDN needed."""
+    return (f'<iframe src="{_src(html_path)}" style="width:100%;max-width:960px;aspect-ratio:4/3;border:1px solid #ddd;'
+            f'border-radius:8px;display:block;margin:0 auto" allow="fullscreen"></iframe>'
+            '<p style="text-align:center;color:#777;font-size:12px;margin:4px 0 0">Drag to look around, scroll to zoom, '
+            'double-click to return to the hero view. The camera stays where the panorama was taken, so nothing tears.</p>')
+
+
+def mesh_v5_html(glb_path: str, bg: str, yaw_deg: float, limit_m: float) -> str:
+    """'Experimental: walkable mesh': the v4 depth mesh, translation limited to the measured hole threshold."""
+    lim = max(0.05, float(limit_m))
+    return _mv(_src(glb_path), f'camera-target="0m 0m 0m" camera-orbit="{-yaw_deg:.1f}deg 90deg 0.05m" '
+               f'min-camera-orbit="auto 10deg 0.05m" max-camera-orbit="auto 170deg {lim:.2f}m" '
+               'field-of-view="64deg" min-field-of-view="30deg" max-field-of-view="90deg"',
+               f"Experimental depth mesh: scroll moves the camera at most {lim:.2f} m from the panorama centre "
+               "(beyond that, surfaces the camera never saw appear as holes / smears).", bg, tone=V4_TONE)
+
+
+MESH_EMPTY = ('<div style="height:300px;display:flex;align-items:center;justify-content:center;'
+              'color:#888;border:1px solid #ddd;border-radius:8px">The walkable mesh is shown for 360° Room v5.</div>')
+
+
+def free_diffusion() -> None:
+    """Drop every large model from memory (RAM is the limit for SDXL on the 16 GB machine)."""
+    for k in ("sd", "alt", "cn", "i2i", "triposr", "dap", "m2f", "m2f_proc", "q5_i2i"):
+        MODELS.pop(k, None)
+    mem.free()
+
+
+def run_360_v5(prompt: str, seed: float, steps: float, cfg: float, k: int = V5_CANDIDATES, extra: dict | None = None):
+    """360° Room, v5 (PLAN_V5): k SDXL panoramas (v5 prompt) -> DAP + SegFormer -> candidate with the best boxiness +
+    room size + camera clearance -> Mask2Former -> v4 room -> 4096 panorama -> valid design shots, re-rendered with
+    SD 1.5 + MMIS LoRA + depth ControlNet -> clean dollhouse -> panorama Inside viewer."""
+    from src import camera_v5 as cam
+    from src import dollhouse_v5 as dv
+    from src import generate_pano_xl as gx
+    from src import room_v4 as r4
+    from src import shot_render as sr
+    from src import shots_v5 as sv
+    extra = {} if extra is None else extra
+    seed = int(seed)
+    gen = p5v.source()
+    watch = pl.Stopwatch()
+    peaks = {}
+    free_diffusion()
+    with mem.PeakMonitor() as pm_all:
+        with watch.stage("candidates"):
+            mem.wait_for_ram(6.0, label="v5 panorama generator")
+            pipe = gp.load_alt_pipeline(DEVICE) if gen == "sd21" else gx.load_xl_pipeline(gen.split("_", 1)[1])
+            panos = [p5v.generate(pipe, gen, prompt, seed + i, spacious=True) for i in range(max(1, int(k)))]
+            pipe = None
+            free_diffusion()
+            peaks["sdxl_vram_gb"] = torch.cuda.max_memory_allocated() / 2 ** 30 if DEVICE.type == "cuda" else 0.0
+        if "seg" not in MODELS:
+            MODELS["seg"] = an.load_segmenter(DEVICE)
+            MODELS["depth"] = dp.load_depth_model(pl.DEPTH_MODEL_3D, DEVICE)
+        if "esrgan" not in MODELS:
+            MODELS["esrgan"] = gp.load_esrgan(DEVICE)
+        id2label = {int(i): v for i, v in MODELS["seg"][0].config.id2label.items()}
+        with watch.stage("scoring"):
+            MODELS["dap"] = pdp.load_dap(DEVICE)[0]
+            if gen == "sd21":
+                panos = [gp.esrgan_upscale(MODELS["esrgan"], x) for x in panos]
+            cands = [p5v.score_candidate(x, MODELS["dap"], MODELS["seg"], id2label, DEVICE) for x in panos]
+            best = cam.pick_candidate([c["score"] for c in cands], p5v.selection_weights())
+            MODELS.pop("dap")
+            mem.free()
+        pano, dist, cm = panos[best], cands[best]["dist"], cands[best]["class_map"]
+        with watch.stage("instances"):
+            MODELS["m2f"] = _load_m2f()
+            small = cv2.resize(pano, (1024, 512), interpolation=cv2.INTER_AREA)
+            ana = p3v.analyse((MODELS["m2f"], MODELS["m2f_proc"]), small, cm, id2label, DEVICE)
+            MODELS.pop("m2f")
+            MODELS.pop("m2f_proc", None)
+            mem.free()
+        with watch.stage("sharpen"):
+            hires, _ = p4v.sharpen(pano, MODELS["esrgan"])
+        with watch.stage("room_shots"):
+            res = p5v.build(dist, pano, hires, ana, id2label, prompt)
+        with watch.stage("rerender"):
+            dec = p5v.decision("v5_shots_decision.json") or {"selected": "cn_lora_s0.45"}
+            c = dec["selected"]
+            if c != "esrgan":
+                pipe = sr.load_cn_img2img(DEVICE, lora=c.startswith("cn_lora")) if c.startswith("cn") else sr.load_xl_img2img()
+                size = (sr.W, sr.H) if c.startswith("cn") else (1024, 768)
+                ims = sr.rerender_shots(pipe, res["shots"]["shots"], dist, res["box"], prompt, float(c.rsplit("_s", 1)[1]),
+                                        seed, size)
+                pipe = None
+                mem.free()
+            else:
+                ims = [s["raw"] for s in res["shots"]["shots"]]
+            for s, im in zip(res["shots"]["shots"], ims):
+                s["image"] = sr.upscale(MODELS["esrgan"], im)
+        with watch.stage("dollhouse"):
+            dd = p5v.decision("v5_doll_decision.json") or {"fill": "lama", "clean": "bilateral"}
+            res["doll_v5"] = dv.build_dollhouse(dist, hires, res, ana, id2label, DEVICE, dd["fill"], dd["clean"])
+            dv.free_lama()
+            dv.free_sd()
+            mem.free()
+            m = r4.build_meshes(dist, hires, res, ana, id2label)
+            res["mesh"], res["dollhouse"] = m["inside"], res["doll_v5"]
+        out_dir = OUT / f"room360v5_{pl.slug(prompt, seed)}_k{k}"
+        with watch.stage("export"):
+            files = p5v.save(res, out_dir, prompt)
+            files["pano"] = str(out_dir / "pano.png")
+            cv2.imwrite(files["pano"], cv2.cvtColor(pano, cv2.COLOR_RGB2BGR))
+            vw.pano_sphere_glb(hires, out_dir / "pano_sphere.glb")
+            zp = out_dir / "design_shots.zip"
+            with zipfile.ZipFile(zp, "w") as z:
+                for s in res["shots"]["shots"]:
+                    z.write(files[f"shot_{s['letter']}"], f"{s['letter']}.jpg")
+                z.write(files["plan_png"], "floorplan_with_views.png")
+            hero = res["shots"]["shots"][0]
+            dc = np.array([0.0, 0.0, 1.0]) @ ds.view_to_cam(res["box"], hero["yaw"])
+            lim = (p5v.decision("v5_viewer_selection.json") or {}).get("max_translation_m", p5v.MESH_MAX_TRANSLATION)
+            extra.update({"shots_zip": str(zp), "sphere": str(out_dir / "pano_sphere.glb"), "pano_path": files["pano"],
+                          "hero_lon": float(np.degrees(np.arctan2(dc[0], dc[2]))),
+                          "raw": [(s["raw"], f"{s['letter']}: crop from the panorama (before re-rendering)")
+                                  for s in res["shots"]["shots"]],
+                          "mesh_tab": mesh_v5_html(files["room_glb"], res["bg_color"], p4v.hero_yaw_A(res), lim)})
+    s, b = watch.seconds, res["box"]
+    peaks.update({"total_vram_gb": max(peaks.get("sdxl_vram_gb", 0), torch.cuda.max_memory_allocated() / 2 ** 30
+                                       if DEVICE.type == "cuda" else 0.0), "peak_ram_gb": pm_all.peak_ram_gb})
+    extra["timing"] = {**s, **peaks, "total_s": sum(s.values())}
+    sh = res["shots"]["shots"]
+    cs = "; ".join(f"seed {seed + i}: boxiness {c['score']['score']:.2f}, {c['score']['area_m2']:.1f} m², nearest furniture "
+                   f"{c['score']['d_near']:.2f} m" for i, c in enumerate(cands))
+    info = (f"**360° room (v5) done in {sum(s.values()):.0f} s** ({len(panos)} panorama(s) {s['candidates']:.0f} s, "
+            f"scoring {s['scoring']:.0f} s, instances {s['instances']:.0f} s, 4096 panorama {s['sharpen']:.0f} s, room + shots "
+            f"{s['room_shots']:.0f} s, re-rendering {s['rerender']:.0f} s, dollhouse {s['dollhouse']:.0f} s, export "
+            f"{s['export']:.0f} s). Peak VRAM {peaks['total_vram_gb']:.1f} GB, peak RAM {pm_all.peak_ram_gb:.1f} GB.\n\n"
+            f"Candidates: {cs}; kept seed {seed + best}.\n\n"
+            f"Room ≈ {b['width']:.2f} × {b['depth']:.2f} m ({b['area']:.1f} m²), ceiling {b['ceiling_height']:.2f} m, camera "
+            f"{b['camera_height']:.2f} m above the floor. Hero: {sv.caption(sh[0])}. "
+            f"{sum(bool(x.get('valid')) for x in sh)} of {len(sh)} shots pass the distance test. Shots re-rendered "
+            f"({dec['selected']}) and upscaled to 1536 × 1152. Dimensions are approximate (monocular depth).")
+    masks = an.room_masks(ana["class_map"], id2label)
+    small = cv2.resize(pano, (1024, 512), interpolation=cv2.INTER_AREA)
+    return ([(x["image"], sv.caption(x)) for x in sh], res["plan_image"], inside_v5_html(files["inside_html"]),
+            dollhouse_html(files["dollhouse_glb"], b["camera_height"], NEUTRAL_BG), gr.Model3D(value=files["room_glb"]),
+            pl.depth_gray(dist), an.overlay_edges(small, an.canny_edges(small)), an.overlay_masks(small, masks),
+            files["pano"], files["plan_svg"], files["room_glb"], files["dollhouse_glb"], info, files["plan_dxf"],
+            res["topdown"])
+
+
 def run_quick(prompt: str, seed: float, steps: float, cfg: float):
     """Quick mode: returns the pictures, the viewers, the download files and a summary."""
     models = load_models(QUICK)
@@ -524,9 +681,10 @@ def build() -> gr.Blocks:
                 steps = gr.Slider(10, 50, value=g2.GEN_STEPS, step=1, label="Steps")
                 cfg = gr.Slider(1.0, 15.0, value=g2.GEN_GUIDANCE, step=0.5, label="CFG (guidance scale)")
                 with gr.Accordion("360° Room options", open=False):
-                    version = gr.Radio([V4, V3, V2], value=V4, label="Pipeline")
-                    candidates = gr.Slider(1, 4, value=3, step=1, label="Candidates (v3 / v4): panoramas generated, "
-                                           "the most box-like one is kept (1 = fast)")
+                    version = gr.Radio([V5, V4, V3, V2], value=V5, label="Pipeline")
+                    candidates = gr.Slider(1, 4, value=V5_CANDIDATES, step=1, label="Candidates: panoramas generated; v5 keeps the "
+                                           "most box-like, largest room with the camera clear of furniture, v3 / v4 the most "
+                                           "box-like (v5: ~55 s per SDXL panorama; v4 used 3)")
                     sharp_shots = gr.Checkbox(value=True, label="v4 sharp design shots: Real-ESRGAN on each shot, "
                                               "1536 x 1152 (~1 s per shot; off = fast 1024 x 768 shots)")
                     n_objects = gr.Slider(0, 12, value=DEFAULT_OBJECTS, step=1,
@@ -556,7 +714,7 @@ def build() -> gr.Blocks:
                         plan = gr.Image(label="Floor plan with camera and view cones (approximate dimensions)",
                                         type="numpy", height=420)
                 with gr.Tabs():
-                    with gr.Tab("Inside (3D)"):
+                    with gr.Tab("Inside"):
                         viewer = gr.HTML(VIEWER_EMPTY)
                     with gr.Tab("Dollhouse (360°)"):
                         doll = gr.HTML(DOLL_EMPTY)
@@ -565,11 +723,15 @@ def build() -> gr.Blocks:
                                            type="numpy", height=420)
                     with gr.Tab("360° panorama"):
                         pano_view = gr.HTML(PANO_EMPTY)
+                    with gr.Tab("Experimental: walkable mesh"):
+                        mesh_tab = gr.HTML(MESH_EMPTY)
                     with gr.Tab("3D: free orbit (offline)"):
                         model3d = gr.Model3D(label="Textured mesh (drag to rotate, scroll to zoom)", height=540,
                                              clear_color=[1.0, 1.0, 1.0, 1.0])
                 with gr.Accordion("Analysis: depth, edges, segmentation", open=False):
                     pano_img = gr.Image(label="Panorama (equirectangular, 360° x 180°)", type="numpy", height=300)
+                    raw_gallery = gr.Gallery(label="v5: design shots as cut from the panorama, before re-rendering",
+                                             columns=5, height=220, object_fit="contain")
                     with gr.Row():
                         depth = gr.Image(label="Depth map (white = near, black = far)", type="numpy", height=260)
                         edges = gr.Image(label="Canny edges", type="numpy", height=260)
@@ -577,7 +739,7 @@ def build() -> gr.Blocks:
                     gr.Markdown("Segmentation colours: blue = wall, orange = floor, green = ceiling, pink = furniture.")
         btn.click(run, [mode, prompt, seed, steps, cfg, version, candidates, detail, n_objects, sharp_shots],
                   [image, plan, viewer, doll, model3d, depth, edges, seg, dl_image, dl_plan, dl_mesh, dl_cloud, info,
-                   dl_dxf, topview, pano_view, pano_img, dl_shots],
+                   dl_dxf, topview, pano_view, pano_img, dl_shots, mesh_tab, raw_gallery],
                   concurrency_limit=1)
     return demo
 

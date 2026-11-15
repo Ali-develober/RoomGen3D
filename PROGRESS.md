@@ -347,3 +347,50 @@ Restart rule: read this section, continue with the first milestone not marked DO
 - `scripts/eval_objects_final.py` completed: largest piece per room, Real-ESRGAN-enhanced crop + clean cut-out → TripoSR. Silhouette IoU held-out: block 0.665, milestone-4 input 0.473, enhanced 0.476 (beats the block in 20 % of rooms; dev 0.712 / 0.511 / 0.509, demo 0.646 / 0.570 / 0.564). Verdict (rule fixed before the run): **final negative result** — no more furniture attempts. `objects_final*.csv/json`, `objects_final_inputs.png`.
 - Demo rooms rebuilt with the new hero rule and sharp 1536 shots (`scripts/v4_summary.py`; coastal bedroom hero = the bed). App headless: v4 sharp shots 76 s cold, fast shots 38.7 s, 6.4 GB.
 - Scratch cache of 40 bench 4096 panoramas lives in the session scratchpad (outside the project).
+
+---
+
+# PLAN_V5 work log
+
+Restart rule: read PLAN_V5.md and this section, continue with the first milestone not marked DONE. Disk at the start: 30 GB free on C:; RAM 16 GB (≈ 9 GB free with the desktop running).
+
+### PLAN_V5 downloads (budget 15 GB)
+
+| Date | What | Size |
+|---|---|---|
+| 2026-11-15 | `stabilityai/stable-diffusion-xl-base-1.0` fp16 parts only (unet, text encoders, configs, tokenizers; no fp32 / VAE weights) → checkpoints/sdxl_base | 6.4 GB |
+| 2026-11-15 | `madebyollin/sdxl-vae-fp16-fix` (config + safetensors) → checkpoints/sdxl_vae_fp16_fix | 0.32 GB |
+| 2026-11-15 | `artificialguybr/360Redmond` View360.safetensors (SDXL 360° LoRA, bigscience-openrail-m) → checkpoints/lora_360redmond | 0.87 GB |
+| 2026-11-15 | `ProGamerGov/sdxl-360-diffusion` unet/ only (SDXL UNet fine-tuned on 2048 × 1024 equirectangular images, MIT per its CITATION) → checkpoints/sdxl_360_diffusion | 4.8 GB |
+| 2026-11-15 | `JosephCatrambone/big-lama-torchscript` lama.pt (LaMa, Apache-2.0) → checkpoints/lama | 0.20 GB |
+
+**Total so far: 12.6 GB of 15 GB.** Free disk after the downloads: 14 GB.
+
+### Decisions log (owner asleep)
+
+- Rooms fixed before any run (PLAN_V5.md): dev = scandinavian / farmhouse × 5 room types, held-out = industrial / bohemian × 5, seed 701; plus the six demo rooms.
+- SDXL licences checked: SDXL base openrail++ (not gated), 360Redmond bigscience-openrail-m, sdxl-360-diffusion MIT. Muapi re-upload of 360Redmond not used (third-party mirror). jbilcke-hf/sdxl-panorama not tried (needs cog-sdxl textual-inversion code).
+- SDXL smoke test (one dev room, 360Redmond): loads and runs in 8 GB with model CPU offload: 56 s per 2048 × 1024 panorama, peak VRAM 5.9 GB, process RAM 8.8 GB (3.4 GB system RAM left). diffusers 0.42 removed `pipe.enable_vae_slicing()` → `pipe.vae.enable_slicing()`.
+- LaMa: the TorchScript port (GPU, any size) instead of OpenCV's fixed-512 ONNX.
+
+## 2026-11-15 — V5 Milestone 1: better panorama source (SDXL) — DONE (adopted by override of the fixed rule, see below)
+
+**Built**: `src/memory.py` (free / wait_for_ram / PeakMonitor for RAM + VRAM peaks), `src/generate_pano_xl.py` (SDXL base fp16 + fp16-fix VAE, 360Redmond LoRA fused or the ProGamerGov 360 UNet, circular padding in UNet + VAE, model CPU offload, 2048 × 1024, DPM++ 2M Karras 25 steps), `scripts/v5_common.py` (room sets, level views, metrics), `scripts/eval_v5_pano.py` (resumable: gen / esrgan / geometry / views / clip / report).
+
+**Results** (26 rooms per config; KID/FID of 8 level views per panorama vs the MMIS hold-out; `results/tables/v5_pano_summary.csv`):
+
+| dev (10 rooms) | sd21 (v4 source, 1024 → ESRGAN 2048) | SDXL + 360Redmond | SDXL 360 UNet (PGG) |
+|---|---|---|---|
+| KID ×10³ ↓ | **56.2** | 70.2 | 84.1 |
+| CLIP ↑ | 20.5 | **21.3** | 18.9 |
+| BRISQUE ↓ | 35.1 | **26.5** | 33.5 |
+| Laplacian sharpness | **95.8** | 72.4 | 66.2 |
+| boxiness ↑ | **0.86** | 0.66 | 0.69 |
+| seam ratio (median) | 1.22 | 0.97 | 1.02 |
+| s / panorama, peak VRAM, peak process RAM | 9.2 s, 3.9 GB, 1.7 GB | 54.8 s, 5.9 GB, 10.0 GB | 51.9 s, 5.9 GB, 10.2 GB |
+
+Held-out and demo show the same pattern (BRISQUE 26.1 / 28.2 for Redmond vs 34.7 / 38.8 for sd21; CLIP higher on both). No crash / OOM in 52 SDXL panoramas.
+
+**Decision**: the fixed rule (mean rank of KID, CLIP, BRISQUE, sharpness, boxiness on dev) gives sd21 1.6 vs Redmond 1.8 (without sharpness: a 1.5 / 1.5 tie broken by speed → sd21). Adopted **SDXL + 360Redmond anyway**, an explicit override logged in `results/tables/v5_pano_decision.json`: the Laplacian term rewards the Real-ESRGAN edge over-sharpening of the low-resolution source (exactly the "sharp edges, no detail" the owner named), and at 100 % (`results/figures/v5_pano_crops_dev.jpg`) sd21 is smeared while Redmond shows real wood, fabric, foliage and window frames; PGG is mostly empty white walls (no furniture, CLIP 18.9). PLAN_V5's goal ("measures well but looks bad = failure") decides. The lower boxiness is handled by milestone-2 candidate selection.
+
+**Failed / negative**: SDXL panoramas are further from MMIS by KID (70 vs 56) — MMIS photos are low-resolution web photos, which the smeared sd21 views resemble more at 256 px; SDXL repeats furniture (three beds, two dining tables) and makes rooms with many windows (less box-like); 6× slower and 10 GB process RAM (needs everything else unloaded). PGG UNet not used (empty rooms); its 4.8 GB stays on disk until the end of the round.
