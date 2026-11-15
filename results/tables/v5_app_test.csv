@@ -1,0 +1,5 @@
+mode,status,seconds,peak_vram_gb,peak_ram_gb,candidates,prompt,seed
+quick,PASS,31.15,4.64,2.35,1,a mid-century modern style dining room,44
+v5,PASS,526.92,6.20,10.60,2,a mid-century modern style dining room,44
+v4,PASS,69.12,6.42,8.57,3,a mid-century modern style dining room,44
+v5_fresh_process,PASS,212.29,5.93,10.94,2,a coastal style bedroom,22

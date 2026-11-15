@@ -458,3 +458,31 @@ Held-out and demo show the same pattern (BRISQUE 26.1 / 28.2 for Redmond vs 34.7
 ## 2026-11-15 — V5 Milestone 4 (part 1): mesh walking limit — measured
 
 `scripts/eval_v5_viewer.py --part mesh` (dev rooms, v4 inside mesh, hero view, 8 directions): 90th-percentile share of pixels never seen from the panorama centre: 1.6 % at 0 m, 2.3 % at 0.1 m, 3.5 % at 0.2 m, 7.2 % at 0.5 m → with the fixed 2 % threshold the "Experimental: walkable mesh" may move **0.05 m** (v4 allowed 1 m). First run used a 3 cm / 3 % tolerance smaller than the shell's own (12 % "holes" at 0 m, a measurement artefact) → aligned with room_box.HIDDEN_REL / ABS before deciding.
+
+## 2026-11-15 — V5 Milestone 4: inside view without tearing — DONE
+
+**Built**: `src/pano_viewer.py` (self-contained WebGL2 page, no CDN: full-screen quad, per-pixel level pinhole ray → room frame B → panorama camera (G = Rᵀ Q) → equirectangular lookup with `textureLod` at the zoom's mip level (no seam line), pixel values written unchanged (no tone mapping), drag / wheel / pinch / keys, double-click resets to the hero; 4096 panorama embedded as JPEG), app tab **Inside** = this page in an iframe; the v4 depth mesh moved to the tab **Experimental: walkable mesh** (translation limited to the measured 0.05 m); `scripts/eval_v5_viewer.py --part browser`.
+
+**Results**: headed Chromium, six demo rooms (`results/tables/v5_viewer_browser.csv`, figures `v5_inside_<room>.png`, `v5_inside_overview.png`): the page opens exactly on the hero design shot, NCC 0.982-0.998 (opposite direction 0.04-0.44); turning ±120° shows no tears or stretched surfaces in any room (it is the panorama itself). Mesh walking limit: see part 1 above (0.05 m).
+
+## 2026-11-15 — V5 self-review loop
+
+`scripts/review_v5.py`: per demo room and version a page with the app's viewer markup (gallery, hero, Inside, Dollhouse, plan), served locally, headed Chromium element screenshots → `outputs/v5_review/<room>/r<round>_<version>_*.png`, figures `results/figures/v5_before_after_<room>.png` (v4 vs v5: hero, hero at 100 %, Inside, dollhouse) and `v5_before_after_overview.png`.
+
+- **Round 1** (all screenshots looked at): hero shots PASS in 6/6 (room + main piece from a distance, level; dining room: table, chairs and the window wall instead of v4's plates close-up); 100 % crops photographic, no painterly mush (re-rendered surfaces have real texture); Inside view PASS 6/6 (no tears, opens on the hero); floor plan agrees with the shots (dining: table in the hero cone). **Dollhouse FAIL**: furniture removed from walls / floors, but LaMa's very large fills give grey / blue-grey blotchy floors and walls; the bathroom has no blocks (bathtub rejected by the v3 solids step); the Mediterranean room is almost empty.
+- **Round 2** (fix attempts on dev, then decided): (a) per-channel colour match of the fill — blob edges at the mask border, more residual furniture (0.6 → 1.8 %): rejected; (b) LaMa detail on a Navier-Stokes base grown from the visible texels — horizontal / vertical streaks across the holes: rejected. Adding these variants flipped the mean-rank winner to lama_nlm, a pure ranking artefact → the ranking is restricted to the six pre-registered methods (LaMa + bilateral stays).
+- **Still failing after the review**: dollhouse floors / walls are clean of furniture but large unseen areas have a grey cast (60-90 % of a plane is hidden or furniture from one viewpoint); bathroom without blocks. Not attempted a third round: the cause (one viewpoint) is beyond a texture fix.
+
+## 2026-11-15 — PLAN_V5 Final — DONE
+
+- App: 360° Room defaults to **v5** (switch v5 / v4 / v3 / v2), Quick hires pass on by default. `scripts/test_app_v5.py` (all PASS, `results/tables/v5_app_test.csv`): Quick 31 s, 4.6 GB VRAM, 2.4 GB RAM; **v5 212 s per room in a fresh process** (2 SDXL candidates incl. load 126 s, scoring 11 s, instances 5 s, 4096 panorama 12 s, room + shots 6 s, re-rendering 35 s, dollhouse 16 s), **peak VRAM 6.2 GB, peak RAM 10.6-10.9 GB**; the same v5 request right after a Quick request took 527 s (RAM pressure while SDXL loads); v4 (k = 3) 69 s, 6.4 GB, 8.6 GB.
+- Demo rooms built with the final v5 pipeline: `outputs/v5_demo/<room>/` (`scripts/build_v5_rooms.py`; per-room timing.json: re-rendering 27 s, dollhouse + mesh + export 5-17 s).
+- Before / after per demo room: `results/figures/v5_before_after_<room>.png` + overview (headed Chromium; v4 vs v5 hero, hero at 100 %, Inside, dollhouse). Summary table of every metric: `results/tables/v5_summary.csv` (`scripts/v5_summary.py`).
+- README: PLAN_V5 section, demo modes v5, objectives 17-22, v5 limitations, repository structure.
+- Downloads PLAN_V5: 12.6 GB of 15 GB (table at the top of this section). Free disk at the end: 15G. The ProGamerGov SDXL 360 UNet (checkpoints/sdxl_360_diffusion, 4.8 GB) is not used by any default path and can be deleted if space is needed (not deleted: checkpoints are not "intermediate outputs").
+- Intermediate outputs of this round kept for now (all regenerable): outputs/v5_pano (≈0.2 GB), v5_rooms (≈0.4 GB), v5_shots, v5_doll, v5_quick, v5_review, v5_demo, outputs/app (test runs).
+- Not done (on purpose): the final course notebook.
+
+**What improved**: the 2D shots look like interior photos taken from a distance (hero valid in 80 % of dev rooms vs 30 %; at 100 % real texture from the SDXL source + LoRA re-render instead of sharpened mush); the Inside view no longer tears (panorama viewer); walls and floors of the dollhouse no longer carry smeared furniture; Quick images are much cleaner (BRISQUE 54 → 28).
+**What did not**: KID vs MMIS and boxiness of the SDXL panoramas are worse than v4's; area / clearance terms in candidate selection; colour-matched and smooth-base dollhouse fills; walking in the 3D room (5 cm).
+**Still weak**: the dollhouse (grey large fills, missing rejected furniture, blocks only); 360° room time (3.5 min) and RAM (11 GB); SDXL repeats furniture and makes window-heavy, less box-like rooms; camera height ~1.0-1.1 m; wall views often fail the distance test (main piece not in them).

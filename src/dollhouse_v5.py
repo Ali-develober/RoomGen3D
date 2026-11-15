@@ -166,6 +166,8 @@ def fill(img: np.ndarray, mask: np.ndarray, method: str, kind: str, device=None)
         return lama_fill(img, mask, device)
     if method == "lamacc":
         return colour_match(lama_fill(img, mask, device), mask)
+    if method == "lamabase":       # LaMa's detail band on a smooth Navier-Stokes base grown from the visible texels
+        return rb.with_base(lama_fill(img, mask, device), img, mask, sigma=8.0)
     if method == "sd":
         return sd_fill(img, mask, kind, device)
     return rb.inpaint(img, mask, method)

@@ -41,7 +41,11 @@ ROOT = vc.ROOT
 SHOTS = ROOT / "outputs" / "v5_shots"
 OUT = ROOT / "outputs" / "v5_doll"
 DEVICE = torch.device("cuda")
-METHODS = ["v4", "telea_bilateral", "lama_none", "lama_bilateral", "lama_nlm", "sd_bilateral", "lamacc_none", "lamacc_bilateral"]
+PREREG = ["v4", "telea_bilateral", "lama_none", "lama_bilateral", "lama_nlm", "sd_bilateral"]     # fixed before the run
+# self-review variants added after the first run (reported, but they do not take part in the ranking: adding
+# alternatives would change the mean ranks of the pre-registered ones)
+EXTRA = ["lamacc_none", "lamacc_bilateral", "lamabase_bilateral"]
+METHODS = PREREG + EXTRA
 
 
 def furniture_share(seg, tex, id2label, obj_ids):
@@ -127,7 +131,7 @@ def report(tag="v5_doll"):
     fl.columns = [f"floor_{c}" for c in fl.columns]
     summ = summ.merge(fl.reset_index(), on=["set", "method"], how="left")
     summ.to_csv(vc.TAB / f"{tag}_summary.csv", index=False, float_format="%.4f")
-    dev = summ[(summ["set"] == "dev") & (summ["method"] != "v4")].set_index("method")
+    dev = summ[(summ["set"] == "dev") & (summ["method"] != "v4") & summ["method"].isin(PREREG)].set_index("method")
     rk = pd.DataFrame({"f": dev["furniture_share"].rank(), "b": dev["brisque"].rank(), "n": dev["noise"].rank()})
     dev["mean_rank"] = rk.mean(1)
     best = dev["mean_rank"].idxmin()

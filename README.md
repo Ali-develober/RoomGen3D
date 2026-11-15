@@ -1015,6 +1015,56 @@ All numbers from `results/tables/v4_summary.csv` (built by `scripts/v4_summary.p
 
 23 of 27 comparable rows improve (bold). Not improved: inside GLB size (1.6 → 5.3 MB, within the 25 MB target), silhouette IoU of the furniture (generated objects rarely beat blocks), synthetic-hole SSIM (−0.01 for the texture-keeping fill) and door / window recall. Summary figures (hero shot, wall shots, plan with view cones, v3 / v4 dollhouse, v3 / v4 inside render): `results/figures/v4_summary_<room>.png` for the six demo rooms and `v4_summary_overview.png`.
 
+### PLAN_V5: outputs that look good to a person
+The owner's verdict on v4 (dining room, seed 44): the hero shot was a tilted close-up of plates, textures were painterly mush (Real-ESRGAN sharpened edges of a low-resolution panorama but added no detail), the camera stood among the furniture, and the inside 3D view tore (ribbons, noisy floor, holes). v5 pipeline (`src/pipeline_v5.py`; v4 stays callable):
+
+```
+prompt + "spacious room, photographed from near a wall, no close-ups"
+  -> SDXL 1.0 + 360Redmond LoRA, 2048 x 1024, circular padding, CPU offload      (src/generate_pano_xl.py)
+  -> 2 candidates (app) / 3 (evaluation): DAP + SegFormer, boxiness; cameras < 0.5 m from furniture rejected
+  -> v4 room (Mask2Former, box, blocks, plan) + 4096 panorama (Real-ESRGAN per view)
+  -> valid design shots: level, 85-90 deg; main piece 15-50 % of the frame, median distance > 1.5 m,
+     < 15 % of the frame nearer than 0.8 m                                          (src/camera_v5.py, src/shots_v5.py)
+  -> each shot RE-RENDERED: SD 1.5 + our MMIS LoRA + depth ControlNet img2img (768 x 576, strength 0.55)
+     -> Real-ESRGAN 1536 x 1152                                                     (src/shot_render.py)
+  -> Inside view = panorama viewer (WebGL2, offline, turn + zoom only)              (src/pano_viewer.py)
+  -> dollhouse: furniture masked out of wall / floor textures, LaMa + bilateral; flat colour on unseen block faces
+                                                                                    (src/dollhouse_v5.py)
+Quick mode: 512 -> img2img 1024 (strength 0.4, LoRA) -> Real-ESRGAN                (src/quick_v5.py)
+```
+
+Rooms: 10 development (scandinavian / farmhouse), 10 held-out (industrial / bohemian), the six demo rooms; all choices made on the development rooms. Full table: `results/tables/v5_summary.csv` (`scripts/v5_summary.py`).
+
+| Milestone | Metric | Data | v4 | v5 |
+|---|---|---|---|---|
+| 1 panorama source | view BRISQUE (SD 2.1 + ESRGAN → SDXL + 360Redmond) | held-out / demo | 34.7 / 38.8 | **26.1 / 28.2** |
+| 1 panorama source | view CLIP | held-out / demo | 21.7 / 20.9 | **22.3 / 23.6** |
+| 1 panorama source | view KID ×10³ vs MMIS | held-out / demo | **61.8 / 47.6** | 69.0 / 51.9 |
+| 1 panorama source | boxiness | held-out / demo | **0.89 / 0.85** | 0.62 / 0.68 |
+| 1 panorama source | s / panorama, peak VRAM, process RAM | demo | 9 s, 3.9 GB, 1.7 GB | 51 s, 5.9 GB, 10.1 GB |
+| 2 camera | rooms whose hero passes the distance test | dev / held-out / demo | 0.30 / 0.20 / 0.50 | **0.80 / 0.50 / 0.67** |
+| 2 camera | camera to nearest furniture (m) | dev / held-out / demo | 0.62 / 0.88 / 0.81 | **1.16 / 1.03 / 1.14** |
+| 3 shot detail | shot BRISQUE (ESRGAN → re-render + LoRA) | held-out / demo | 22.7 / 28.6 | **20.4 / 23.4** |
+| 3 shot detail | shot KID ×10³ vs MMIS | held-out / demo | 64.5 / 48.3 | **51.0 / 43.7** |
+| 3 shot detail | shot CLIP | held-out / demo | 20.5 / 22.7 | **21.9 / 22.8** |
+| 3 shot detail | LoRA effect, same re-render without → with LoRA: BRISQUE / KID | held-out | 21.1 / 56.6 | **20.4 / 51.0** |
+| 3 shot detail | structure kept (edge F1 vs crop) | held-out | **0.96** | 0.56 |
+| 4 inside view | pixels never seen from the centre at 0.5 m (mesh) vs panorama viewer | dev | 7.2 % | **0 %** |
+| 4 inside view | browser: opening view vs hero shot NCC | demo, headed Chromium | – | **0.99** |
+| 5 dollhouse | residual furniture on wall / floor textures | held-out / demo | 2.2 % / 3.0 % | **0.9 % / 1.5 %** |
+| 5 dollhouse | flat-area noise | held-out / demo | 0.29 / 0.30 | **0.24 / 0.24** |
+| 5 dollhouse | BRISQUE of wall / floor textures | held-out / demo | **43.6 / 46.2** | 52.0 / 56.0 |
+| 6 Quick | BRISQUE / KID ×10³ (512 → hires 0.4 + ESRGAN) | held-out | 54.4 / 12.9 | **28.1 / 5.2** |
+| 6 Quick | CLIP / seconds | held-out | **28.7 / 3.7 s** | 28.3 / 14.5 s |
+| app | 360° request (v4 k = 3 vs v5 k = 2), peak VRAM, peak RAM | demo dining room | **69 s**, 6.4 GB, 8.6 GB | 212 s fresh (527 s right after a Quick request), 6.2 GB, 10.6 GB |
+
+Decisions and negative results (details in `PROGRESS.md`): SDXL was adopted although the fixed mean-rank rule preferred the v4 source by 0.2 rank points (its Laplacian term rewards ESRGAN's over-sharpened edges; at 100 % the SDXL views show real texture, `results/figures/v5_pano_crops_dev.jpg`); the ProGamerGov SDXL 360 UNet makes empty rooms (not used). Area / clearance terms in the candidate score did not help (only the rejection rule is kept). Our MMIS LoRA clearly helps for the first time in the 360° mode: in the shot re-render it beats the same pipeline without it on BRISQUE, KID and CLIP on dev, held-out and demo. The depth-mesh inside view tears after 5 cm of walking (2 % threshold), so the default Inside view does not move. Dollhouse: furniture is gone from walls and floors, but very large unseen areas get a grey cast; two fixes tried in the self-review (colour matching, smooth base) were rejected.
+
+Figures: before / after per demo room (v4 vs v5: hero, hero at 100 %, Inside, dollhouse; headed Chromium) `results/figures/v5_before_after_<room>.png` and `v5_before_after_overview.png`; Inside viewer `v5_inside_<room>.png`; shot re-render crops `v5_shots_crops.png`; panorama sources `v5_pano_views.png`, `v5_pano_crops_dev.jpg`; mesh walking limit `v5_viewer_mesh.png`; Quick hires `v5_quick_crops.png`.
+
+### Demo modes (v5)
+**360° Room** runs **v5** by default (switch v5 / v4 / v3 / v2). Top: gallery of the re-rendered design shots (1536 × 1152, hero first, captions say whether the view passes the distance test) next to the floor plan with view cones. Tabs: **Inside** (panorama viewer: drag to turn, scroll to zoom, double-click returns to the hero; works offline), **Dollhouse**, **Top-down**, **360° panorama**, **Experimental: walkable mesh** (the v4 depth mesh, at most 5 cm from the centre), free orbit. Analysis: the raw shot crops before re-rendering, panorama, depth, edges, segmentation. Candidates default 2 (~55 s per SDXL panorama). **Quick** has a hires pass checkbox (default on). App test `scripts/test_app_v5.py` (`results/tables/v5_app_test.csv`): Quick 31 s (4.6 GB), v5 212 s in a fresh process / 527 s right after a Quick request (6.2 GB VRAM, 10.6 GB RAM), v4 69 s; all pass.
+
 ### Demo modes (v4)
 **360° Room** runs **v4** by default (pipeline switch v4 / v3 / v2; options: candidates (default 3), number of generated furniture objects (default 4), img2img detail pass). Page layout: design-shot gallery + floor plan with view cones on top, then the viewer tabs **Inside**, **Dollhouse**, **Top-down**, **360° panorama** (+ free orbit), then the Analysis section. The top of the page is a **gallery of design shots** (hero first, then A–D, captions with the plan letters; Quick and the other modes show their single image or panorama there) next to the **floor plan with view cones**; the viewer tabs are Inside, Dollhouse (+ top view), **360° panorama** (new) and Free orbit; the panorama itself is in the Analysis section. New download: the design shots + plan as a zip. Headless test: v4 one candidate 40.7 s including the first model loads, peak 5.9 GB; v3 15.1 s; Quick 13.0 s.
 
@@ -1081,7 +1131,15 @@ RoomGen3D/
 │   ├── pano_refine.py         # v4: 4096 x 2048 panorama from refined perspective views (ESRGAN, img2img, multi-band blend)
 │   ├── room_v4.py             # v4: sharp 3D (hires shell textures, silhouette band, 3D Taubin, packed atlas, mipmaps)
 │   ├── objects3d.py           # v4: TripoSR furniture objects (crop, mask, inpaint, generate, render-and-compare)
-│   ├── pipeline_v4.py         # v4 360° Room stages (default in the demo)
+│   ├── pipeline_v4.py         # v4 360° Room stages (comparison)
+│   ├── pipeline_v5.py         # v5 360° Room stages (default in the demo, PLAN_V5)
+│   ├── generate_pano_xl.py    # SDXL + 360° LoRA panoramas, 2048 x 1024, circular padding, CPU offload
+│   ├── camera_v5.py / shots_v5.py  # camera clearance, candidate rejection, valid design shots
+│   ├── shot_render.py         # shot re-rendering: SD 1.5 + MMIS LoRA + depth ControlNet img2img
+│   ├── pano_viewer.py         # offline WebGL2 panorama viewer (Inside view)
+│   ├── dollhouse_v5.py        # furniture-free plane textures (LaMa), flat-coloured hidden block faces
+│   ├── quick_v5.py            # Quick-mode hires pass
+│   └── memory.py              # RAM / VRAM helpers (free, wait_for_ram, PeakMonitor)
 │   ├── pipeline.py            # End-to-end stages (used by the script and the demo)
 │   └── evaluate.py            # FID, CLIP, AbsRel, RMSE, δ
 ├── scripts/                   # Long jobs: training, evaluations, run_pipeline.py, figures
@@ -1149,6 +1207,15 @@ Version 4 (PLAN_V4.md):
 15. Real furniture shapes. *Status: not met: TripoSR objects fit the panorama silhouettes worse than blocks in every class (dev 0.55 vs 0.71), so only 5 % of held-out pieces use them; the relief tier for uncertain instances improves the full-room render (PSNR 24.4 → 26.2) and recall (2.05 → 2.60 pieces per room).*
 16. Remaining v3 weaknesses. *Status: partly met: hidden-area fill keeps texture (energy ratio 0.50 → 0.91, BRISQUE 51.9 → 45.0); open sides are detected and drawn (4 of 6 demo rooms) but the area rarely shrinks; door / window recall unchanged (0.02).*
 
+Version 5 (PLAN_V5.md):
+
+17. A better panorama source. *Status: met by eye, not by the pre-fixed rule: SDXL + 360Redmond at 2048 x 1024 runs in 8 GB VRAM / 16 GB RAM; BRISQUE 34.7 -> 26.1 and CLIP 21.7 -> 22.3 on held-out views, but KID vs MMIS 61.8 -> 69.0 and boxiness 0.89 -> 0.62 are worse, and it is 6x slower.*
+18. Shots from a distance. *Status: met: rooms whose hero passes the distance test 0.30 -> 0.80 (dev), 0.20 -> 0.50 (held-out), 0.50 -> 0.67 (demo).*
+19. Real detail in the design shots. *Status: met: re-rendering with SD 1.5 + MMIS LoRA + depth ControlNet: held-out BRISQUE 22.7 -> 20.4, KID 64.5 -> 51.0, CLIP 20.5 -> 21.9 vs Real-ESRGAN only; the LoRA beats no LoRA on all three; structure moves more (edge F1 0.56).*
+20. An inside view without tearing. *Status: met: panorama viewer (0 % unseen pixels, opens on the hero, NCC 0.99 in Chromium); the depth mesh would show 2 % holes after 5 cm.*
+21. A clean dollhouse. *Status: partly met: residual furniture on wall / floor textures 2.2 % -> 0.9 %, noise 0.29 -> 0.24 (held-out); large unseen areas look grey, BRISQUE worse (43.6 -> 52.0).*
+22. Quick mode hires. *Status: met: BRISQUE 54.4 -> 28.1, KID 12.9 -> 5.2 (held-out), CLIP -0.4, 4x slower.*
+
 ---
 
 ## 14. Limitations
@@ -1161,6 +1228,7 @@ Version 4 (PLAN_V4.md):
 - The 360° room box and plan are rectangles; open-plan and L-shaped rooms are boxed too large.
 - **v3 (PLAN_V3):** the room is always one rectangle and the furniture always boxes (hidden faces repeat the visible side's texture); hidden wall / floor regions are inpainted smoothly (Navier–Stokes was chosen by SSIM; the patch fill keeps more texture). Doors and windows are rarely found on generated images. The box fit takes the farthest strong wall peak, which fixes rooms cut by furniture fronts but boxes open-plan panoramas around the neighbouring spaces (dining 74.7 m²). All v3 numbers come from layout-conditioned panoramas whose images follow the layout only approximately; the selection of the best of k panoramas favours one "look" and reduces variety.
 - **v4 (PLAN_V4):** all design shots and the inside view share one camera (the panorama centre, ~1.2 m high); moving it would open disocclusion holes. The hero choice is better than a fixed wall but far from the oracle (1.35 vs 2.25 pieces). Generated 3D furniture (TripoSR, single cropped view) does not beat boxes, so the dollhouse is still mostly blocks plus relief shells that can look like floating fragments. Open-plan rooms are now marked "open" but stay large, because furniture seen in the adjoining space cannot be assigned. Doors and windows remain rarely detected. The img2img detail pass costs ~75–90 s per room. Real-browser numbers come from scripted camera poses, not mouse interaction.
+- **v5 (PLAN_V5):** the 360° mode needs ~3.5 min per room (two SDXL candidates) and ~11 GB of RAM, so every other model is unloaded first; right after another request it can take ~9 min (RAM pressure). SDXL rooms are less box-like and repeat furniture (several beds / tables); the camera stays at the panorama height (~1.0-1.1 m), and walking in the 3D room is not possible (the mesh tears after 5 cm). Re-rendered shots invent small content (glassware, ceiling shapes) where the depth allows. The dollhouse is clean of smeared furniture, but most of each floor / wall is unseen from one viewpoint and its LaMa fill looks grey; rejected furniture (e.g. the bathroom's bathtub) is missing.
 - Training on a subset of MMIS due to compute limits.
 - The 3D stage uses a metric depth model, but its absolute scale is only approximate (AbsRel 0.22 without alignment on NYU), and the camera field of view (60°) is assumed, so sizes in the 3D model are rough.
 - Classical preprocessing did **not** improve depth accuracy on clean NYU Depth V2 images: modern depth networks are already robust to moderate noise, blur and low light. Only noise-gated denoising helps, and only under strong noise (σ ≥ 25); nothing tested helps against blur. Depth refinement gives a cleaner point cloud (fewer flying pixels) but not a lower depth error.

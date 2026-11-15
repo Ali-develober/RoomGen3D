@@ -3,13 +3,11 @@
  "fill": "lama",
  "clean": "bilateral",
  "mean_rank": {
-  "lama_bilateral": 3.0,
-  "lama_nlm": 3.0,
-  "lama_none": 3.3333333333333335,
-  "lamacc_bilateral": 4.333333333333333,
-  "lamacc_none": 4.333333333333333,
-  "sd_bilateral": 4.666666666666667,
-  "telea_bilateral": 5.333333333333333
+  "lama_bilateral": 2.3333333333333335,
+  "lama_nlm": 2.3333333333333335,
+  "lama_none": 2.6666666666666665,
+  "sd_bilateral": 3.6666666666666665,
+  "telea_bilateral": 4.0
  },
  "rule": "dev: mean rank of residual furniture share, BRISQUE, noise"
 }
