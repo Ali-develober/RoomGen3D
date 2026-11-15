@@ -486,3 +486,25 @@ Held-out and demo show the same pattern (BRISQUE 26.1 / 28.2 for Redmond vs 34.7
 **What improved**: the 2D shots look like interior photos taken from a distance (hero valid in 80 % of dev rooms vs 30 %; at 100 % real texture from the SDXL source + LoRA re-render instead of sharpened mush); the Inside view no longer tears (panorama viewer); walls and floors of the dollhouse no longer carry smeared furniture; Quick images are much cleaner (BRISQUE 54 → 28).
 **What did not**: KID vs MMIS and boxiness of the SDXL panoramas are worse than v4's; area / clearance terms in candidate selection; colour-matched and smooth-base dollhouse fills; walking in the 3D room (5 cm).
 **Still weak**: the dollhouse (grey large fills, missing rejected furniture, blocks only); 360° room time (3.5 min) and RAM (11 GB); SDXL repeats furniture and makes window-heavy, less box-like rooms; camera height ~1.0-1.1 m; wall views often fail the distance test (main piece not in them).
+
+---
+
+# PLAN_V6 work log
+
+Restart rule: read PLAN_V6.md (acceptance table) and this section, continue with the first milestone not marked DONE.
+
+## 2026-11-15 — V6 Milestone 0: free disk space — DONE
+
+Free on C: **12.2 GB before → 23 GB after** (the owner's message said 46 GB; the measured value at the start was 12 GB).
+
+| Removed | Size | Why |
+|---|---|---|
+| checkpoints/sdxl_360_diffusion (ProGamerGov 360 UNet) | 4.8 GB | only candidate B of V5 M1; no mode loads it |
+| checkpoints/controlnet_tile | 1.4 GB | only `shot_enhance.load_tile_pipeline`, called by no mode (ESRGAN won in the polish round) |
+| checkpoints/horizonnet | 0.33 GB | only `scripts/eval_horizonnet.py` (an old experiment) |
+| HF cache Intel/dpt-hybrid-midas | 0.93 GB | only the depth-robustness experiments, no mode |
+| outputs/* except outputs/v5_demo (latest run of each demo room) | ≈ 3.3 GB | intermediate outputs, all tables / figures are saved |
+| Windows temp `gradio` folder (this project's app uploads / outputs) | 0.45 GB | temp files |
+| pip cache, `__pycache__` / `.ipynb_checkpoints` | 0.05 GB | caches |
+
+Kept: TripoSR (1.6 GB, still loadable by the v4 objects option), SD 1.5 / CLIP / SegFormer / Depth Anything relative + metric (used by modes or by the v6 gates), Playwright chromium-1255 + its headless shell (both used: headed review, headless app test). Already absent: checkpoints/lora_smoke and LoRA steps 500-2500 (only step_03000 exists). No duplicate model copies found (the HF cache entries of mask2former / DAP / sd-t2i-360 / controlnet-sd21 are 1 kB refs; the weights live only in checkpoints/). Not deleted: the untracked `results/*_smoke*` files (the owner's never-delete list includes results/). Unrelated HF models listed only: arabert (FatimahEmadEldin EXP-001) 0.52 GB, timm vit/convnext 0.86 GB.
