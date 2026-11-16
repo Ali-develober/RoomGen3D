@@ -552,9 +552,9 @@ Kept: TripoSR (1.6 GB, still loadable by the v4 objects option), SD 1.5 / CLIP /
 | T2I 0.8 | 0.070 | 0.93 | 0.29 | 0.18 | 0.45 | 47.7 | 58.8 | 21.7 | 46 |
 | T2I 1.0 | 0.042 | 0.98 | 0.29 | 0.23 | 0.48 | 48.3 | 71.3 | 21.6 | 45 |
 
-Decision (`v6_pano_decision.json`; the ranking rule was written AFTER the sweep — the plan named the gates but no ranking): gates δ1 ≥ 0.9, seam ratio ≤ 1.5, generated window share ≤ 1.5 × proxy (the three scale-0.5/0.7 small configs fail δ1), then mean rank of the 4 geometry gates + KID + CLIP + BRISQUE → **cn_small, scale 0.9, full schedule** (2.29) ahead of cn_mid 0.7 (2.57). By eye the two are close; mid invents strip skylights in the ceiling and loads in 104 s cold (small: 22 s warm). Weak conditioning (0.5-0.7) hallucinates extra furniture and split the 8-seat table into two tables (acceptance issue 3) — visible in `outputs/v6_pano/*/dev_a_scandinavian_style_dining_room_s701.jpg`.
+Decision (`v6_pano_decision.json`; **post-hoc: the ranking rule was written AFTER this sweep, on the same 5 dev rooms it then ranked** — the plan named the gates but no ranking; the rule was never evaluated on rooms outside the sweep, see "Post-freeze re-measurement" below): gates δ1 ≥ 0.9, seam ratio ≤ 1.5, generated window share ≤ 1.5 × proxy (the three scale-0.5/0.7 small configs fail δ1), then mean rank of the 4 geometry gates + KID + CLIP + BRISQUE → **cn_small, scale 0.9, full schedule** (2.29) ahead of cn_mid 0.7 (2.57). By eye the two are close; mid invents strip skylights in the ceiling and loads in 104 s cold (small: 22 s warm). Weak conditioning (0.5-0.7) hallucinates extra furniture and split the 8-seat table into two tables (acceptance issue 3) — visible in `outputs/v6_pano/*/dev_a_scandinavian_style_dining_room_s701.jpg`.
 
-**Final (selected config, final proxy, 26 rooms; `results/tables/v6_pano_summary.csv`, per room `v6_pano_per_room.csv`; v5 rows: `v5_pano_summary.csv` and `v6_pano_v5demo_metrics.csv` (same view code on the v5 demo panoramas))**
+**Final (selected config, final proxy, 26 rooms) — measured before the final prompt order and window repair; not re-measured.** The shipped v6 panorama (window phrase right after the room, window repair + extra-window removal) differs from what this table measured. (`results/tables/v6_pano_summary.csv`, per room `v6_pano_per_room.csv`; v5 rows: `v5_pano_summary.csv` and `v6_pano_v5demo_metrics.csv` (same view code on the v5 demo panoramas))**
 
 | | v5 (SDXL + Redmond, no condition) | v6 dev | v6 held-out | v6 demo |
 |---|---|---|---|---|
@@ -617,7 +617,7 @@ All configs pass the consistency / geometry constraints (LPIPS ≤ 0.30, ΔLab �
 - **Round 7-10** — kitchen: framed-art proxies were painted as extra windows / a niche -> no wall art in kitchens; still one invented window on a blank wall -> **extra-window removal**: window / sky regions of the panorama that touch no proxy window (>= 0.2 %) are filled. Attempt with SD inpainting ("plain wall") gave a plank board (kitchen) and a pale-blue patch from the palette words (coastal) -> rejected; LaMa with a 35 px mask (incl. the frame) -> clean plaster walls (round 10).
 - **Round 12 (failed, reverted)** — a border-crop penalty for furniture cut at the frame edges (owner issue 20) pushed the wall cameras into corners (curtain / wardrobe close-ups) -> reverted.
 - **Round 13** — final state = round 11 for all six rooms; acceptance table below. Before / after per room: `results/figures/v6_before_after_<room>.png`, overview `v6_before_after_overview.png`.
-- Note: the milestone-2 panorama metrics (`v6_pano_summary.csv`) were measured before the window phrase moved forward in the prompt and before the window repair; the demo panoramas of the figures use the final prompt.
+- Note: the milestone-2 panorama metrics (`v6_pano_summary.csv`) were measured before the final prompt order and window repair; not re-measured. The demo panoramas of the figures use the final prompt.
 
 ## 2026-11-16 — PLAN_V6 Final
 
@@ -668,3 +668,17 @@ All configs pass the consistency / geometry constraints (LPIPS ≤ 0.30, ΔLab �
 | 42 | Run | prompt > 77 tokens truncated | FIXED (M5) | v6 prompts asserted <= 77; v5 prompts cut at a word boundary; 0 truncation warnings in all app tests |
 | 43 | Run | Mask2Former MISSING weights | FIXED (proof) | the layer is unused by SwinBackbone: random weights change logits by 0.0 (`v6_mask2former_missing_weights_check.json`); report silenced |
 | 44 | Run | Hub requests; SD 1.5 loaded 3x | FIXED (M5) | offline mode + local snapshot paths: 0 Hub lines; one SDXL + one SD 1.5 load per v6 request |
+
+## 2026-11-16 — Post-freeze re-measurement of the v6 panorama — STOPPED (not completed)
+
+Goal: re-measure every v6 panorama metric on the final pipeline (final prompt order, window repair on) against v5 on the same 26 rooms and seeds, and evaluate the post-hoc ranking rule once on the 10 held-out rooms (industrial / bohemian, seed 701; never used in the sweep). Code frozen at tag `v6-final`; nothing in the pipeline was changed.
+
+- Checked before the run: the rule exactly as written in `v6_pano_decision.json` reproduces the recorded dev5 ranks (2.286 / 2.571 / 3.143 / 3.429 / 3.571); regenerating dining 44 through `pipeline_v6.panorama` matches the shipped `outputs/v6_demo` panorama (mean abs difference 0.12 / 255, identical depth condition).
+- Stopped by the owner after the background run was killed for low system memory: SDXL with CPU offload held 12.8 GB of process memory and the Windows pagefile grew to 14.6 GB, taking free disk on C: to 9.7 GB (below the 20 GB floor). 24 of 26 raw v6 panoramas had been generated; no metric was computed.
+- Cleaned up: the re-downloaded `cn_depth_sdxl_mid` (0.52 GB) and `t2i_depth_sdxl` (0.15 GB) and the partial outputs (`outputs/v6_final`, 25 MB) were deleted. Free on C: afterwards 21.3 GB.
+
+**Status of the numbers (plain):**
+- **Post-hoc, not validated on held-out:** the v6 panorama ranking rule and its choice (ControlNet small, scale 0.9). It was written after the dev5 sweep and ranked only those 5 rooms; it has not been evaluated on any other room.
+- **Measured before the final prompt order and window repair; not re-measured:** every v6 panorama metric of milestone 2 (`v6_pano_summary.csv`, `v6_pano_per_room.csv`, the milestone-2 rows of `v6_summary.csv` and README section 8). The held-out rows there are held-out only in the sense that those rooms did not choose the config; they measure the pre-final panorama.
+- **Validated on held-out:** nothing in the v6 panorama milestone.
+- Window presence 1.0 after the repair (review rounds 5-6) was measured on three demo rooms only.
